@@ -380,9 +380,8 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 				}
 				else
 				{
-					WorldEditor& editor = *m_app.getWorldEditor();
-					CSharpScriptScene* scene = static_cast<CSharpScriptScene*>(editor.getUniverse()->getScene(crc32("csharp_script")));
-					scene->reloadAssembly();
+					CSharpScriptScene* scene = getScene();
+					scene->loadAssembly();
 				}
 				PlatformInterface::destroyProcess(*m_compile_process);
 				m_compile_process = nullptr;
@@ -400,8 +399,17 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 	const char* getName() const override { return "csharp_script"; }
 
 
+	CSharpScriptScene* getScene() const
+	{
+		WorldEditor& editor = *m_app.getWorldEditor();
+		return (CSharpScriptScene*)editor.getUniverse()->getScene(crc32("csharp_script"));
+	}
+
+
 	void compile()
 	{
+		CSharpScriptScene* scene = getScene();
+		scene->unloadAssembly();
 		IAllocator& allocator = m_app.getWorldEditor()->getAllocator();
 		m_compile_process = PlatformInterface::createProcess("c:\\windows\\system32\\cmd.exe", "/c \"\"C:\\Program Files\\Mono\\bin\\mcs.bat\" -out:\"cs\\main.dll\" -target:library -recurse:\"cs\\*.cs\"", allocator);
 	}

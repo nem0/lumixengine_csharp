@@ -24,7 +24,8 @@ struct CSharpScriptScene : public IScene
 	virtual const char* getScriptName(ComponentHandle cmp, int scr_index) = 0;
 	virtual int getNamesCount() const = 0;
 	virtual const char* getName(int idx) const = 0;
-	virtual void reloadAssembly() = 0;
+	virtual void unloadAssembly() = 0;
+	virtual void loadAssembly() = 0;
 };
 
 

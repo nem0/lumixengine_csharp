@@ -47,6 +47,7 @@ void csharp_logError(MonoString* message)
 	g_log_error.log("C#") << mono_string_to_utf8(message);
 }
 
+
 struct CSharpScriptSceneImpl : public CSharpScriptScene
 {
 	struct Script
@@ -78,7 +79,27 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	}
 
 
-	void reloadAssembly() override
+	void unloadAssembly() override
+	{
+		if (!m_assembly) return;
+
+		for (ScriptComponent* cmp : m_scripts)
+		{
+			Array<Script>& scripts = cmp->scripts;
+			for (Script& script : scripts)
+			{
+				mono_gchandle_free(script.gc_handle);
+				script.gc_handle = INVALID_GC_HANDLE;
+			}
+		}
+		mono_assembly_close(m_assembly);
+		m_assembly = nullptr;
+		mono_domain_free(m_system.m_domain, false);
+		m_system.m_domain = mono_domain_create();
+	}
+
+
+	void loadAssembly() override
 	{
 		load("cs\\main.dll");
 	}
@@ -101,9 +122,16 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	void stopGame() override { m_is_game_running = false; }
 
 
-	static void getClassName(u32 name_hash, char(&out_name)[256])
+	void getClassName(u32 name_hash, char(&out_name)[256]) const
 	{
-		copyString(out_name, "Main"); // TODO
+		int idx = m_names.find(name_hash);
+		if (idx < 0)
+		{
+			out_name[0] = 0;
+			return;
+		}
+		
+		copyString(out_name, m_names.at(idx).c_str());
 	}
 
 
@@ -287,41 +315,11 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		}
 		m_scripts.clear();
 	}
-	/*
 
-	MonoClass*
-		mono_image_get_classes(MonoImage *image, gpointer *iter)
-	{
-		int num_types;
-		int *index;
 
-		if (!iter)
-			return NULL;
-
-		index = (int *)iter;
-
-		if (!*index)
-			*index = 1;
-
-		num_types = mono_image_get_table_rows(image, MONO_TABLE_TYPEDEF);
-
-		if (*index < num_types) {
-			(*index)++;
-			return mono_class_get(image, *index | MONO_TOKEN_TYPE_DEF);
-		}
-		else {
-			*index = 0;
-			return NULL;
-		}
-	}
-
-	*/
 	bool load(const char* path)
 	{
-		if(m_assembly)
-		{ 
-			mono_assembly_close(m_assembly);
-		}
+		if(m_assembly) mono_assembly_close(m_assembly);
 
 		IAllocator& allocator = m_system.m_engine.getAllocator();
 		m_assembly = mono_domain_assembly_open(m_system.m_domain, path);
@@ -343,12 +341,6 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 			}
 		}
 		return true;
-		/*MonoClass* klass = mono_class_from_name(mono_assembly_get_image(assembly), "", "HelloWorld");
-		MonoMethod* main = mono_class_get_method_from_name(klass, "Main", -1);
-		MonoException* exc;
-		MonoArray* args = mono_array_new(mono_domain_get(), mono_get_string_class(), 0);
-		mono_runtime_exec_main(main, args, (MonoObject**)&exc);
-		auto retval = mono_jit_exec(domain, assembly, 0, nullptr);*/
 	}
 
 
@@ -380,7 +372,6 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		MonoClass *exceptionClass;
 		MonoType *exceptionType;
 		const char *typeName, *message, *source, *stackTrace;
-
 		if (exc)
 		{
 			exceptionClass = mono_object_get_class(exc);
@@ -389,12 +380,12 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 			message = GetStringProperty("Message", exceptionClass, exc);
 			source = GetStringProperty("Source", exceptionClass, exc);
 			stackTrace = GetStringProperty("StackTrace", exceptionClass, exc);
+			g_log_error.log("C#") << message;
 			return false;
 		}
 		
 		return true;
 	}
-
 
 
 	uint32_t createObject(const char* name_space, const char* class_name)
@@ -444,18 +435,6 @@ void CSharpPlugin::createScenes(Universe& universe)
 LUMIX_PLUGIN_ENTRY(lumixengine_csharp)
 {
 	return LUMIX_NEW(engine.getAllocator(), CSharpPlugin)(engine);
-	/*
-	mono_set_dirs("C:\\Program Files\\Mono\\lib", "C:\\Program Files\\Mono\\etc");
-	MonoDomain *domain = mono_jit_init("lumix");
-	MonoAssembly *assembly = mono_domain_assembly_open(domain, "C:\\projects\\lumixengine_csharp\\main.exe");
-	MonoClass* klass = mono_class_from_name(mono_assembly_get_image(assembly), "", "HelloWorld");
-	MonoMethod* main = mono_class_get_method_from_name(klass, "Main", -1);
-	MonoException* exc;
-	MonoArray* args = mono_array_new(mono_domain_get(), mono_get_string_class(), 0);
-	mono_runtime_exec_main(main, args, (MonoObject**)&exc);
-	auto retval = mono_jit_exec(domain, assembly, 0, nullptr);
-	*/
-	return nullptr;
 }
 
 
