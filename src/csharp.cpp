@@ -42,6 +42,12 @@ struct CSharpPlugin : public IPlugin
 };
 
 
+void csharp_Entity_setPosition(Universe* universe, int entity, float x, float y, float z)
+{
+	universe->setPosition({entity}, x, y, z);
+}
+
+
 void csharp_logError(MonoString* message)
 {
 	g_log_error.log("C#") << mono_string_to_utf8(message);
@@ -63,6 +69,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 		Array<Script> scripts;
 		Entity entity;
+		u32 entity_gc_handle;
 	};
 
 
@@ -71,10 +78,12 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		, m_universe(universe)
 		, m_scripts(plugin.m_allocator)
 		, m_names(plugin.m_allocator)
+		, m_updates(plugin.m_allocator)
 		, m_is_game_running(false)
 	{
 		universe.registerComponentType(CSHARP_SCRIPT_TYPE, this, &CSharpScriptSceneImpl::serializeCSharpScript, &CSharpScriptSceneImpl::deserializeCSharpScript);
 		mono_add_internal_call("Lumix.Engine::logError", csharp_logError);
+		mono_add_internal_call("Lumix.Entity::native_setPosition", csharp_Entity_setPosition);
 		load("cs\\main.dll");
 	}
 
@@ -83,6 +92,8 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	{
 		if (!m_assembly) return;
 
+		m_names.clear();
+		m_updates.clear();
 		for (ScriptComponent* cmp : m_scripts)
 		{
 			Array<Script>& scripts = cmp->scripts;
@@ -102,6 +113,14 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	void loadAssembly() override
 	{
 		load("cs\\main.dll");
+		for (ScriptComponent* cmp : m_scripts)
+		{
+			Array<Script>& scripts = cmp->scripts;
+			for (Script& script : scripts)
+			{
+				setScriptNameHash(*cmp, script, script.script_name_hash);
+			}
+		}
 	}
 
 
@@ -112,7 +131,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 			Array<Script>& scripts = cmp->scripts;
 			for (Script& script : scripts)
 			{
-				tryCallMethod(script, "StartGame");
+				tryCallMethod(script.gc_handle, "startGame");
 			}
 		}
 		m_is_game_running = true;
@@ -153,6 +172,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		ComponentHandle cmp = { entity.index };
 		script->entity = entity;
 		m_scripts.insert(entity, script);
+		createCSharpEntity(*script);
 
 		int count;
 		serializer.read(&count);
@@ -243,7 +263,30 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		char class_name[256];
 		getClassName(name_hash, class_name);
 		script.gc_handle = createObject("", class_name);
+
+		setCSharpComponent(script, cmp);
+
 		script.script_name_hash = name_hash;
+	}
+
+
+	void setCSharpComponent(Script& script, ScriptComponent& cmp)
+	{
+		MonoObject* obj = mono_gchandle_get_target(script.gc_handle);
+		ASSERT(obj);
+		MonoClass* mono_class = mono_object_get_class(obj);
+
+		MonoClassField* field = mono_class_get_field_from_name(mono_class, "entity");
+		ASSERT(field);
+
+		MonoObject* entity_obj = mono_gchandle_get_target(cmp.entity_gc_handle);
+
+		mono_field_set_value(obj, field, entity_obj);
+
+		if (mono_class_get_method_from_name(mono_class, "update", 1))
+		{
+			m_updates.push(script.gc_handle);
+		}
 	}
 
 
@@ -253,6 +296,31 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		if (script_cmp->scripts.size() <= scr_index) return;
 
 		setScriptNameHash(*script_cmp, script_cmp->scripts[scr_index], name_hash);
+	}
+
+
+	void createCSharpEntity(ScriptComponent& cmp)
+	{
+		// TODO cleanup
+		cmp.entity_gc_handle = createObject("Lumix", "Entity");
+		
+		MonoObject* obj = mono_gchandle_get_target(cmp.entity_gc_handle);
+		ASSERT(obj);
+		MonoClass* mono_class = mono_object_get_class(obj);
+		
+		MonoClassField* field = mono_class_get_field_from_name(mono_class, "native");
+		ASSERT(field);
+
+		mono_field_set_value(obj, field, &cmp.entity.index);
+
+		MonoClassField* universe_field = mono_class_get_field_from_name(mono_class, "universe");
+		ASSERT(universe_field);
+
+		void* y = &m_universe;
+		mono_field_set_value(obj, universe_field, &y);
+
+		Universe* x;
+		mono_field_get_value(obj, universe_field, &x);
 	}
 
 
@@ -266,6 +334,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		ComponentHandle cmp = {entity.index};
 		script->entity = entity;
 		m_scripts.insert(entity, script);
+		createCSharpEntity(*script);
 		m_universe.addComponent(entity, type, this, cmp);
 		return cmp;
 	}
@@ -287,10 +356,64 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	}
 
 
-	void serialize(OutputBlob& serializer) override {}
-	void deserialize(InputBlob& serializer) override {}
+	void serialize(OutputBlob& serializer) override
+	{
+		serializer.write(m_scripts.size());
+		for (ScriptComponent** iter = m_scripts.begin(), **end = m_scripts.end(); iter != end; ++iter)
+		{
+			ScriptComponent* script_cmp = *iter;
+			serializer.write(script_cmp->entity);
+			serializer.write(script_cmp->scripts.size());
+			for (Script& scr : script_cmp->scripts)
+			{
+				serializer.write(scr.script_name_hash);
+			}
+		}
+	}
+
+
+	void deserialize(InputBlob& serializer) override
+	{
+		int len = serializer.read<int>();
+		m_scripts.reserve(len);
+		for (int i = 0; i < len; ++i)
+		{
+			IAllocator& allocator = m_system.m_allocator;
+			ScriptComponent* script = LUMIX_NEW(allocator, ScriptComponent)(allocator);
+
+			serializer.read(script->entity);
+			m_scripts.insert(script->entity, script);
+			createCSharpEntity(*script);
+			int scr_count;
+			serializer.read(scr_count);
+			for (int j = 0; j < scr_count; ++j)
+			{
+				Script& scr = script->scripts.emplace();
+				scr.gc_handle = INVALID_GC_HANDLE;
+				scr.script_name_hash = serializer.read<u32>();
+				setScriptNameHash(*script, scr, scr.script_name_hash);
+			}
+			ComponentHandle cmp = {script->entity.index};
+			m_universe.addComponent(script->entity, CSHARP_SCRIPT_TYPE, this, cmp);
+		}
+	}
+
+
 	IPlugin& getPlugin() const override { return m_system; }
-	void update(float time_delta, bool paused) override {}
+	
+	
+	void update(float time_delta, bool paused) override
+	{
+		if (paused) return;
+		if (!m_is_game_running) return;
+
+		for (u32 gc_handle : m_updates)
+		{
+			tryCallMethod(gc_handle, "update", time_delta);
+		}
+	}
+	
+	
 	void lateUpdate(float time_delta, bool paused) override {}
 
 
@@ -357,18 +480,10 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	}
 
 
-	bool tryCallMethod(Script& script, const char* method_name)
+	void handleException(MonoObject* exc)
 	{
-		MonoObject* obj = mono_gchandle_get_target(script.gc_handle);
-		ASSERT(obj);
-		MonoClass* mono_class = mono_object_get_class(obj);
-		ASSERT(mono_class);
-		MonoMethod* method = mono_class_get_method_from_name(mono_class, method_name, 0);
-		if (!method) return false;
+		if (!exc) return;
 
-		MonoObject* exc = nullptr;
-		mono_runtime_invoke(method, obj, nullptr, &exc);
-		
 		MonoClass *exceptionClass;
 		MonoType *exceptionType;
 		const char *typeName, *message, *source, *stackTrace;
@@ -381,14 +496,47 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 			source = GetStringProperty("Source", exceptionClass, exc);
 			stackTrace = GetStringProperty("StackTrace", exceptionClass, exc);
 			g_log_error.log("C#") << message;
-			return false;
 		}
-		
-		return true;
 	}
 
 
-	uint32_t createObject(const char* name_space, const char* class_name)
+	template <typename T>
+	bool tryCallMethod(u32 gc_handle, const char* method_name, T arg0)
+	{
+		MonoObject* obj = mono_gchandle_get_target(gc_handle);
+		ASSERT(obj);
+		MonoClass* mono_class = mono_object_get_class(obj);
+		ASSERT(mono_class);
+		MonoMethod* method = mono_class_get_method_from_name(mono_class, method_name, 1);
+		if (!method) return false;
+
+		MonoObject* exc = nullptr;
+		void* args[] = { &arg0 };
+		mono_runtime_invoke(method, obj, args, &exc);
+		handleException(exc);
+
+		return exc == nullptr;
+	}
+
+
+	bool tryCallMethod(u32 gc_handle, const char* method_name)
+	{
+		MonoObject* obj = mono_gchandle_get_target(gc_handle);
+		ASSERT(obj);
+		MonoClass* mono_class = mono_object_get_class(obj);
+		ASSERT(mono_class);
+		MonoMethod* method = mono_class_get_method_from_name(mono_class, method_name, 0);
+		if (!method) return false;
+
+		MonoObject* exc = nullptr;
+		mono_runtime_invoke(method, obj, nullptr, &exc);
+		
+		handleException(exc);
+		return exc == nullptr;
+	}
+
+
+	u32 createObject(const char* name_space, const char* class_name)
 	{
 		MonoClass* mono_class = mono_class_from_name(mono_assembly_get_image(m_assembly), name_space, class_name);
 		if (!mono_class) return 0;
@@ -403,6 +551,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 	AssociativeArray<Entity, ScriptComponent*> m_scripts;
 	AssociativeArray<u32, string> m_names;
+	Array<u32> m_updates;
 	CSharpPlugin& m_system;
 	Universe& m_universe;
 	MonoAssembly* m_assembly = nullptr;

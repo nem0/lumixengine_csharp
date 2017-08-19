@@ -9,6 +9,7 @@ namespace Lumix
  
 public class Component
 {
+	public Lumix.Entity entity;
 }
 
 
