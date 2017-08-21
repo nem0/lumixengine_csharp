@@ -26,7 +26,6 @@ static const ComponentType CSHARP_SCRIPT_TYPE = PropertyRegister::getComponentTy
 static const ResourceType CSHARP_SCRIPT_RESOURCE_TYPE("csharp_script");
 
 
-
 struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 {
 	struct SetPropertyCommand LUMIX_FINAL : public IEditorCommand
@@ -140,6 +139,7 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 		{
 			auto* scene = static_cast<CSharpScriptScene*>(editor.getUniverse()->getScene(crc32("csharp_script")));
 			scr_index = scene->addScript(cmp);
+			scene->setScriptNameHash(cmp, scr_index, name_hash);
 			return true;
 		}
 
@@ -151,12 +151,17 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 		}
 
 
-		void serialize(JsonSerializer& serializer) override { serializer.serialize("component", cmp); }
+		void serialize(JsonSerializer& serializer) override
+		{ 
+			serializer.serialize("component", cmp);
+			serializer.serialize("name_hash", name_hash);
+		}
 
 
 		void deserialize(JsonSerializer& serializer) override
 		{
 			serializer.deserialize("component", cmp, INVALID_COMPONENT);
+			serializer.deserialize("name_hash", name_hash, 0);
 		}
 
 
@@ -168,6 +173,7 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 
 		WorldEditor& editor;
 		ComponentHandle cmp;
+		u32 name_hash;
 		int scr_index;
 	};
 
@@ -248,11 +254,25 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 		auto& editor = *m_app.getWorldEditor();
 		auto& allocator = editor.getAllocator();
 
-		if (ImGui::Button("Add script"))
+		if (ImGui::Button("Add script")) ImGui::OpenPopup("add_csharp_script_popup");
+
+		if (ImGui::BeginPopup("add_csharp_script_popup"))
 		{
-			auto* cmd = LUMIX_NEW(allocator, AddCSharpScriptCommand)(editor);
-			cmd->cmp = cmp.handle;
-			editor.executeCommand(cmd);
+			int count = scene->getNamesCount();
+			for (int i = 0; i < count; ++i)
+			{
+				const char* name = scene->getName(i);
+				bool b = false;
+				if (ImGui::Selectable(name, &b))
+				{
+					auto* cmd = LUMIX_NEW(allocator, AddCSharpScriptCommand)(editor);
+					cmd->cmp = cmp.handle;
+					cmd->name_hash = crc32(name);
+					editor.executeCommand(cmd);
+					break;
+				}
+			}
+			ImGui::EndPopup();
 		}
 
 		for (int j = 0; j < scene->getScriptCount(cmp.handle); ++j)
