@@ -8,12 +8,14 @@ public class Main : Lumix.Component
 	
     public void startGame()
     {
-		Lumix.Engine.logError("hello from c#" + entity.native);
+		Lumix.Engine.logError("start game");
+		var animable = entity.createComponent<Lumix.Animable>();
+		animable.source = "Abc";
     }
 	
 	public void update(float time_delta)
 	{
 		t += time_delta;
-		entity.setPosition((float)Math.Cos(t) * 10, (float)Math.Sin(t) * 10, 0);
+		entity.position = new Lumix.Vector3((float)Math.Cos(t) * 10, (float)Math.Sin(t) * 10, 0);
 	}
 }

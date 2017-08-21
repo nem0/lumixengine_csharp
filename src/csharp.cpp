@@ -1,4 +1,6 @@
 #include "csharp.h"
+#include "animation/animation.h"
+#include "animation/animation_system.h"
 #include "engine/blob.h"
 #include "engine/crc32.h"
 #include "engine/engine.h"
@@ -42,9 +44,83 @@ struct CSharpPlugin : public IPlugin
 };
 
 
-void csharp_Entity_setPosition(Universe* universe, int entity, float x, float y, float z)
+IScene* csharp_Component_getScene(Universe* universe, MonoString* type_str)
 {
-	universe->setPosition({entity}, x, y, z);
+	const char* type = mono_string_to_utf8(type_str);
+	ComponentType cmp_type = PropertyRegister::getComponentType(type);
+	return universe->getScene(cmp_type);
+}
+
+
+int csharp_Component_create(Universe* universe, int entity, MonoString* type_str)
+{
+	const char* type = mono_string_to_utf8(type_str);
+	ComponentType cmp_type = PropertyRegister::getComponentType(type);
+	IScene* scene = universe->getScene(cmp_type);
+	if (!scene) return INVALID_COMPONENT.index;
+	if (scene->getComponent({entity}, cmp_type) != INVALID_COMPONENT)
+	{
+		g_log_error.log("C# Script") << "Component " << type << " already exists in entity " << entity;
+		return INVALID_COMPONENT.index;
+	}
+
+	return scene->createComponent(cmp_type, {entity}).index;
+}
+
+
+void csharp_Entity_destroy(Universe* universe, int entity)
+{
+	universe->destroyEntity({entity});
+}
+
+
+void csharp_Entity_setPosition(Universe* universe, int entity, const Vec3& pos)
+{
+	universe->setPosition({entity}, pos);
+}
+
+
+Vec3 csharp_Entity_getPosition(Universe* universe, int entity)
+{
+	return universe->getPosition({entity});
+}
+
+
+void csharp_Entity_setRotation(Universe* universe, int entity, const Quat& pos)
+{
+	universe->setRotation({entity}, pos);
+}
+
+
+Quat csharp_Entity_getRotation(Universe* universe, int entity)
+{
+	return universe->getRotation({entity});
+}
+
+
+void csharp_Entity_setName(Universe* universe, int entity, MonoString* name)
+{
+	universe->setEntityName({ entity }, mono_string_to_utf8(name));
+}
+
+
+MonoString* csharp_Entity_getName(Universe* universe, int entity)
+{
+	return mono_string_new(mono_domain_get(), universe->getEntityName({entity}));
+}
+
+
+MonoString* csharp_Animable_getSource(AnimationScene* scene, int cmp)
+{
+	Path src = scene->getAnimation({cmp});
+	return mono_string_new(mono_domain_get(), src.c_str());
+}
+
+
+void csharp_Animable_setSource(AnimationScene* scene, int cmp, MonoString* src)
+{
+	const char* str = mono_string_to_utf8(src);
+	scene->setAnimation({cmp}, Path(str));
 }
 
 
@@ -83,8 +159,26 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	{
 		universe.registerComponentType(CSHARP_SCRIPT_TYPE, this, &CSharpScriptSceneImpl::serializeCSharpScript, &CSharpScriptSceneImpl::deserializeCSharpScript);
 		mono_add_internal_call("Lumix.Engine::logError", csharp_logError);
-		mono_add_internal_call("Lumix.Entity::native_setPosition", csharp_Entity_setPosition);
+		mono_add_internal_call("Lumix.Component::create", csharp_Component_create);
+		mono_add_internal_call("Lumix.Component::getScene", csharp_Component_getScene);
+		mono_add_internal_call("Lumix.Entity::destroy", csharp_Entity_destroy);
+		mono_add_internal_call("Lumix.Entity::setPosition", csharp_Entity_setPosition);
+		mono_add_internal_call("Lumix.Entity::getPosition", csharp_Entity_getPosition);
+		mono_add_internal_call("Lumix.Entity::setRotation", csharp_Entity_setRotation);
+		mono_add_internal_call("Lumix.Entity::getRotation", csharp_Entity_getRotation);
+		mono_add_internal_call("Lumix.Entity::setName", csharp_Entity_setName);
+		mono_add_internal_call("Lumix.Entity::getName", csharp_Entity_getName);
+
+		createAnimationAPI();
+
 		load("cs\\main.dll");
+	}
+
+
+	void createAnimationAPI()
+	{
+		mono_add_internal_call("Lumix.Animable::setSource", csharp_Animable_setSource);
+		mono_add_internal_call("Lumix.Animable::getSource", csharp_Animable_getSource);
 	}
 
 
@@ -260,13 +354,16 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 			script.script_name_hash = 0;
 		}
 
-		char class_name[256];
-		getClassName(name_hash, class_name);
-		script.gc_handle = createObject("", class_name);
+		if (name_hash != 0)
+		{
+			char class_name[256];
+			getClassName(name_hash, class_name);
+			script.gc_handle = createObject("", class_name);
 
-		setCSharpComponent(script, cmp);
+			setCSharpComponent(script, cmp);
 
-		script.script_name_hash = name_hash;
+			script.script_name_hash = name_hash;
+		}
 	}
 
 
@@ -308,12 +405,12 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		ASSERT(obj);
 		MonoClass* mono_class = mono_object_get_class(obj);
 		
-		MonoClassField* field = mono_class_get_field_from_name(mono_class, "native");
+		MonoClassField* field = mono_class_get_field_from_name(mono_class, "_entity_id");
 		ASSERT(field);
 
 		mono_field_set_value(obj, field, &cmp.entity.index);
 
-		MonoClassField* universe_field = mono_class_get_field_from_name(mono_class, "universe");
+		MonoClassField* universe_field = mono_class_get_field_from_name(mono_class, "_universe");
 		ASSERT(universe_field);
 
 		void* y = &m_universe;
