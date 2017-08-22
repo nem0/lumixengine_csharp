@@ -14,9 +14,11 @@
 #include "engine/serializer.h"
 #include "engine/universe/universe.h"
 #include "imgui/imgui.h"
+#include "renderer/render_scene.h"
 
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
+#include <mono/metadata/mono-config.h>
 #include <mono/metadata/tokentype.h>
 
 #pragma comment(lib, "mono-2.0-sgen.lib")
@@ -110,6 +112,21 @@ MonoString* csharp_Entity_getName(Universe* universe, int entity)
 }
 
 
+
+template <typename R, typename C, R(C::*Function)(ComponentHandle)>
+R csharp_getProperty(C* scene, int cmp)
+{
+	return (scene->*Function)({cmp});
+}
+
+
+template <typename T, typename C, void (C::*Function)(ComponentHandle, T)>
+void csharp_setProperty(C* scene, int cmp, T value)
+{
+	(scene->*Function)({cmp}, value);
+}
+
+
 MonoString* csharp_Animable_getSource(AnimationScene* scene, int cmp)
 {
 	Path src = scene->getAnimation({cmp});
@@ -158,6 +175,17 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		, m_is_game_running(false)
 	{
 		universe.registerComponentType(CSHARP_SCRIPT_TYPE, this, &CSharpScriptSceneImpl::serializeCSharpScript, &CSharpScriptSceneImpl::deserializeCSharpScript);
+
+		createEngineAPI();
+		createRendererAPI();
+		createAnimationAPI();
+
+		load("cs\\main.dll");
+	}
+
+
+	void createEngineAPI()
+	{
 		mono_add_internal_call("Lumix.Engine::logError", csharp_logError);
 		mono_add_internal_call("Lumix.Component::create", csharp_Component_create);
 		mono_add_internal_call("Lumix.Component::getScene", csharp_Component_getScene);
@@ -168,18 +196,49 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		mono_add_internal_call("Lumix.Entity::getRotation", csharp_Entity_getRotation);
 		mono_add_internal_call("Lumix.Entity::setName", csharp_Entity_setName);
 		mono_add_internal_call("Lumix.Entity::getName", csharp_Entity_getName);
+	}
 
-		createAnimationAPI();
 
-		load("cs\\main.dll");
+	#define CSHARP_PROPERTY(Type, Scene, Class, Property) \
+		do { \
+			auto f = &csharp_getProperty<Type, Scene, &Scene::get##Class##Property>; \
+			mono_add_internal_call("Lumix." ## #Class ## "::get" ## #Property, f); \
+			auto f2 = &csharp_setProperty<Type, Scene, &Scene::set##Class##Property>; \
+			mono_add_internal_call("Lumix." ## #Class ## "::set" ## #Property, f2); \
+		}  while (false)
+
+
+	void createRendererAPI()
+	{
+		CSHARP_PROPERTY(float, RenderScene, Camera, FOV);
+		CSHARP_PROPERTY(float, RenderScene, Camera, NearPlane);
+		CSHARP_PROPERTY(float, RenderScene, Camera, FarPlane);
+		CSHARP_PROPERTY(float, RenderScene, Camera, OrthoSize);
+
+		CSHARP_PROPERTY(float, RenderScene, Terrain, XZScale);
+		CSHARP_PROPERTY(float, RenderScene, Terrain, YScale);
+
+		CSHARP_PROPERTY(float, RenderScene, GlobalLight, Intensity);
+		CSHARP_PROPERTY(float, RenderScene, GlobalLight, IndirectIntensity);
+
+		CSHARP_PROPERTY(float, RenderScene, PointLight, Intensity);
+
+		CSHARP_PROPERTY(float, RenderScene, Fog, Bottom);
+		CSHARP_PROPERTY(float, RenderScene, Fog, Height);
 	}
 
 
 	void createAnimationAPI()
 	{
+
+		CSHARP_PROPERTY(float, AnimationScene, Animable, Time);
 		mono_add_internal_call("Lumix.Animable::setSource", csharp_Animable_setSource);
 		mono_add_internal_call("Lumix.Animable::getSource", csharp_Animable_getSource);
+
 	}
+
+
+	#undef CSHARP_PROPERTY
 
 
 	void unloadAssembly() override
@@ -322,6 +381,13 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 	int getNamesCount() const override { return m_names.size(); }
 	const char* getName(int idx) const override { return m_names.at(idx).c_str(); }
+
+
+	u32 getGCHandle(ComponentHandle cmp, int scr_index) const override
+	{
+		Script& scr = m_scripts[{cmp.index}]->scripts[scr_index];
+		return scr.gc_handle;
+	}
 
 
 	const char* getScriptName(ComponentHandle cmp, int scr_index) override
@@ -581,19 +647,15 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	{
 		if (!exc) return;
 
-		MonoClass *exceptionClass;
-		MonoType *exceptionType;
-		const char *typeName, *message, *source, *stackTrace;
-		if (exc)
-		{
-			exceptionClass = mono_object_get_class(exc);
-			exceptionType = mono_class_get_type(exceptionClass);
-			typeName = mono_type_get_name(exceptionType);
-			message = GetStringProperty("Message", exceptionClass, exc);
-			source = GetStringProperty("Source", exceptionClass, exc);
-			stackTrace = GetStringProperty("StackTrace", exceptionClass, exc);
-			g_log_error.log("C#") << message;
-		}
+		MonoClass *exception_class = mono_object_get_class(exc);
+		MonoType* exception_type = mono_class_get_type(exception_class);
+		const char* type_name = mono_type_get_name(exception_type);
+		const char* message = GetStringProperty("Message", exception_class, exc);
+		const char* source = GetStringProperty("Source", exception_class, exc);
+		const char* stack_trace = GetStringProperty("StackTrace", exception_class, exc);
+		if(message) g_log_error.log("C#") << message;
+		if(source) g_log_error.log("C#") << source;
+		if(stack_trace) g_log_error.log("C#") << stack_trace;
 	}
 
 
@@ -661,6 +723,7 @@ CSharpPlugin::CSharpPlugin(Engine& engine)
 	, m_allocator(engine.getAllocator())
 {
 	mono_set_dirs("C:\\Program Files\\Mono\\lib", "C:\\Program Files\\Mono\\etc");
+	mono_config_parse(nullptr);
 	m_domain = mono_jit_init("lumix");
 }
 

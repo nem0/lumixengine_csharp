@@ -22,6 +22,7 @@ struct CSharpScriptScene : public IScene
 	virtual u32 getScriptNameHash(ComponentHandle cmp, int scr_index) = 0;
 	virtual void setScriptNameHash(ComponentHandle cmp, int scr_index, u32 name_hash) = 0;
 	virtual const char* getScriptName(ComponentHandle cmp, int scr_index) = 0;
+	virtual u32 getGCHandle(ComponentHandle cmp, int scr_index) const = 0;
 	virtual int getNamesCount() const = 0;
 	virtual const char* getName(int idx) const = 0;
 	virtual void unloadAssembly() = 0;
