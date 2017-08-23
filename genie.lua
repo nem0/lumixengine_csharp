@@ -17,7 +17,18 @@ project "lumixengine_csharp"
 	links { "engine" }
 	useLua()
 	defaultConfigurations()
+
+project "lumixengine_csharp_binder"
+	kind "ConsoleApp"
+
+	files {
+			"binder/**.cpp",
+			"genie.lua"
+	}
+
+	defines { "_CRT_SECURE_NO_WARNINGS" }
 	
+	defaultConfigurations()
 	
 table.insert(build_app_callbacks, linkMono)
 table.insert(build_studio_callbacks, linkMono)

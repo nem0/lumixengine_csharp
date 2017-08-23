@@ -20,6 +20,34 @@ namespace Lumix
 		}
 
 
+		/* Bottom */
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		private extern static void setBottom(IntPtr scene, int cmp, float source);
+		
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		private extern static float getBottom(IntPtr scene, int cmp);
+		
+		public float Bottom
+		{
+			get{ return getBottom(scene, component_id); }
+			set{ setBottom(scene, component_id, value); }
+		}
+
+
+		/* Color */
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		private extern static void setColor(IntPtr scene, int cmp, Vec3 source);
+		
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		private extern static Vec3 getColor(IntPtr scene, int cmp);
+		
+		public Vec3 Color
+		{
+			get{ return getColor(scene, component_id); }
+			set{ setColor(scene, component_id, value); }
+		}
+
+
 		/* Height */
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		private extern static void setHeight(IntPtr scene, int cmp, float source);
@@ -45,20 +73,6 @@ namespace Lumix
 		{
 			get{ return getDensity(scene, component_id); }
 			set{ setDensity(scene, component_id, value); }
-		}
-
-
-		/* Bottom */
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		private extern static void setBottom(IntPtr scene, int cmp, float source);
-		
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		private extern static float getBottom(IntPtr scene, int cmp);
-		
-		public float Bottom
-		{
-			get{ return getBottom(scene, component_id); }
-			set{ setBottom(scene, component_id, value); }
 		}
 
 

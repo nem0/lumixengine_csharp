@@ -123,7 +123,14 @@ R csharp_getProperty(C* scene, int cmp)
 template <typename T, typename C, void (C::*Function)(ComponentHandle, T)>
 void csharp_setProperty(C* scene, int cmp, T value)
 {
-	(scene->*Function)({cmp}, value);
+	(scene->*Function)({ cmp }, value);
+}
+
+
+template <typename T, typename C, void (C::*Function)(ComponentHandle, const T&)>
+void csharp_setProperty(C* scene, int cmp, T value)
+{
+	(scene->*Function)({ cmp }, value);
 }
 
 
@@ -215,15 +222,22 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		CSHARP_PROPERTY(float, RenderScene, Camera, FarPlane);
 		CSHARP_PROPERTY(float, RenderScene, Camera, OrthoSize);
 
+		CSHARP_PROPERTY(Vec3, RenderScene, Decal, Scale);
+
 		CSHARP_PROPERTY(float, RenderScene, Terrain, XZScale);
 		CSHARP_PROPERTY(float, RenderScene, Terrain, YScale);
 
+		CSHARP_PROPERTY(Vec3, RenderScene, GlobalLight, Color);
 		CSHARP_PROPERTY(float, RenderScene, GlobalLight, Intensity);
 		CSHARP_PROPERTY(float, RenderScene, GlobalLight, IndirectIntensity);
 
 		CSHARP_PROPERTY(float, RenderScene, PointLight, Intensity);
+		CSHARP_PROPERTY(Vec3, RenderScene, PointLight, Color);
+		CSHARP_PROPERTY(Vec3, RenderScene, PointLight, SpecularColor);
 
 		CSHARP_PROPERTY(float, RenderScene, Fog, Bottom);
+		CSHARP_PROPERTY(Vec3, RenderScene, Fog, Color);
+
 		CSHARP_PROPERTY(float, RenderScene, Fog, Density);
 		CSHARP_PROPERTY(float, RenderScene, Fog, Height);
 	}

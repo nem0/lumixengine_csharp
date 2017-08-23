@@ -9,13 +9,13 @@ public class Main : Lumix.Component
     public void startGame()
     {
 		Lumix.Engine.logError("start game");
-		var animable = entity.createComponent<Lumix.Animable>();
-		animable.source = "Abc";
+		var point_light = entity.createComponent<Lumix.PointLight>();
+		point_light.Color = new Lumix.Vec3(1, 0, 0);
     }
 	
 	public void update(float time_delta)
 	{
 		t += time_delta;
-		entity.position = new Lumix.Vector3((float)Math.Cos(t) * 10, (float)Math.Sin(t) * 10, 0);
+		entity.position = new Lumix.Vec3((float)Math.Cos(t) * 10, (float)Math.Sin(t) * 10, 0);
 	}
 }

@@ -48,6 +48,20 @@ namespace Lumix
 		}
 
 
+		/* Color */
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		private extern static void setColor(IntPtr scene, int cmp, Vec3 source);
+		
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		private extern static Vec3 getColor(IntPtr scene, int cmp);
+		
+		public Vec3 Color
+		{
+			get{ return getColor(scene, component_id); }
+			set{ setColor(scene, component_id, value); }
+		}
+
+
 	}
 
 }

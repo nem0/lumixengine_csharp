@@ -7,13 +7,13 @@ namespace Lumix
 {
 
 
-public struct Vector3
+public struct Vec3
 {
     float x;
     float y;
 	float z;
 	
-	public Vector3(float _x, float _y, float _z)
+	public Vec3(float _x, float _y, float _z)
 	{
 		x = _x;
 		y = _y;

@@ -13,10 +13,10 @@ public class Entity
 	public IntPtr _universe;
 
 	[MethodImplAttribute(MethodImplOptions.InternalCall)]
-	private extern static void setPosition(IntPtr universe, int entity, Vector3 pos);
+	private extern static void setPosition(IntPtr universe, int entity, Vec3 pos);
 
 	[MethodImplAttribute(MethodImplOptions.InternalCall)]
-	private extern static Vector3 getPosition(IntPtr universe, int entity);
+	private extern static Vec3 getPosition(IntPtr universe, int entity);
 
 	[MethodImplAttribute(MethodImplOptions.InternalCall)]
 	private extern static void setRotation(IntPtr universe, int entity, Quat rot);
@@ -57,7 +57,7 @@ public class Entity
 	}
 	
 	
-	public Vector3 position
+	public Vec3 position
 	{
 		get { return getPosition(_universe, _entity_id); }
 		set { setPosition(_universe, _entity_id, value); }
