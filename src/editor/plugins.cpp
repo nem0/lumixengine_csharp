@@ -410,6 +410,7 @@ struct AddCSharpComponentPlugin LUMIX_FINAL : public StudioApp::IAddComponentPlu
 
 				ComponentHandle cmp = editor.getUniverse()->getComponent(entity, CSHARP_SCRIPT_TYPE).handle;
 				cmd->cmp = cmp;
+				cmd->name_hash = crc32(name);
 				editor.executeCommand(cmd);
 
 				int scr_count = script_scene->getScriptCount(cmp);

@@ -224,17 +224,16 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		CSHARP_PROPERTY(float, RenderScene, PointLight, Intensity);
 
 		CSHARP_PROPERTY(float, RenderScene, Fog, Bottom);
+		CSHARP_PROPERTY(float, RenderScene, Fog, Density);
 		CSHARP_PROPERTY(float, RenderScene, Fog, Height);
 	}
 
 
 	void createAnimationAPI()
 	{
-
 		CSHARP_PROPERTY(float, AnimationScene, Animable, Time);
 		mono_add_internal_call("Lumix.Animable::setSource", csharp_Animable_setSource);
 		mono_add_internal_call("Lumix.Animable::getSource", csharp_Animable_getSource);
-
 	}
 
 
@@ -314,6 +313,47 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		for (Script& inst : script->scripts)
 		{
 			serializer.write("script_name_hash", inst.script_name_hash);
+			if (inst.gc_handle == INVALID_GC_HANDLE)
+			{
+				serializer.write("prop_count", (int)0);
+				continue;
+			}
+			
+			MonoObject* obj = mono_gchandle_get_target(inst.gc_handle);
+			MonoClass* mono_class = mono_object_get_class(obj);
+
+			void* iter = nullptr;
+			int count = 0;
+			while (MonoClassField* field = mono_class_get_fields(mono_class, &iter))
+			{
+				bool is_public = (mono_field_get_flags(field) & 0x6) != 0;
+				if (is_public) ++count;
+			}
+
+			serializer.write("prop_count", count);
+
+			iter = nullptr;
+			while (MonoClassField* field = mono_class_get_fields(mono_class, &iter))
+			{
+				bool is_public = (mono_field_get_flags(field) & 0x6) != 0;
+				if (!is_public) continue;
+				int type = mono_type_get_type(mono_field_get_type(field));
+
+				const char* field_name = mono_field_get_name(field);
+				serializer.write("name", field_name);
+				serializer.write("type", type);
+				switch (type)
+				{
+					case MONO_TYPE_R4:
+					{
+						float value;
+						mono_field_get_value(obj, field, &value);
+						serializer.write("value", value);
+						break;
+					}
+					default: ASSERT(false);
+				}
+			}
 		}
 	}
 
@@ -336,6 +376,33 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 			u32 hash;
 			serializer.read(&hash);
 			setScriptNameHash(cmp, i, hash);
+
+			int prop_count;
+			serializer.read(&prop_count);
+
+			for (int i = 0; i < prop_count; ++i)
+			{
+				char name[128];
+				int type;
+				serializer.read(name, lengthOf(name));
+				serializer.read(&type);
+
+				MonoObject* obj = mono_gchandle_get_target(inst.gc_handle);
+				MonoClass* mono_class = mono_object_get_class(obj);
+				MonoClassField* field = mono_class_get_field_from_name(mono_class, name);
+
+				switch (type)
+				{
+					case MONO_TYPE_R4:
+					{
+						float value;
+						serializer.read(&value);
+						mono_field_set_value(obj, field, &value);
+						break;
+					}
+					default: ASSERT(false);
+				}
+			}
 		}
 
 		m_universe.addComponent(entity, CSHARP_SCRIPT_TYPE, this, cmp);
@@ -425,7 +492,8 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 			char class_name[256];
 			getClassName(name_hash, class_name);
 			script.gc_handle = createObject("", class_name);
-
+			ASSERT(script.gc_handle != INVALID_GC_HANDLE);
+			
 			setCSharpComponent(script, cmp);
 
 			script.script_name_hash = name_hash;
@@ -530,6 +598,42 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 			for (Script& scr : script_cmp->scripts)
 			{
 				serializer.write(scr.script_name_hash);
+
+				MonoObject* obj = mono_gchandle_get_target(scr.gc_handle);
+				MonoClass* mono_class = mono_object_get_class(obj);
+
+				void* iter = nullptr;
+				int count = 0;
+				while (MonoClassField* field = mono_class_get_fields(mono_class, &iter))
+				{
+					bool is_public = (mono_field_get_flags(field) & 0x6) != 0;
+					if (is_public) ++count;
+				}
+
+				serializer.write(count);
+
+				iter = nullptr;
+				while (MonoClassField* field = mono_class_get_fields(mono_class, &iter))
+				{
+					bool is_public = (mono_field_get_flags(field) & 0x6) != 0;
+					if (!is_public) continue;
+					int type = mono_type_get_type(mono_field_get_type(field));
+
+					const char* field_name = mono_field_get_name(field);
+					serializer.writeString(field_name);
+					serializer.write(type);
+					switch (type)
+					{
+						case MONO_TYPE_R4:
+						{
+							float value;
+							mono_field_get_value(obj, field, &value);
+							serializer.write(value);
+							break;
+						}
+						default: ASSERT(false);
+					}
+				}
 			}
 		}
 	}
@@ -555,6 +659,34 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 				scr.gc_handle = INVALID_GC_HANDLE;
 				scr.script_name_hash = serializer.read<u32>();
 				setScriptNameHash(*script, scr, scr.script_name_hash);
+
+				int prop_count;
+				serializer.read(prop_count);
+
+				MonoObject* obj = mono_gchandle_get_target(scr.gc_handle);
+				MonoClass* mono_class = mono_object_get_class(obj);
+
+				for (int i = 0; i < prop_count; ++i)
+				{
+					char name[128];
+					int type;
+					serializer.readString(name, lengthOf(name));
+					serializer.read(type);
+
+					MonoClassField* field = mono_class_get_field_from_name(mono_class, name);
+
+					switch (type)
+					{
+						case MONO_TYPE_R4:
+						{
+							float value;
+							serializer.read(value);
+							mono_field_set_value(obj, field, &value);
+							break;
+						}
+						default: ASSERT(false);
+					}
+				}
 			}
 			ComponentHandle cmp = {script->entity.index};
 			m_universe.addComponent(script->entity, CSHARP_SCRIPT_TYPE, this, cmp);
@@ -698,10 +830,10 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	u32 createObject(const char* name_space, const char* class_name)
 	{
 		MonoClass* mono_class = mono_class_from_name(mono_assembly_get_image(m_assembly), name_space, class_name);
-		if (!mono_class) return 0;
+		if (!mono_class) return INVALID_GC_HANDLE;
 
 		MonoObject* obj = mono_object_new(m_system.m_domain, mono_class);
-		if (!obj) return 0;
+		if (!obj) return INVALID_GC_HANDLE;
 
 		mono_runtime_object_init(obj);
 		return mono_gchandle_new(obj, false);
