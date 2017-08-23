@@ -14,6 +14,7 @@
 #include "engine/serializer.h"
 #include "engine/universe/universe.h"
 #include "imgui/imgui.h"
+#include "physics/physics_scene.h"
 #include "renderer/render_scene.h"
 
 #include <mono/jit/jit.h>
@@ -112,7 +113,6 @@ MonoString* csharp_Entity_getName(Universe* universe, int entity)
 }
 
 
-
 template <typename R, typename C, R(C::*Function)(ComponentHandle)>
 R csharp_getProperty(C* scene, int cmp)
 {
@@ -185,6 +185,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 		createEngineAPI();
 		createRendererAPI();
+		createPhysicsAPI();
 		createAnimationAPI();
 
 		load("cs\\main.dll");
@@ -217,6 +218,11 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 	void createRendererAPI()
 	{
+		CSHARP_PROPERTY(Entity, RenderScene, BoneAttachment, Parent);
+		CSHARP_PROPERTY(int, RenderScene, BoneAttachment, Bone);
+		CSHARP_PROPERTY(Vec3, RenderScene, BoneAttachment, Position);
+		CSHARP_PROPERTY(Vec3, RenderScene, BoneAttachment, Rotation);
+
 		CSHARP_PROPERTY(float, RenderScene, Camera, FOV);
 		CSHARP_PROPERTY(float, RenderScene, Camera, NearPlane);
 		CSHARP_PROPERTY(float, RenderScene, Camera, FarPlane);
@@ -233,6 +239,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 		CSHARP_PROPERTY(float, RenderScene, PointLight, Intensity);
 		CSHARP_PROPERTY(Vec3, RenderScene, PointLight, Color);
+		CSHARP_PROPERTY(float, RenderScene, PointLight, SpecularIntensity);
 		CSHARP_PROPERTY(Vec3, RenderScene, PointLight, SpecularColor);
 
 		CSHARP_PROPERTY(float, RenderScene, Fog, Bottom);
@@ -240,12 +247,35 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 		CSHARP_PROPERTY(float, RenderScene, Fog, Density);
 		CSHARP_PROPERTY(float, RenderScene, Fog, Height);
+
+		CSHARP_PROPERTY(Vec3, RenderScene, ParticleEmitter, Acceleration);
+
+		CSHARP_PROPERTY(float, RenderScene, ParticleEmitterPlane, Bounce);
+		
+		CSHARP_PROPERTY(float, RenderScene, ParticleEmitterShape, Radius);
+	}
+
+
+	void createPhysicsAPI()
+	{
+		CSHARP_PROPERTY(float, PhysicsScene, Capsule, Radius);
+		CSHARP_PROPERTY(float, PhysicsScene, Capsule, Height);
+
+		CSHARP_PROPERTY(int, PhysicsScene, Controller, Layer);
+
+		CSHARP_PROPERTY(float, PhysicsScene, Heightmap, XZScale);
+		CSHARP_PROPERTY(float, PhysicsScene, Heightmap, YScale);
+
+		CSHARP_PROPERTY(float, PhysicsScene, Sphere, Radius);
 	}
 
 
 	void createAnimationAPI()
 	{
+		CSHARP_PROPERTY(Entity, AnimationScene, SharedController, Parent);
+
 		CSHARP_PROPERTY(float, AnimationScene, Animable, Time);
+
 		mono_add_internal_call("Lumix.Animable::setSource", csharp_Animable_setSource);
 		mono_add_internal_call("Lumix.Animable::getSource", csharp_Animable_getSource);
 	}
@@ -735,6 +765,8 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 
 	Universe& getUniverse() override { return m_universe; }
+
+
 	void clear() override
 	{
 		for (ScriptComponent* script_cmp : m_scripts)
