@@ -174,6 +174,7 @@ void writeCSharpProperty(FILE* fp, const Property& prop)
 
 	const char* type = prop.type;
 	if (strcmp(type, "const char*") == 0) type = "string";
+	else if (strcmp(type, "Path") == 0) type = "string";
 	const char* name = prop.property;
 	fprintf(fp, text, name, name, type, type, name, type, name, name, name);
 }

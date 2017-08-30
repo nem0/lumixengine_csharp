@@ -115,8 +115,10 @@ MonoString* csharp_Entity_getName(Universe* universe, int entity)
 
 template <typename T> struct ToCSharpType { typedef T Type; };
 template <> struct ToCSharpType<const char*> { typedef MonoString* Type; };
+template <> struct ToCSharpType<Path> { typedef MonoString* Type; };
 template <typename T> T toCSharpValue(T val) { return val; }
 MonoString* toCSharpValue(const char* val) { return mono_string_new(mono_domain_get(), val); }
+MonoString* toCSharpValue(const Path& val) { return mono_string_new(mono_domain_get(), val.c_str()); }
 template <typename T> T fromCSharpValue(T val) { return val; }
 const char* fromCSharpValue(MonoString* val) { return mono_string_to_utf8(val); }
 
@@ -124,7 +126,7 @@ const char* fromCSharpValue(MonoString* val) { return mono_string_to_utf8(val); 
 template <typename R, typename C, R(C::*Function)(ComponentHandle)>
 typename ToCSharpType<R>::Type csharp_getProperty(C* scene, int cmp)
 {
-	R val = (scene->*Function)({ cmp });
+	R val = (scene->*Function)({cmp});
 	return toCSharpValue(val);
 }
 
@@ -139,7 +141,7 @@ void csharp_setProperty(C* scene, int cmp, typename ToCSharpType<T>::Type value)
 template <typename T, typename C, void (C::*Function)(ComponentHandle, const T&)>
 void csharp_setProperty(C* scene, int cmp, typename ToCSharpType<T>::Type value)
 {
-	(scene->*Function)({ cmp }, fromCSharpValue(value));
+	(scene->*Function)({ cmp }, T(fromCSharpValue(value)));
 }
 
 
@@ -239,9 +241,13 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		CSHARP_PROPERTY(const char*, RenderScene, Camera, Slot);
 
 		CSHARP_PROPERTY(Vec3, RenderScene, Decal, Scale);
+		CSHARP_PROPERTY(Path, RenderScene, Decal, MaterialPath);
+
+		CSHARP_PROPERTY(Path, RenderScene, ModelInstance, Path);
 
 		CSHARP_PROPERTY(float, RenderScene, Terrain, XZScale);
 		CSHARP_PROPERTY(float, RenderScene, Terrain, YScale);
+		CSHARP_PROPERTY(Path, RenderScene, Terrain, MaterialPath);
 
 		CSHARP_PROPERTY(Vec3, RenderScene, GlobalLight, Color);
 		CSHARP_PROPERTY(float, RenderScene, GlobalLight, Intensity);
@@ -254,11 +260,16 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 		CSHARP_PROPERTY(float, RenderScene, Fog, Bottom);
 		CSHARP_PROPERTY(Vec3, RenderScene, Fog, Color);
+		CSHARP_PROPERTY(float, RenderScene, Fog, Density);
+		CSHARP_PROPERTY(float, RenderScene, Fog, Height);
+
 
 		CSHARP_PROPERTY(float, RenderScene, Fog, Density);
 		CSHARP_PROPERTY(float, RenderScene, Fog, Height);
 
 		CSHARP_PROPERTY(Vec3, RenderScene, ParticleEmitter, Acceleration);
+		CSHARP_PROPERTY(Path, RenderScene, ParticleEmitter, MaterialPath);
+		CSHARP_PROPERTY(bool, RenderScene, ParticleEmitter, Autoemit);
 
 		CSHARP_PROPERTY(float, RenderScene, ParticleEmitterPlane, Bounce);
 		

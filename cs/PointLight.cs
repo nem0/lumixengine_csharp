@@ -20,17 +20,17 @@ namespace Lumix
 		}
 
 
-		/* Color */
+		/* SpecularIntensity */
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		private extern static void setColor(IntPtr scene, int cmp, Vec3 source);
+		private extern static void setSpecularIntensity(IntPtr scene, int cmp, float source);
 		
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		private extern static Vec3 getColor(IntPtr scene, int cmp);
+		private extern static float getSpecularIntensity(IntPtr scene, int cmp);
 		
-		public Vec3 Color
+		public float SpecularIntensity
 		{
-			get{ return getColor(scene, component_id); }
-			set{ setColor(scene, component_id, value); }
+			get{ return getSpecularIntensity(scene, component_id); }
+			set{ setSpecularIntensity(scene, component_id, value); }
 		}
 
 
@@ -62,17 +62,17 @@ namespace Lumix
 		}
 
 
-		/* SpecularIntensity */
+		/* Color */
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		private extern static void setSpecularIntensity(IntPtr scene, int cmp, float source);
+		private extern static void setColor(IntPtr scene, int cmp, Vec3 source);
 		
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		private extern static float getSpecularIntensity(IntPtr scene, int cmp);
+		private extern static Vec3 getColor(IntPtr scene, int cmp);
 		
-		public float SpecularIntensity
+		public Vec3 Color
 		{
-			get{ return getSpecularIntensity(scene, component_id); }
-			set{ setSpecularIntensity(scene, component_id, value); }
+			get{ return getColor(scene, component_id); }
+			set{ setColor(scene, component_id, value); }
 		}
 
 

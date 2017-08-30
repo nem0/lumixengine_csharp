@@ -20,20 +20,6 @@ namespace Lumix
 		}
 
 
-		/* Color */
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		private extern static void setColor(IntPtr scene, int cmp, Vec3 source);
-		
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		private extern static Vec3 getColor(IntPtr scene, int cmp);
-		
-		public Vec3 Color
-		{
-			get{ return getColor(scene, component_id); }
-			set{ setColor(scene, component_id, value); }
-		}
-
-
 		/* Bottom */
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		private extern static void setBottom(IntPtr scene, int cmp, float source);
@@ -48,20 +34,6 @@ namespace Lumix
 		}
 
 
-		/* Density */
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		private extern static void setDensity(IntPtr scene, int cmp, float source);
-		
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		private extern static float getDensity(IntPtr scene, int cmp);
-		
-		public float Density
-		{
-			get{ return getDensity(scene, component_id); }
-			set{ setDensity(scene, component_id, value); }
-		}
-
-
 		/* Height */
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		private extern static void setHeight(IntPtr scene, int cmp, float source);
@@ -73,6 +45,34 @@ namespace Lumix
 		{
 			get{ return getHeight(scene, component_id); }
 			set{ setHeight(scene, component_id, value); }
+		}
+
+
+		/* Color */
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		private extern static void setColor(IntPtr scene, int cmp, Vec3 source);
+		
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		private extern static Vec3 getColor(IntPtr scene, int cmp);
+		
+		public Vec3 Color
+		{
+			get{ return getColor(scene, component_id); }
+			set{ setColor(scene, component_id, value); }
+		}
+
+
+		/* Density */
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		private extern static void setDensity(IntPtr scene, int cmp, float source);
+		
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		private extern static float getDensity(IntPtr scene, int cmp);
+		
+		public float Density
+		{
+			get{ return getDensity(scene, component_id); }
+			set{ setDensity(scene, component_id, value); }
 		}
 
 

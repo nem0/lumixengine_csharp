@@ -20,6 +20,20 @@ namespace Lumix
 		}
 
 
+		/* MaterialPath */
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		private extern static void setMaterialPath(IntPtr scene, int cmp, string source);
+		
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		private extern static string getMaterialPath(IntPtr scene, int cmp);
+		
+		public string MaterialPath
+		{
+			get{ return getMaterialPath(scene, component_id); }
+			set{ setMaterialPath(scene, component_id, value); }
+		}
+
+
 		/* Scale */
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		private extern static void setScale(IntPtr scene, int cmp, Vec3 source);
