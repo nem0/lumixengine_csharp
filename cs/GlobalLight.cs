@@ -7,7 +7,7 @@ namespace Lumix
 {
 
 
-	public class GlobalLight : Component
+	public class GlobalLight : NativeComponent
 	{
 		private int component_id;
 		private IntPtr scene;
@@ -34,20 +34,6 @@ namespace Lumix
 		}
 
 
-		/* Color */
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		private extern static void setColor(IntPtr scene, int cmp, Vec3 source);
-		
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		private extern static Vec3 getColor(IntPtr scene, int cmp);
-		
-		public Vec3 Color
-		{
-			get{ return getColor(scene, component_id); }
-			set{ setColor(scene, component_id, value); }
-		}
-
-
 		/* IndirectIntensity */
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		private extern static void setIndirectIntensity(IntPtr scene, int cmp, float source);
@@ -59,6 +45,20 @@ namespace Lumix
 		{
 			get{ return getIndirectIntensity(scene, component_id); }
 			set{ setIndirectIntensity(scene, component_id, value); }
+		}
+
+
+		/* Color */
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		private extern static void setColor(IntPtr scene, int cmp, Vec3 source);
+		
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		private extern static Vec3 getColor(IntPtr scene, int cmp);
+		
+		public Vec3 Color
+		{
+			get{ return getColor(scene, component_id); }
+			set{ setColor(scene, component_id, value); }
 		}
 
 

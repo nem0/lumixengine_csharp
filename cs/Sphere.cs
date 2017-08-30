@@ -7,7 +7,7 @@ namespace Lumix
 {
 
 
-	public class Sphere : Component
+	public class Sphere : NativeComponent
 	{
 		private int component_id;
 		private IntPtr scene;

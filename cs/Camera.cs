@@ -7,7 +7,7 @@ namespace Lumix
 {
 
 
-	public class Camera : Component
+	public class Camera : NativeComponent
 	{
 		private int component_id;
 		private IntPtr scene;

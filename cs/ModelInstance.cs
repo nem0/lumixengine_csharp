@@ -7,7 +7,7 @@ namespace Lumix
 {
 
 
-	public class ModelInstance : Component
+	public class ModelInstance : NativeComponent
 	{
 		private int component_id;
 		private IntPtr scene;
@@ -15,8 +15,8 @@ namespace Lumix
 
 		public override void create()
 		{
-			component_id = create(entity._universe, entity._entity_id, "renderable");
-			scene = getScene(entity._universe, "renderable");
+			component_id = create(entity._universe, entity._entity_id, "model_instance");
+			scene = getScene(entity._universe, "model_instance");
 		}
 
 

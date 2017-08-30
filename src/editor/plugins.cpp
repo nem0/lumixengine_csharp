@@ -278,6 +278,8 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 		IAllocator& allocator = editor.getAllocator();
 		auto* scene = static_cast<CSharpScriptScene*>(cmp.scene);
 		u32 gc_handle = scene->getGCHandle(cmp.handle, script_idx);
+		if (gc_handle == INVALID_GC_HANDLE) return;
+
 
 		MonoObject* obj = mono_gchandle_get_target(gc_handle);
 		MonoClass* mono_class = mono_object_get_class(obj);

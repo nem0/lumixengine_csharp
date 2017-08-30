@@ -7,7 +7,7 @@ namespace Lumix
 {
 
 
-	public class ParticleEmitterShape : Component
+	public class ParticleEmitterShape : NativeComponent
 	{
 		private int component_id;
 		private IntPtr scene;

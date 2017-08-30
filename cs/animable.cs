@@ -7,7 +7,7 @@ namespace Lumix
 {
 
 
-	public class Animable : Component
+	public class Animable : NativeComponent
 	{
 		private int component_id;
 		private IntPtr scene;

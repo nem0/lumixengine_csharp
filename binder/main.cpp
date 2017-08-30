@@ -113,7 +113,7 @@ void writeCSharpHeader(FILE* fp, const char* obj)
 		"{\n"
 		"\n"
 		"\n"
-		"	public class %s : Component\n"
+		"	public class %s : NativeComponent\n"
 		"	{\n"
 		"		private int component_id;\n"
 		"		private IntPtr scene;\n"

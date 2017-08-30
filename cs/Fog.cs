@@ -7,7 +7,7 @@ namespace Lumix
 {
 
 
-	public class Fog : Component
+	public class Fog : NativeComponent
 	{
 		private int component_id;
 		private IntPtr scene;
@@ -17,6 +17,20 @@ namespace Lumix
 		{
 			component_id = create(entity._universe, entity._entity_id, "fog");
 			scene = getScene(entity._universe, "fog");
+		}
+
+
+		/* Color */
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		private extern static void setColor(IntPtr scene, int cmp, Vec3 source);
+		
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		private extern static Vec3 getColor(IntPtr scene, int cmp);
+		
+		public Vec3 Color
+		{
+			get{ return getColor(scene, component_id); }
+			set{ setColor(scene, component_id, value); }
 		}
 
 
@@ -45,20 +59,6 @@ namespace Lumix
 		{
 			get{ return getHeight(scene, component_id); }
 			set{ setHeight(scene, component_id, value); }
-		}
-
-
-		/* Color */
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		private extern static void setColor(IntPtr scene, int cmp, Vec3 source);
-		
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		private extern static Vec3 getColor(IntPtr scene, int cmp);
-		
-		public Vec3 Color
-		{
-			get{ return getColor(scene, component_id); }
-			set{ setColor(scene, component_id, value); }
 		}
 
 

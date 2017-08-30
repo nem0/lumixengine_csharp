@@ -8,6 +8,9 @@ namespace Lumix
 {
 
 
+enum { INVALID_GC_HANDLE = 0xffffFFFF };
+
+
 class Path;
 
 

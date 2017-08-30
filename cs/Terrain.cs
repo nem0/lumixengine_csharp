@@ -7,7 +7,7 @@ namespace Lumix
 {
 
 
-	public class Terrain : Component
+	public class Terrain : NativeComponent
 	{
 		private int component_id;
 		private IntPtr scene;
@@ -20,17 +20,17 @@ namespace Lumix
 		}
 
 
-		/* XZScale */
+		/* MaterialPath */
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		private extern static void setXZScale(IntPtr scene, int cmp, float source);
+		private extern static void setMaterialPath(IntPtr scene, int cmp, string source);
 		
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		private extern static float getXZScale(IntPtr scene, int cmp);
+		private extern static string getMaterialPath(IntPtr scene, int cmp);
 		
-		public float XZScale
+		public string MaterialPath
 		{
-			get{ return getXZScale(scene, component_id); }
-			set{ setXZScale(scene, component_id, value); }
+			get{ return getMaterialPath(scene, component_id); }
+			set{ setMaterialPath(scene, component_id, value); }
 		}
 
 
@@ -45,6 +45,20 @@ namespace Lumix
 		{
 			get{ return getYScale(scene, component_id); }
 			set{ setYScale(scene, component_id, value); }
+		}
+
+
+		/* XZScale */
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		private extern static void setXZScale(IntPtr scene, int cmp, float source);
+		
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		private extern static float getXZScale(IntPtr scene, int cmp);
+		
+		public float XZScale
+		{
+			get{ return getXZScale(scene, component_id); }
+			set{ setXZScale(scene, component_id, value); }
 		}
 
 

@@ -21,4 +21,10 @@ public class Component
 }
 
 
+public class NativeComponent : Component
+{
+	
+}
+
+
 }

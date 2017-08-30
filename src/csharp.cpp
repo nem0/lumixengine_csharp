@@ -30,7 +30,6 @@ namespace Lumix
 
 
 static const ComponentType CSHARP_SCRIPT_TYPE = PropertyRegister::getComponentType("csharp_script");
-enum { INVALID_GC_HANDLE = 0xffffFFFF };
 
 
 struct CSharpPlugin : public IPlugin
@@ -260,10 +259,6 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 		CSHARP_PROPERTY(float, RenderScene, Fog, Bottom);
 		CSHARP_PROPERTY(Vec3, RenderScene, Fog, Color);
-		CSHARP_PROPERTY(float, RenderScene, Fog, Density);
-		CSHARP_PROPERTY(float, RenderScene, Fog, Height);
-
-
 		CSHARP_PROPERTY(float, RenderScene, Fog, Density);
 		CSHARP_PROPERTY(float, RenderScene, Fog, Height);
 
@@ -819,7 +814,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 			MonoClass* cl = mono_class_get(img, i | MONO_TOKEN_TYPE_DEF);
 			const char* n = mono_class_get_name(cl);
 			MonoClass* parent = mono_class_get_parent(cl);
-			if (component_class == parent)
+			if (component_class == parent && !equalStrings(n, "NativeComponent"))
 			{
 				m_names.insert(crc32(n), string(n, allocator));
 			}

@@ -7,7 +7,7 @@ namespace Lumix
 {
 
 
-	public class Capsule : Component
+	public class Capsule : NativeComponent
 	{
 		private int component_id;
 		private IntPtr scene;
@@ -17,20 +17,6 @@ namespace Lumix
 		{
 			component_id = create(entity._universe, entity._entity_id, "capsule");
 			scene = getScene(entity._universe, "capsule");
-		}
-
-
-		/* Height */
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		private extern static void setHeight(IntPtr scene, int cmp, float source);
-		
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		private extern static float getHeight(IntPtr scene, int cmp);
-		
-		public float Height
-		{
-			get{ return getHeight(scene, component_id); }
-			set{ setHeight(scene, component_id, value); }
 		}
 
 
@@ -45,6 +31,20 @@ namespace Lumix
 		{
 			get{ return getRadius(scene, component_id); }
 			set{ setRadius(scene, component_id, value); }
+		}
+
+
+		/* Height */
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		private extern static void setHeight(IntPtr scene, int cmp, float source);
+		
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		private extern static float getHeight(IntPtr scene, int cmp);
+		
+		public float Height
+		{
+			get{ return getHeight(scene, component_id); }
+			set{ setHeight(scene, component_id, value); }
 		}
 
 

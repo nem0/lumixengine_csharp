@@ -7,7 +7,7 @@ namespace Lumix
 {
 
 
-	public class SharedController : Component
+	public class SharedController : NativeComponent
 	{
 		private int component_id;
 		private IntPtr scene;

@@ -7,7 +7,7 @@ namespace Lumix
 {
 
 
-	public class BoneAttachment : Component
+	public class BoneAttachment : NativeComponent
 	{
 		private int component_id;
 		private IntPtr scene;

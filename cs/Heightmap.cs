@@ -7,7 +7,7 @@ namespace Lumix
 {
 
 
-	public class Heightmap : Component
+	public class Heightmap : NativeComponent
 	{
 		private int component_id;
 		private IntPtr scene;
