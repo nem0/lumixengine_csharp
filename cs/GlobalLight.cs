@@ -20,20 +20,6 @@ namespace Lumix
 		}
 
 
-		/* IndirectIntensity */
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		private extern static void setIndirectIntensity(IntPtr scene, int cmp, float source);
-		
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		private extern static float getIndirectIntensity(IntPtr scene, int cmp);
-		
-		public float IndirectIntensity
-		{
-			get{ return getIndirectIntensity(scene, component_id); }
-			set{ setIndirectIntensity(scene, component_id, value); }
-		}
-
-
 		/* Intensity */
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		private extern static void setIntensity(IntPtr scene, int cmp, float source);
@@ -45,6 +31,20 @@ namespace Lumix
 		{
 			get{ return getIntensity(scene, component_id); }
 			set{ setIntensity(scene, component_id, value); }
+		}
+
+
+		/* IndirectIntensity */
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		private extern static void setIndirectIntensity(IntPtr scene, int cmp, float source);
+		
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		private extern static float getIndirectIntensity(IntPtr scene, int cmp);
+		
+		public float IndirectIntensity
+		{
+			get{ return getIndirectIntensity(scene, component_id); }
+			set{ setIndirectIntensity(scene, component_id, value); }
 		}
 
 

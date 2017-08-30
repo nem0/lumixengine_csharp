@@ -62,6 +62,20 @@ namespace Lumix
 		}
 
 
+		/* Slot */
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		private extern static void setSlot(IntPtr scene, int cmp, string source);
+		
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		private extern static string getSlot(IntPtr scene, int cmp);
+		
+		public string Slot
+		{
+			get{ return getSlot(scene, component_id); }
+			set{ setSlot(scene, component_id, value); }
+		}
+
+
 		/* FOV */
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		private extern static void setFOV(IntPtr scene, int cmp, float source);

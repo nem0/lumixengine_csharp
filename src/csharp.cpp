@@ -113,24 +113,33 @@ MonoString* csharp_Entity_getName(Universe* universe, int entity)
 }
 
 
+template <typename T> struct ToCSharpType { typedef T Type; };
+template <> struct ToCSharpType<const char*> { typedef MonoString* Type; };
+template <typename T> T toCSharpValue(T val) { return val; }
+MonoString* toCSharpValue(const char* val) { return mono_string_new(mono_domain_get(), val); }
+template <typename T> T fromCSharpValue(T val) { return val; }
+const char* fromCSharpValue(MonoString* val) { return mono_string_to_utf8(val); }
+
+
 template <typename R, typename C, R(C::*Function)(ComponentHandle)>
-R csharp_getProperty(C* scene, int cmp)
+typename ToCSharpType<R>::Type csharp_getProperty(C* scene, int cmp)
 {
-	return (scene->*Function)({cmp});
+	R val = (scene->*Function)({ cmp });
+	return toCSharpValue(val);
 }
 
 
 template <typename T, typename C, void (C::*Function)(ComponentHandle, T)>
-void csharp_setProperty(C* scene, int cmp, T value)
+void csharp_setProperty(C* scene, int cmp, typename ToCSharpType<T>::Type value)
 {
-	(scene->*Function)({ cmp }, value);
+	(scene->*Function)({cmp}, fromCSharpValue(value));
 }
 
 
 template <typename T, typename C, void (C::*Function)(ComponentHandle, const T&)>
-void csharp_setProperty(C* scene, int cmp, T value)
+void csharp_setProperty(C* scene, int cmp, typename ToCSharpType<T>::Type value)
 {
-	(scene->*Function)({ cmp }, value);
+	(scene->*Function)({ cmp }, fromCSharpValue(value));
 }
 
 
@@ -227,6 +236,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		CSHARP_PROPERTY(float, RenderScene, Camera, NearPlane);
 		CSHARP_PROPERTY(float, RenderScene, Camera, FarPlane);
 		CSHARP_PROPERTY(float, RenderScene, Camera, OrthoSize);
+		CSHARP_PROPERTY(const char*, RenderScene, Camera, Slot);
 
 		CSHARP_PROPERTY(Vec3, RenderScene, Decal, Scale);
 
@@ -472,7 +482,6 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	{
 		m_scripts[{cmp.index}]->scripts.emplaceAt(idx);
 	}
-
 
 
 	int addScript(ComponentHandle cmp) override

@@ -36,7 +36,7 @@ template <int N>
 const char* copyIdentifier(char(&out)[N], const char* src)
 {
 	char* c = out;
-	while (isalnum(*src) || *src == '_')
+	while (*src != ',' && *src != ')')
 	{
 		*c = *src;
 		++c;
@@ -173,6 +173,7 @@ void writeCSharpProperty(FILE* fp, const Property& prop)
 		"\n";
 
 	const char* type = prop.type;
+	if (strcmp(type, "const char*") == 0) type = "string";
 	const char* name = prop.property;
 	fprintf(fp, text, name, name, type, type, name, type, name, name, name);
 }

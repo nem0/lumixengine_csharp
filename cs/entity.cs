@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 
@@ -11,6 +12,7 @@ public class Entity
 {
 	public int _entity_id;
 	public IntPtr _universe;
+	private List<Component> components = new List<Component>();
 
 	[MethodImplAttribute(MethodImplOptions.InternalCall)]
 	private extern static void setPosition(IntPtr universe, int entity, Vec3 pos);
@@ -41,11 +43,23 @@ public class Entity
 	}
 	
 	
+	public T getComponent<T>() where T : Component
+	{
+		for (int i = 0, c = components.Count; i < c; ++i)
+		{
+			var cmp = components[i];
+			if (cmp is T) return cmp as T;
+		}
+		return null;
+	}
+	
+	
 	public T createComponent<T>() where T : Component, new()
 	{
 		T cmp = new T();
 		cmp.entity = this;
 		cmp.create();
+		components.Add(cmp);
 		return cmp;
 	}
 	
