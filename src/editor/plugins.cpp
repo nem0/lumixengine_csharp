@@ -6,6 +6,7 @@
 #include "editor/world_editor.h"
 #include "engine/blob.h"
 #include "engine/crc32.h"
+#include "engine/fs/disk_file_device.h"
 #include "engine/fs/os_file.h"
 #include "engine/json_serializer.h"
 #include "engine/log.h"
@@ -320,8 +321,8 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 		if (cmp.type != CSHARP_SCRIPT_TYPE) return;
 
 		auto* scene = static_cast<CSharpScriptScene*>(cmp.scene);
-		auto& editor = *m_app.getWorldEditor();
-		auto& allocator = editor.getAllocator();
+		WorldEditor& editor = *m_app.getWorldEditor();
+		IAllocator& allocator = editor.getAllocator();
 
 		if (ImGui::Button("Add script")) ImGui::OpenPopup("add_csharp_script_popup");
 
@@ -346,12 +347,19 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 
 		for (int j = 0; j < scene->getScriptCount(cmp.handle); ++j)
 		{
-			StaticString<MAX_PATH_LENGTH + 20> header(scene->getScriptName(cmp.handle, j));
+			const char* script_name = scene->getScriptName(cmp.handle, j);
+			StaticString<MAX_PATH_LENGTH + 20> header(script_name);
 			if (header.empty()) header << j;
 			header << "###" << j;
 			if (ImGui::CollapsingHeader(header))
 			{
 				ImGui::PushID(j);
+				if (ImGui::Button("Edit"))
+				{
+					StaticString<MAX_PATH_LENGTH> full_path(editor.getEngine().getDiskFileDevice()->getBasePath(), "cs/", script_name, ".cs");
+					PlatformInterface::shellExecuteOpen(full_path);
+				}
+				ImGui::SameLine();
 				if (ImGui::Button("Remove script"))
 				{
 					auto* cmd = LUMIX_NEW(allocator, RemoveScriptCommand)(allocator);
