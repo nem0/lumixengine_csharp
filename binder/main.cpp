@@ -122,6 +122,7 @@ void writeCSharpHeader(FILE* fp, const char* obj)
 		"		public override void create()\n"
 		"		{\n"
 		"			component_id = create(entity._universe, entity._entity_id, \"%s\");\n"
+		"			if (component_id < 0) throw new Exception(\"Failed to create component\");\n"
 		"			scene = getScene(entity._universe, \"%s\");\n"
 		"		}\n"
 		"\n"
