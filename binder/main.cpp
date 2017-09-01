@@ -10,6 +10,7 @@ struct Property
 	char type[32];
 	char scene[32];
 	char object[32];
+	char subobject[32];
 	char property[32];
 };
 
@@ -48,18 +49,28 @@ const char* copyIdentifier(char(&out)[N], const char* src)
 }
 
 
-bool addProperty(const char* str, std::vector<Property>& properties)
+bool addProperty(const char* str, std::vector<Property>& properties, bool is_subproperty)
 {
 	assert(str);
 	
 	Property prop;
-	const char* c = str + strlen("CSHARP_PROPERTY(");
+	const char* c = str;
+	c += is_subproperty ? strlen("CSHARP_SUBPROPERTY(") : strlen("CSHARP_PROPERTY(");
 	c = copyIdentifier(prop.type, c);
 	if (strcmp(prop.type, "Type") == 0) return true;
 	if (!*c) return false;
 	c = copyIdentifier(prop.scene, c);
 	if (!*c) return false;
 	c = copyIdentifier(prop.object, c);
+	if (!*c) return false;
+	if (is_subproperty)
+	{
+		c = copyIdentifier(prop.subobject, c);
+	}
+	else
+	{
+		prop.subobject[0] = '\0';
+	}
 	if (!*c) return false;
 	copyIdentifier(prop.property, c);
 	properties.push_back(prop);
@@ -88,20 +99,110 @@ bool parse(const char* path, std::vector<Property>& properties)
 	const char* prop_str = &text[0];
 	while (prop_str = strstr(prop_str, "CSHARP_PROPERTY("))
 	{
-		if (!addProperty(prop_str, properties)) return false;
+		if (!addProperty(prop_str, properties, false)) return false;
 		++prop_str;
 	}
+
+	prop_str = &text[0];
+	while (prop_str = strstr(prop_str, "CSHARP_SUBPROPERTY("))
+	{
+		if (!addProperty(prop_str, properties, true)) return false;
+		++prop_str;
+	}
+
 	return true;
 }
 
 
-void writeCSharpFooter(FILE* fp)
+void writeCSharpFooter(FILE* fp, const char* obj, const std::vector<Property>& properties)
 {
+	const char* last_subobj = "";
+	for (const Property& prop : properties)
+	{
+		if (!prop.subobject[0]) continue;
+		if (strcmp(prop.object, obj)) continue;
+
+		if (strcmp(prop.subobject, last_subobj))
+		{
+			if(last_subobj[0]) fprintf(fp, "%s", "\t\t}\n\n");
+			last_subobj = prop.subobject;
+			static const char* container_text =
+				"		[MethodImplAttribute(MethodImplOptions.InternalCall)]\n"
+				"		private extern static int get%sCount(IntPtr scene, int cmp);\n"
+				"\n"
+				"\n"
+				"		[MethodImplAttribute(MethodImplOptions.InternalCall)]\n"
+				"		private extern static void add%s(IntPtr scene, int cmp);\n"
+				"\n"
+				"\n"
+				"		[MethodImplAttribute(MethodImplOptions.InternalCall)]\n"
+				"		private extern static void remove%s(IntPtr scene, int cmp, int index);\n"
+				"\n"
+				"\n"
+				"		public class %sContainer\n"
+				"		{\n"
+				"			public int Length { get { return %s.getGrassCount(_object.scene, _object.component_id); } }\n"
+				"\n"
+				"			public %sType this[int index]\n"
+				"			{\n"
+				"				get {\n"
+				"					return new %sType(_object, index);\n"
+				"				}\n"
+				"			}\n"
+				"\n"
+				"			public void add()\n"
+				"			{\n"
+				"				%s.add%s(_object.scene, _object.component_id);\n"
+				"			}\n"
+				"\n"
+				"			public void remove(int index)\n"
+				"			{\n"
+				"				%s.remove%s(_object.scene, _object.component_id, index);\n"
+				"			}\n"
+				"\n"
+				"			public %s _object;\n"
+				"		}\n"
+				"\n"
+				"\n"
+				"		public %sContainer %s = new %sContainer();\n"
+				"\n"
+				"\n";
+
+			fprintf(fp, container_text, prop.subobject, prop.subobject, prop.subobject, prop.subobject, prop.object, prop.subobject, prop.subobject, prop.object, prop.subobject, prop.object, prop.subobject, prop.object, prop.subobject, prop.subobject, prop.subobject);
+
+			static const char* text =
+				"		public class %sType\n"
+				"		{\n"
+				"			private int _index;\n"
+				"			private %s _object;\n"
+				"\n"
+				"			public %sType(%s obj, int index)\n"
+				"			{\n"
+				"				_index = index;\n"
+				"				_object = obj;\n"
+				"			}\n"
+				"\n"
+				;
+			fprintf(fp, text, prop.subobject, prop.object, prop.subobject, prop.object);
+		}
+
+		const char* prop_text =
+			"			public %s %s\n"
+			"			{\n"
+			"				get{ return %s.get%s%s(_object.scene, _object.component_id, _index); }\n"
+			"				set{ %s.set%s%s(_object.scene, _object.component_id, value, _index); }\n"
+			"			}\n"
+			"\n"
+			"\n";
+		fprintf(fp, prop_text, prop.type, prop.property, prop.object, prop.subobject, prop.property, prop.object, prop.subobject, prop.property);
+	}
+	if (last_subobj[0]) fprintf(fp, "%s", "\t\t}\n\n");
+	
 	fprintf(fp, "\t}\n\n}\n");
 }
 
 
-void writeCSharpHeader(FILE* fp, const char* obj)
+void writeCSharpHeader(FILE* fp, const char* obj, const std::vector<Property>& properties)
 {
 	static const char* header =
 		"using System;\n"
@@ -123,11 +224,8 @@ void writeCSharpHeader(FILE* fp, const char* obj)
 		"		{\n"
 		"			component_id = create(entity._universe, entity._entity_id, \"%s\");\n"
 		"			if (component_id < 0) throw new Exception(\"Failed to create component\");\n"
-		"			scene = getScene(entity._universe, \"%s\");\n"
-		"		}\n"
-		"\n"
-		"\n";
-
+		"			scene = getScene(entity._universe, \"%s\");\n";
+	
 	char cmp_name[128];
 	char* c = cmp_name;
 	const char* in = obj;
@@ -150,14 +248,31 @@ void writeCSharpHeader(FILE* fp, const char* obj)
 		++in;
 	}
 	*c = '\0';
-
 	fprintf(fp, header, obj, cmp_name, cmp_name);
+
+	static const char* header_end = 
+		"		}\n"
+		"\n"
+		"\n";
+
+	const char* last_subobj = "";
+	for (const Property& prop : properties)
+	{
+		if (!prop.subobject[0]) continue;
+		if (strcmp(prop.object, obj)) continue;
+		if (strcmp(last_subobj, prop.subobject) == 0) continue;
+
+		last_subobj = prop.subobject;
+		fprintf(fp, "			%s._object = this;\n", prop.subobject);
+	}
+
+	fprintf(fp, "%s", header_end);
 }
 
 
 void writeCSharpProperty(FILE* fp, const Property& prop)
 {
-	const char* text =
+	static const char* text =
 		"		/* %s */\n"
 		"		[MethodImplAttribute(MethodImplOptions.InternalCall)]\n"
 		"		private extern static void set%s(IntPtr scene, int cmp, %s source);\n"
@@ -181,12 +296,35 @@ void writeCSharpProperty(FILE* fp, const Property& prop)
 }
 
 
+void writeCSharpSubproperty(FILE* fp, const Property& prop)
+{
+	static const char* text =
+		"		/* %s %s */\n"
+		"		[MethodImplAttribute(MethodImplOptions.InternalCall)]\n"
+		"		private extern static void set%s%s(IntPtr scene, int cmp, int index, %s source);\n"
+		"		\n"
+		"		[MethodImplAttribute(MethodImplOptions.InternalCall)]\n"
+		"		private extern static %s get%s%s(IntPtr scene, int cmp, int index);\n"
+		"\n"
+		"\n";
+
+	const char* type = prop.type;
+	if (strcmp(type, "const char*") == 0) type = "string";
+	else if (strcmp(type, "Path") == 0) type = "string";
+	const char* name = prop.property;
+	const char* subobject = prop.subobject;
+	fprintf(fp, text, subobject, name, subobject, name, type, type, subobject, name);
+}
+
+
 bool writeCSharp(const char* out_dir, std::vector<Property>& properties)
 {
 	auto cmp = [](const void* a, const void* b) -> int {
 		auto* prop_a = (Property*)a;
 		auto* prop_b = (Property*)b;
-		return strcmp(prop_a->object, prop_b->object);
+		int cmp = strcmp(prop_a->object, prop_b->object);
+		if (cmp) return cmp;
+		return strcmp(prop_a->subobject, prop_b->subobject);
 	};
 	qsort(&properties[0], properties.size(), sizeof(properties[0]), cmp);
 
@@ -198,7 +336,7 @@ bool writeCSharp(const char* out_dir, std::vector<Property>& properties)
 		{
 			if (fp)
 			{
-				writeCSharpFooter(fp);
+				writeCSharpFooter(fp, last_obj, properties);
 				fclose(fp);
 			}
 			char path[256];
@@ -209,11 +347,18 @@ bool writeCSharp(const char* out_dir, std::vector<Property>& properties)
 			last_obj = prop.object;
 			if (!fp) return false;
 
-			writeCSharpHeader(fp, prop.object);
+			writeCSharpHeader(fp, prop.object, properties);
 		}
-		writeCSharpProperty(fp, prop);
+		if (prop.subobject[0])
+		{
+			writeCSharpSubproperty(fp, prop);
+		}
+		else
+		{
+			writeCSharpProperty(fp, prop);
+		}
 	}
-	writeCSharpFooter(fp);
+	writeCSharpFooter(fp, last_obj, properties);
 	if (fp) fclose(fp);
 	return true;
 }

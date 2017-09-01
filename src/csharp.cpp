@@ -134,7 +134,36 @@ const char* fromCSharpValue(MonoString* val) { return mono_string_to_utf8(val); 
 template <typename R, typename C, R(C::*Function)(ComponentHandle)>
 typename ToCSharpType<R>::Type csharp_getProperty(C* scene, int cmp)
 {
-	R val = (scene->*Function)({cmp});
+	R val = (scene->*Function)({ cmp });
+	return toCSharpValue(val);
+}
+
+
+template <typename C, int (C::*Function)(ComponentHandle cmp)>
+int csharp_getSubobjectCount(C* scene, int cmp)
+{
+	return (scene->*Function)({ cmp });
+}
+
+
+template <typename C, void (C::*Function)(ComponentHandle cmp, int)>
+void csharp_addSubobject(C* scene, int cmp)
+{
+	(scene->*Function)({ cmp }, -1);
+}
+
+
+template <typename C, void (C::*Function)(ComponentHandle cmp, int)>
+void csharp_removeSubobject(C* scene, int cmp, int index)
+{
+	(scene->*Function)({ cmp }, index);
+}
+
+
+template <typename R, typename C, R(C::*Function)(ComponentHandle, int)>
+typename ToCSharpType<R>::Type csharp_getSubproperty(C* scene, int cmp, int index)
+{
+	R val = (scene->*Function)({cmp}, index);
 	return toCSharpValue(val);
 }
 
@@ -142,7 +171,14 @@ typename ToCSharpType<R>::Type csharp_getProperty(C* scene, int cmp)
 template <typename T, typename C, void (C::*Function)(ComponentHandle, T)>
 void csharp_setProperty(C* scene, int cmp, typename ToCSharpType<T>::Type value)
 {
-	(scene->*Function)({cmp}, fromCSharpValue(value));
+	(scene->*Function)({ cmp }, fromCSharpValue(value));
+}
+
+
+template <typename T, typename C, void (C::*Function)(ComponentHandle, int, T)>
+void csharp_setSubproperty(C* scene, int cmp, typename ToCSharpType<T>::Type value, int index)
+{
+	(scene->*Function)({cmp}, index, fromCSharpValue(value));
 }
 
 
@@ -268,8 +304,25 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 			mono_add_internal_call("Lumix." ## #Class ## "::get" ## #Property, f); \
 			auto f2 = &csharp_setProperty<Type, Scene, &Scene::set##Class##Property>; \
 			mono_add_internal_call("Lumix." ## #Class ## "::set" ## #Property, f2); \
-		}  while (false)
+		} while (false)
 
+	#define CSHARP_SUBOBJECT(Scene, Class, Subclass) \
+		do { \
+			auto f = csharp_getSubobjectCount<Scene, &Scene::get##Subclass##Count>; \
+			mono_add_internal_call("Lumix." ## #Class ## "::get" ## #Subclass ##  "Count", f); \
+			auto f2 = csharp_addSubobject<Scene, &Scene::add##Subclass##>; \
+			mono_add_internal_call("Lumix." ## #Class ## "::add" ## #Subclass, f2); \
+			auto f3 = csharp_removeSubobject<Scene, &Scene::remove##Subclass##>; \
+			mono_add_internal_call("Lumix." ## #Class ## "::remove" ## #Subclass, f3); \
+		} while(false)
+
+	#define CSHARP_SUBPROPERTY(Type, Scene, Class, Subclass, Property) \
+		do { \
+			auto f = &csharp_getSubproperty<Type, Scene, &Scene::get##Subclass##Property>; \
+			mono_add_internal_call("Lumix." ## #Class ## "::get" ## #Subclass ## #Property, f); \
+			auto f2 = &csharp_setSubproperty<Type, Scene, &Scene::set##Subclass##Property>; \
+			mono_add_internal_call("Lumix." ## #Class ## "::set" ## #Subclass ## #Property, f2); \
+		} while (false)
 
 	void createRendererAPI()
 	{
@@ -292,6 +345,9 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		CSHARP_PROPERTY(float, RenderScene, Terrain, XZScale);
 		CSHARP_PROPERTY(float, RenderScene, Terrain, YScale);
 		CSHARP_PROPERTY(Path, RenderScene, Terrain, MaterialPath);
+
+		CSHARP_SUBOBJECT(RenderScene, Terrain, Grass);
+		CSHARP_SUBPROPERTY(int, RenderScene, Terrain, Grass, Density);
 
 		CSHARP_PROPERTY(Vec3, RenderScene, GlobalLight, Color);
 		CSHARP_PROPERTY(float, RenderScene, GlobalLight, Intensity);
@@ -343,6 +399,8 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 
 	#undef CSHARP_PROPERTY
+	#undef CSHARP_SUBPROPERTY
+	#undef CSHARP_SUBOBJECT
 
 
 	void startGame() override

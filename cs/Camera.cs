@@ -21,31 +21,17 @@ namespace Lumix
 		}
 
 
-		/* NearPlane */
+		/* FOV */
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		private extern static void setNearPlane(IntPtr scene, int cmp, float source);
+		private extern static void setFOV(IntPtr scene, int cmp, float source);
 		
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		private extern static float getNearPlane(IntPtr scene, int cmp);
+		private extern static float getFOV(IntPtr scene, int cmp);
 		
-		public float NearPlane
+		public float FOV
 		{
-			get{ return getNearPlane(scene, component_id); }
-			set{ setNearPlane(scene, component_id, value); }
-		}
-
-
-		/* FarPlane */
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		private extern static void setFarPlane(IntPtr scene, int cmp, float source);
-		
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		private extern static float getFarPlane(IntPtr scene, int cmp);
-		
-		public float FarPlane
-		{
-			get{ return getFarPlane(scene, component_id); }
-			set{ setFarPlane(scene, component_id, value); }
+			get{ return getFOV(scene, component_id); }
+			set{ setFOV(scene, component_id, value); }
 		}
 
 
@@ -77,17 +63,31 @@ namespace Lumix
 		}
 
 
-		/* FOV */
+		/* FarPlane */
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		private extern static void setFOV(IntPtr scene, int cmp, float source);
+		private extern static void setFarPlane(IntPtr scene, int cmp, float source);
 		
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		private extern static float getFOV(IntPtr scene, int cmp);
+		private extern static float getFarPlane(IntPtr scene, int cmp);
 		
-		public float FOV
+		public float FarPlane
 		{
-			get{ return getFOV(scene, component_id); }
-			set{ setFOV(scene, component_id, value); }
+			get{ return getFarPlane(scene, component_id); }
+			set{ setFarPlane(scene, component_id, value); }
+		}
+
+
+		/* NearPlane */
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		private extern static void setNearPlane(IntPtr scene, int cmp, float source);
+		
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		private extern static float getNearPlane(IntPtr scene, int cmp);
+		
+		public float NearPlane
+		{
+			get{ return getNearPlane(scene, component_id); }
+			set{ setNearPlane(scene, component_id, value); }
 		}
 
 

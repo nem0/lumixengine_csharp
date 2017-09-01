@@ -21,6 +21,34 @@ namespace Lumix
 		}
 
 
+		/* Density */
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		private extern static void setDensity(IntPtr scene, int cmp, float source);
+		
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		private extern static float getDensity(IntPtr scene, int cmp);
+		
+		public float Density
+		{
+			get{ return getDensity(scene, component_id); }
+			set{ setDensity(scene, component_id, value); }
+		}
+
+
+		/* Height */
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		private extern static void setHeight(IntPtr scene, int cmp, float source);
+		
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		private extern static float getHeight(IntPtr scene, int cmp);
+		
+		public float Height
+		{
+			get{ return getHeight(scene, component_id); }
+			set{ setHeight(scene, component_id, value); }
+		}
+
+
 		/* Color */
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		private extern static void setColor(IntPtr scene, int cmp, Vec3 source);
@@ -46,34 +74,6 @@ namespace Lumix
 		{
 			get{ return getBottom(scene, component_id); }
 			set{ setBottom(scene, component_id, value); }
-		}
-
-
-		/* Height */
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		private extern static void setHeight(IntPtr scene, int cmp, float source);
-		
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		private extern static float getHeight(IntPtr scene, int cmp);
-		
-		public float Height
-		{
-			get{ return getHeight(scene, component_id); }
-			set{ setHeight(scene, component_id, value); }
-		}
-
-
-		/* Density */
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		private extern static void setDensity(IntPtr scene, int cmp, float source);
-		
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		private extern static float getDensity(IntPtr scene, int cmp);
-		
-		public float Density
-		{
-			get{ return getDensity(scene, component_id); }
-			set{ setDensity(scene, component_id, value); }
 		}
 
 
