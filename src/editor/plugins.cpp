@@ -457,6 +457,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 		: m_app(app)
 	{
 		m_filter[0] = '\0';
+		m_new_script_name[0] = '\0';
 		
 		IAllocator& allocator = app.getWorldEditor()->getAllocator();
 		m_watcher = FileSystemWatcher::create("cs", allocator);
@@ -469,6 +470,12 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 	~StudioCSharpPlugin()
 	{
 		FileSystemWatcher::destroy(m_watcher);
+	}
+
+
+	void update(float)
+	{
+		if (m_deferred_compile) compile();
 	}
 
 
@@ -503,7 +510,63 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 
 	void onFileChanged(const char* path)
 	{
-		compile();
+		if(PathUtils::hasExtension(path, "cs")) m_deferred_compile = true;
+	}
+
+
+	void createNewScript(const char* name)
+	{
+		FS::OsFile file;
+		char class_name[128];
+
+		const char* cin = name;
+		char* cout = class_name;
+		bool to_upper = true;
+		while (*cin && cout - class_name < lengthOf(class_name) - 1)
+		{
+			char c = *cin;
+			if (c >= 'a' && c <= 'z')
+			{
+				*cout = to_upper ? *cin - 'a' + 'A' : *cin;
+				to_upper = false;
+			}
+			else if (c >= 'A' && c <= 'Z')
+			{
+				*cout = *cin;
+				to_upper = false;
+			}
+			else if (c >= '0' && c <= '9')
+			{
+				*cout = *cin;
+				to_upper = true;
+			}
+			else
+			{
+				to_upper = true;
+				--cout;
+			}
+			++cout;
+			++cin;
+		}
+		*cout = '\0';
+
+		StaticString<MAX_PATH_LENGTH> path("cs/", class_name, ".cs");
+		if (PlatformInterface::fileExists(path))
+		{
+			g_log_error.log("C#") << path << "already exists";
+			return;
+		}
+		if (!file.open(path, FS::Mode::CREATE_AND_WRITE, m_app.getWorldEditor()->getAllocator()))
+		{
+			g_log_error.log("C#") << "Failed to create file " << path;
+			return;
+		}
+
+		file.writeText("public class ");
+		file.writeText(class_name);
+		file.writeText(" : Lumix.Component\n{\n}\n");
+
+		file.close();
 	}
 
 
@@ -540,6 +603,18 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 		else
 		{
 			if (ImGui::Button("Compile")) compile();
+			ImGui::SameLine();
+			if (ImGui::Button("New script")) ImGui::OpenPopup("new_csharp_script");
+			if (ImGui::BeginPopup("new_csharp_script"))
+			{
+				ImGui::InputText("Name", m_new_script_name, sizeof(m_new_script_name));
+				if (ImGui::Button("Create"))
+				{
+					createNewScript(m_new_script_name);
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::EndPopup();
+			}
 		}
 
 		ImGui::FilterInput("Filter", m_filter, sizeof(m_filter));
@@ -575,6 +650,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 
 	void compile()
 	{
+		m_deferred_compile = false;
 		if (m_compile_process) return;
 
 		CSharpScriptScene* scene = getScene();
@@ -588,6 +664,8 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 	StudioApp& m_app;
 	FileSystemWatcher* m_watcher;
 	char m_filter[128];
+	char m_new_script_name[128];
+	bool m_deferred_compile = false;
 };
 
 

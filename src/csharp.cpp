@@ -915,8 +915,7 @@ void CSharpPluginImpl::unloadAssembly()
 	m_on_assembly_unload.invoke();
 
 	m_names.clear();
-	//mono_assembly_close(m_assembly);
-	mono_domain_set(m_domain, true);
+	if(mono_domain_get() != m_domain) mono_domain_set(m_domain, true);
 	MonoObject *exc = NULL;
 	mono_domain_finalize(m_assembly_domain, 2000);
 	mono_domain_try_unload(m_assembly_domain, &exc);
