@@ -1,4 +1,5 @@
 #include "editor/asset_browser.h"
+#include "editor/file_system_watcher.h"
 #include "editor/ieditor_command.h"
 #include "editor/platform_interface.h"
 #include "editor/property_grid.h"
@@ -450,10 +451,52 @@ struct AddCSharpComponentPlugin LUMIX_FINAL : public StudioApp::IAddComponentPlu
 
 struct StudioCSharpPlugin : public StudioApp::IPlugin
 {
-
 	StudioCSharpPlugin(StudioApp& app)
 		: m_app(app)
 	{
+		IAllocator& allocator = app.getWorldEditor()->getAllocator();
+		m_watcher = FileSystemWatcher::create("cs", allocator);
+		m_watcher->getCallback().bind<StudioCSharpPlugin, &StudioCSharpPlugin::onFileChanged>(this);
+
+		makeUpToDate();
+	}
+
+
+	~StudioCSharpPlugin()
+	{
+		FileSystemWatcher::destroy(m_watcher);
+	}
+
+
+	void makeUpToDate()
+	{
+		IAllocator& allocator = m_app.getWorldEditor()->getAllocator();
+		PlatformInterface::FileIterator* iter = PlatformInterface::createFileIterator("cs", allocator);
+		PlatformInterface::FileInfo info;
+		if (!PlatformInterface::fileExists("cs\\main.dll"))
+		{
+			compile();
+			return;
+		}
+		u64 dll_modified = PlatformInterface::getLastModified("cs\\main.dll");
+		while (PlatformInterface::getNextFile(iter, &info))
+		{
+			if (info.is_directory) continue;
+			
+			StaticString<MAX_PATH_LENGTH> tmp("cs\\", info.filename);
+			u64 script_modified = PlatformInterface::getLastModified(tmp);
+			if (script_modified > dll_modified)
+			{
+				compile();
+				return;
+			}
+		}
+	}
+
+
+	void onFileChanged(const char* path)
+	{
+		compile();
 	}
 
 
@@ -507,6 +550,8 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 
 	void compile()
 	{
+		if (m_compile_process) return;
+
 		CSharpScriptScene* scene = getScene();
 		scene->unloadAssembly();
 		IAllocator& allocator = m_app.getWorldEditor()->getAllocator();
@@ -515,6 +560,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 
 	PlatformInterface::Process* m_compile_process = nullptr;
 	StudioApp& m_app;
+	FileSystemWatcher* m_watcher;
 };
 
 
