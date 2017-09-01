@@ -32,17 +32,26 @@ namespace Lumix
 static const ComponentType CSHARP_SCRIPT_TYPE = PropertyRegister::getComponentType("csharp_script");
 
 
-struct CSharpPlugin : public IPlugin
+struct CSharpPluginImpl : public CSharpPlugin
 {
-	CSharpPlugin(Engine& engine);
-	~CSharpPlugin();
+	CSharpPluginImpl(Engine& engine);
+	~CSharpPluginImpl();
 	const char* getName() const override { return "csharp_script"; }
 	void createScenes(Universe& universe) override;
 	void destroyScene(IScene* scene) override { LUMIX_DELETE(m_engine.getAllocator(), scene); }
+	void unloadAssembly() override;
+	void loadAssembly() override;
+	int getNamesCount() const override { return m_names.size(); }
+	const char* getName(int idx) const override { return m_names.at(idx).c_str(); }
 
 	Engine& m_engine;
 	IAllocator& m_allocator;
-	MonoDomain* m_domain;
+	MonoDomain* m_domain = nullptr;
+	MonoAssembly* m_assembly = nullptr;
+	MonoDomain* m_assembly_domain = nullptr;
+	AssociativeArray<u32, string> m_names;
+	DelegateList<void()> m_on_assembly_unload;
+	DelegateList<void()> m_on_assembly_load;
 };
 
 
@@ -183,11 +192,10 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	};
 
 
-	CSharpScriptSceneImpl(CSharpPlugin& plugin, Universe& universe)
+	CSharpScriptSceneImpl(CSharpPluginImpl& plugin, Universe& universe)
 		: m_system(plugin)
 		, m_universe(universe)
 		, m_scripts(plugin.m_allocator)
-		, m_names(plugin.m_allocator)
 		, m_updates(plugin.m_allocator)
 		, m_is_game_running(false)
 	{
@@ -198,7 +206,44 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		createPhysicsAPI();
 		createAnimationAPI();
 
-		load("cs\\main.dll");
+		m_system.m_on_assembly_load.bind<CSharpScriptSceneImpl, &CSharpScriptSceneImpl::onAssemblyLoad>(this);
+		m_system.m_on_assembly_unload.bind<CSharpScriptSceneImpl, &CSharpScriptSceneImpl::onAssemblyUnload>(this);
+		onAssemblyLoad();
+	}
+
+
+	~CSharpScriptSceneImpl()
+	{
+		m_system.m_on_assembly_load.unbind<CSharpScriptSceneImpl, &CSharpScriptSceneImpl::onAssemblyLoad>(this);
+		m_system.m_on_assembly_unload.unbind<CSharpScriptSceneImpl, &CSharpScriptSceneImpl::onAssemblyUnload>(this);
+	}
+
+
+	void onAssemblyLoad()
+	{
+		for (ScriptComponent* cmp : m_scripts)
+		{
+			Array<Script>& scripts = cmp->scripts;
+			for (Script& script : scripts)
+			{
+				setScriptNameHash(*cmp, script, script.script_name_hash);
+			}
+		}
+	}
+
+
+	void onAssemblyUnload()
+	{
+		m_updates.clear();
+		for (ScriptComponent* cmp : m_scripts)
+		{
+			Array<Script>& scripts = cmp->scripts;
+			for (Script& script : scripts)
+			{
+				mono_gchandle_free(script.gc_handle);
+				script.gc_handle = INVALID_GC_HANDLE;
+			}
+		}
 	}
 
 
@@ -300,42 +345,6 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	#undef CSHARP_PROPERTY
 
 
-	void unloadAssembly() override
-	{
-		if (!m_assembly) return;
-
-		m_names.clear();
-		m_updates.clear();
-		for (ScriptComponent* cmp : m_scripts)
-		{
-			Array<Script>& scripts = cmp->scripts;
-			for (Script& script : scripts)
-			{
-				mono_gchandle_free(script.gc_handle);
-				script.gc_handle = INVALID_GC_HANDLE;
-			}
-		}
-		mono_assembly_close(m_assembly);
-		m_assembly = nullptr;
-		mono_domain_free(m_system.m_domain, false);
-		m_system.m_domain = mono_domain_create();
-	}
-
-
-	void loadAssembly() override
-	{
-		load("cs\\main.dll");
-		for (ScriptComponent* cmp : m_scripts)
-		{
-			Array<Script>& scripts = cmp->scripts;
-			for (Script& script : scripts)
-			{
-				setScriptNameHash(*cmp, script, script.script_name_hash);
-			}
-		}
-	}
-
-
 	void startGame() override
 	{
 		for (ScriptComponent* cmp : m_scripts)
@@ -355,14 +364,14 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 	void getClassName(u32 name_hash, char(&out_name)[256]) const
 	{
-		int idx = m_names.find(name_hash);
+		int idx = m_system.m_names.find(name_hash);
 		if (idx < 0)
 		{
 			out_name[0] = 0;
 			return;
 		}
 		
-		copyString(out_name, m_names.at(idx).c_str());
+		copyString(out_name, m_system.m_names.at(idx).c_str());
 	}
 
 
@@ -505,10 +514,6 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	}
 
 
-	int getNamesCount() const override { return m_names.size(); }
-	const char* getName(int idx) const override { return m_names.at(idx).c_str(); }
-
-
 	u32 getGCHandle(ComponentHandle cmp, int scr_index) const override
 	{
 		Script& scr = m_scripts[{cmp.index}]->scripts[scr_index];
@@ -519,9 +524,9 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	const char* getScriptName(ComponentHandle cmp, int scr_index) override
 	{
 		Script& scr = m_scripts[{cmp.index}]->scripts[scr_index];
-		int idx = m_names.find(scr.script_name_hash);
+		int idx = m_system.m_names.find(scr.script_name_hash);
 		if (idx < 0) return "";
-		return m_names.at(idx).c_str();
+		return m_system.m_names.at(idx).c_str();
 	}
 
 
@@ -796,33 +801,6 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	}
 
 
-	bool load(const char* path)
-	{
-		if(m_assembly) mono_assembly_close(m_assembly);
-
-		IAllocator& allocator = m_system.m_engine.getAllocator();
-		m_assembly = mono_domain_assembly_open(m_system.m_domain, path);
-		if (!m_assembly) return false;
-
-		MonoImage* img = mono_assembly_get_image(m_assembly);
-		MonoClass* component_class = mono_class_from_name(img, "Lumix", "Component");
-
-		m_names.clear();
-		int num_types = mono_image_get_table_rows(img, MONO_TABLE_TYPEDEF);
-		for (int i = 2; i <= num_types; ++i)
-		{
-			MonoClass* cl = mono_class_get(img, i | MONO_TOKEN_TYPE_DEF);
-			const char* n = mono_class_get_name(cl);
-			MonoClass* parent = mono_class_get_parent(cl);
-			if (component_class == parent && !equalStrings(n, "NativeComponent"))
-			{
-				m_names.insert(crc32(n), string(n, allocator));
-			}
-		}
-		return true;
-	}
-
-
 	static const char *GetStringProperty(const char *propertyName, MonoClass *classType, MonoObject *classObject)
 	{
 		MonoProperty *messageProperty;
@@ -890,7 +868,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 	u32 createObject(const char* name_space, const char* class_name)
 	{
-		MonoClass* mono_class = mono_class_from_name(mono_assembly_get_image(m_assembly), name_space, class_name);
+		MonoClass* mono_class = mono_class_from_name(mono_assembly_get_image(m_system.m_assembly), name_space, class_name);
 		if (!mono_class) return INVALID_GC_HANDLE;
 
 		MonoObject* obj = mono_object_new(m_system.m_domain, mono_class);
@@ -902,32 +880,88 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 
 	AssociativeArray<Entity, ScriptComponent*> m_scripts;
-	AssociativeArray<u32, string> m_names;
 	Array<u32> m_updates;
-	CSharpPlugin& m_system;
+	CSharpPluginImpl& m_system;
 	Universe& m_universe;
-	MonoAssembly* m_assembly = nullptr;
 	bool m_is_game_running;
 };
 
 
-CSharpPlugin::CSharpPlugin(Engine& engine)
+CSharpPluginImpl::CSharpPluginImpl(Engine& engine)
 	: m_engine(engine)
 	, m_allocator(engine.getAllocator())
+	, m_names(m_allocator)
+	, m_on_assembly_load(m_allocator)
+	, m_on_assembly_unload(m_allocator)
 {
 	mono_set_dirs("C:\\Program Files\\Mono\\lib", "C:\\Program Files\\Mono\\etc");
 	mono_config_parse(nullptr);
 	m_domain = mono_jit_init("lumix");
+	loadAssembly();
 }
 
 
-CSharpPlugin::~CSharpPlugin()
+CSharpPluginImpl::~CSharpPluginImpl()
 {
+	unloadAssembly();
 	mono_jit_cleanup(m_domain);
 }
 
 
-void CSharpPlugin::createScenes(Universe& universe)
+void CSharpPluginImpl::unloadAssembly()
+{
+	if (!m_assembly) return;
+
+	m_on_assembly_unload.invoke();
+
+	m_names.clear();
+	//mono_assembly_close(m_assembly);
+	mono_domain_set(m_domain, true);
+	MonoObject *exc = NULL;
+	mono_domain_finalize(m_assembly_domain, 2000);
+	mono_domain_try_unload(m_assembly_domain, &exc);
+
+	if (exc) {
+		
+		return;
+	}
+	m_assembly = nullptr;
+	m_assembly_domain = nullptr;
+}
+
+
+void CSharpPluginImpl::loadAssembly()
+{
+	ASSERT(!m_assembly);
+	
+	const char* path = "cs\\main.dll";
+
+	IAllocator& allocator = m_engine.getAllocator();
+	m_assembly_domain = mono_domain_create_appdomain("lumix_runtime", nullptr);
+	mono_domain_set(m_assembly_domain, false);
+	m_assembly = mono_domain_assembly_open(m_assembly_domain, path);
+	if (!m_assembly) return;
+
+	MonoImage* img = mono_assembly_get_image(m_assembly);
+	MonoClass* component_class = mono_class_from_name(img, "Lumix", "Component");
+
+	m_names.clear();
+	int num_types = mono_image_get_table_rows(img, MONO_TABLE_TYPEDEF);
+	for (int i = 2; i <= num_types; ++i)
+	{
+		MonoClass* cl = mono_class_get(img, i | MONO_TOKEN_TYPE_DEF);
+		const char* n = mono_class_get_name(cl);
+		MonoClass* parent = mono_class_get_parent(cl);
+		if (component_class == parent && !equalStrings(n, "NativeComponent"))
+		{
+			m_names.insert(crc32(n), string(n, allocator));
+		}
+	}
+	m_on_assembly_load.invoke();
+}
+
+
+void CSharpPluginImpl::createScenes(Universe& universe)
 {
 	CSharpScriptSceneImpl* scene = LUMIX_NEW(m_engine.getAllocator(), CSharpScriptSceneImpl)(*this, universe);
 	universe.addScene(scene);
@@ -936,7 +970,7 @@ void CSharpPlugin::createScenes(Universe& universe)
 
 LUMIX_PLUGIN_ENTRY(lumixengine_csharp)
 {
-	return LUMIX_NEW(engine.getAllocator(), CSharpPlugin)(engine);
+	return LUMIX_NEW(engine.getAllocator(), CSharpPluginImpl)(engine);
 }
 
 

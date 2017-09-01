@@ -322,6 +322,7 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 		if (cmp.type != CSHARP_SCRIPT_TYPE) return;
 
 		auto* scene = static_cast<CSharpScriptScene*>(cmp.scene);
+		auto& plugin = static_cast<CSharpPlugin&>(scene->getPlugin());
 		WorldEditor& editor = *m_app.getWorldEditor();
 		IAllocator& allocator = editor.getAllocator();
 
@@ -329,10 +330,10 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 
 		if (ImGui::BeginPopup("add_csharp_script_popup"))
 		{
-			int count = scene->getNamesCount();
+			int count = plugin.getNamesCount();
 			for (int i = 0; i < count; ++i)
 			{
-				const char* name = scene->getName(i);
+				const char* name = plugin.getName(i);
 				bool b = false;
 				if (ImGui::Selectable(name, &b))
 				{
@@ -397,9 +398,10 @@ struct AddCSharpComponentPlugin LUMIX_FINAL : public StudioApp::IAddComponentPlu
 		
 		WorldEditor& editor = *app.getWorldEditor();
 		CSharpScriptScene* script_scene = (CSharpScriptScene*)editor.getUniverse()->getScene(CSHARP_SCRIPT_TYPE);
-		for (int i = 0, count = script_scene->getNamesCount(); i < count; ++i)
+		CSharpPlugin& plugin = (CSharpPlugin&)script_scene->getPlugin();
+		for (int i = 0, count = plugin.getNamesCount(); i < count; ++i)
 		{
-			const char* name = script_scene->getName(i);
+			const char* name = plugin.getName(i);
 			bool b = false;
 			if (ImGui::Selectable(name, &b))
 			{
@@ -514,6 +516,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 		}
 
 		CSharpScriptScene* scene = getScene();
+		CSharpPlugin& plugin = (CSharpPlugin&)scene->getPlugin();
 		if (m_compile_process)
 		{
 			ImGui::Text("Compiling...");
@@ -528,7 +531,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 				}
 				else
 				{
-					scene->loadAssembly();
+					plugin.loadAssembly();
 				}
 				PlatformInterface::destroyProcess(*m_compile_process);
 				m_compile_process = nullptr;
@@ -541,9 +544,9 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 
 		ImGui::FilterInput("Filter", m_filter, sizeof(m_filter));
 
-		for (int i = 0, c = scene->getNamesCount(); i < c; ++i)
+		for (int i = 0, c = plugin.getNamesCount(); i < c; ++i)
 		{
-			const char* name = scene->getName(i);
+			const char* name = plugin.getName(i);
 			if (m_filter[0] != '\0' && stristr(name, m_filter) == 0) continue;
 			ImGui::PushID(i);
 			if (ImGui::Button("Edit"))
@@ -575,7 +578,8 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 		if (m_compile_process) return;
 
 		CSharpScriptScene* scene = getScene();
-		scene->unloadAssembly();
+		CSharpPlugin& plugin = (CSharpPlugin&)scene->getPlugin();
+		plugin.unloadAssembly();
 		IAllocator& allocator = m_app.getWorldEditor()->getAllocator();
 		m_compile_process = PlatformInterface::createProcess("c:\\windows\\system32\\cmd.exe", "/c \"\"C:\\Program Files\\Mono\\bin\\mcs.bat\" -out:\"cs\\main.dll\" -target:library -recurse:\"cs\\*.cs\"", allocator);
 	}
