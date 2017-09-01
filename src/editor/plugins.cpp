@@ -454,6 +454,8 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 	StudioCSharpPlugin(StudioApp& app)
 		: m_app(app)
 	{
+		m_filter[0] = '\0';
+		
 		IAllocator& allocator = app.getWorldEditor()->getAllocator();
 		m_watcher = FileSystemWatcher::create("cs", allocator);
 		m_watcher->getCallback().bind<StudioCSharpPlugin, &StudioCSharpPlugin::onFileChanged>(this);
@@ -471,14 +473,15 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 	void makeUpToDate()
 	{
 		IAllocator& allocator = m_app.getWorldEditor()->getAllocator();
-		PlatformInterface::FileIterator* iter = PlatformInterface::createFileIterator("cs", allocator);
-		PlatformInterface::FileInfo info;
 		if (!PlatformInterface::fileExists("cs\\main.dll"))
 		{
 			compile();
 			return;
 		}
+
 		u64 dll_modified = PlatformInterface::getLastModified("cs\\main.dll");
+		PlatformInterface::FileIterator* iter = PlatformInterface::createFileIterator("cs", allocator);
+		PlatformInterface::FileInfo info;
 		while (PlatformInterface::getNextFile(iter, &info))
 		{
 			if (info.is_directory) continue;
@@ -488,9 +491,11 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 			if (script_modified > dll_modified)
 			{
 				compile();
+				PlatformInterface::destroyFileIterator(iter);
 				return;
 			}
 		}
+		PlatformInterface::destroyFileIterator(iter);
 	}
 
 
@@ -508,6 +513,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 			return;
 		}
 
+		CSharpScriptScene* scene = getScene();
 		if (m_compile_process)
 		{
 			ImGui::Text("Compiling...");
@@ -522,7 +528,6 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 				}
 				else
 				{
-					CSharpScriptScene* scene = getScene();
 					scene->loadAssembly();
 				}
 				PlatformInterface::destroyProcess(*m_compile_process);
@@ -532,6 +537,23 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 		else
 		{
 			if (ImGui::Button("Compile")) compile();
+		}
+
+		ImGui::FilterInput("Filter", m_filter, sizeof(m_filter));
+
+		for (int i = 0, c = scene->getNamesCount(); i < c; ++i)
+		{
+			const char* name = scene->getName(i);
+			if (m_filter[0] != '\0' && stristr(name, m_filter) == 0) continue;
+			ImGui::PushID(i);
+			if (ImGui::Button("Edit"))
+			{
+				StaticString<MAX_PATH_LENGTH> path("cs\\", name, ".cs");
+				PlatformInterface::shellExecuteOpen(path);
+			}
+			ImGui::SameLine();
+			ImGui::Text("%s", name);
+			ImGui::PopID();
 		}
 
 		ImGui::EndDock();
@@ -561,6 +583,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 	PlatformInterface::Process* m_compile_process = nullptr;
 	StudioApp& m_app;
 	FileSystemWatcher* m_watcher;
+	char m_filter[128];
 };
 
 
