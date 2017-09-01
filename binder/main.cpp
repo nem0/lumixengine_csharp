@@ -15,24 +15,6 @@ struct Property
 };
 
 
-template <typename F>
-struct privDefer {
-	F f;
-	privDefer(F f) : f(f) {}
-	~privDefer() { f(); }
-};
-
-template <typename F>
-privDefer<F> defer_func(F f) {
-	return privDefer<F>(f);
-}
-
-#define DEFER_1(x, y) x##y
-#define DEFER_2(x, y) DEFER_1(x, y)
-#define DEFER_3(x)    DEFER_2(x, __COUNTER__)
-#define defer(code)   auto DEFER_3(_defer_) = defer_func([&](){code;})
-
-
 template <int N>
 const char* copyIdentifier(char(&out)[N], const char* src)
 {
@@ -83,8 +65,6 @@ bool parse(const char* path, std::vector<Property>& properties)
 	FILE* fp = fopen(path, "rb");
 	if (!fp) return false;
 	
-	defer(fclose(fp));
-	
 	fseek(fp, 0, SEEK_END);
 	int size = (int)ftell(fp);
 	fseek(fp, 0, SEEK_SET);
@@ -92,7 +72,12 @@ bool parse(const char* path, std::vector<Property>& properties)
 	std::vector<char> text;
 	text.resize(size + 1);
 
-	if (fread(&text[0], 1, size, fp) != size) return false;
+	if (fread(&text[0], 1, size, fp) != size)
+	{
+		fclose(fp);
+		return false;
+	}
+	fclose(fp);
 
 	text[size] = 0;
 
