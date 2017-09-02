@@ -82,10 +82,29 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 				const char* field_name = mono_field_get_name(field);
 				switch (type)
 				{
+					case MONO_TYPE_BOOLEAN:
+					{
+						bool b = value[0] != '0';
+						mono_field_set_value(obj, field, &b);
+						break;
+					}
 					case MONO_TYPE_R4:
 					{
 						float f = atof(value.c_str());
 						mono_field_set_value(obj, field, &f);
+						break;
+					}
+					case MONO_TYPE_I4:
+					{
+						int i;
+						fromCString(value.c_str(), value.length(), &i);
+						mono_field_set_value(obj, field, &i);
+						break;
+					}
+					case MONO_TYPE_STRING:
+					{
+						MonoString* str = mono_string_new(mono_domain_get(), value.c_str());
+						mono_field_set_value(obj, field, str);
 						break;
 					}
 					default: ASSERT(false); break;
@@ -297,6 +316,34 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 			const char* field_name = mono_field_get_name(field);
 			switch (type)
 			{
+				case MONO_TYPE_BOOLEAN:
+				{
+					bool value;
+					mono_field_get_value(obj, field, &value);
+					if (ImGui::Checkbox(field_name, &value))
+					{
+						char tmp[2] = "0";
+						if (value) tmp[0] = '1';
+						auto* set_source_cmd = LUMIX_NEW(allocator, PropertyGridCSharpPlugin::SetPropertyCommand)(
+							editor, cmp.handle, script_idx, field_name, tmp, allocator);
+						editor.executeCommand(set_source_cmd);
+					}
+					break;
+				}
+				case MONO_TYPE_I4:
+				{
+					int value;
+					mono_field_get_value(obj, field, &value);
+					if (ImGui::InputInt(field_name, &value))
+					{
+						char tmp[50];
+						toCString(value, tmp, lengthOf(tmp), 10);
+						auto* set_source_cmd = LUMIX_NEW(allocator, PropertyGridCSharpPlugin::SetPropertyCommand)(
+							editor, cmp.handle, script_idx, field_name, tmp, allocator);
+						editor.executeCommand(set_source_cmd);
+					}
+					break;
+				}
 				case MONO_TYPE_R4:
 				{
 					float value;
@@ -308,6 +355,20 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 						auto* set_source_cmd = LUMIX_NEW(allocator, PropertyGridCSharpPlugin::SetPropertyCommand)(
 							editor, cmp.handle, script_idx, field_name, tmp, allocator);
 						editor.executeCommand(set_source_cmd);
+					}
+					break;
+				}
+				case MONO_TYPE_STRING:
+				{
+					MonoString* str_val;
+					mono_field_get_value(obj, field, &str_val);
+					char tmp[1024];
+					copyString(tmp, mono_string_to_utf8(str_val));
+					if (ImGui::InputText(field_name, tmp, sizeof(tmp)))
+					{
+						auto* set_prop_cmd = LUMIX_NEW(allocator, PropertyGridCSharpPlugin::SetPropertyCommand)(
+							editor, cmp.handle, script_idx, field_name, tmp, allocator);
+						editor.executeCommand(set_prop_cmd);
 					}
 					break;
 				}
