@@ -215,6 +215,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	{
 		u32 script_name_hash;
 		u32 gc_handle = INVALID_GC_HANDLE;
+		bool has_update = false;
 	};
 
 
@@ -273,10 +274,12 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		m_updates.clear();
 		for (ScriptComponent* cmp : m_scripts)
 		{
+			if(cmp->entity_gc_handle != INVALID_GC_HANDLE) mono_gchandle_free(cmp->entity_gc_handle);
+			cmp->entity_gc_handle = INVALID_GC_HANDLE;
 			Array<Script>& scripts = cmp->scripts;
 			for (Script& script : scripts)
 			{
-				mono_gchandle_free(script.gc_handle);
+				if(script.gc_handle != INVALID_GC_HANDLE) mono_gchandle_free(script.gc_handle);
 				script.gc_handle = INVALID_GC_HANDLE;
 			}
 		}
@@ -604,19 +607,28 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	{
 		if (script.gc_handle != INVALID_GC_HANDLE)
 		{
+			ASSERT(m_system.m_assembly);
 			mono_gchandle_free(script.gc_handle);
-			script.gc_handle = INVALID_GC_HANDLE;
+			if (script.has_update)
+			{
+				script.has_update = false;
+				m_updates.eraseItems([&script](u32 iter) { return iter == script.gc_handle; });
+			}
 			script.script_name_hash = 0;
+			script.gc_handle = INVALID_GC_HANDLE;
 		}
 
 		if (name_hash != 0)
 		{
-			char class_name[256];
-			getClassName(name_hash, class_name);
-			script.gc_handle = createObject("", class_name);
-			ASSERT(script.gc_handle != INVALID_GC_HANDLE);
-			
-			setCSharpComponent(script, cmp);
+			if (m_system.m_assembly)
+			{
+				char class_name[256];
+				getClassName(name_hash, class_name);
+				script.gc_handle = createObject("", class_name);
+				ASSERT(script.gc_handle != INVALID_GC_HANDLE);
+
+				setCSharpComponent(script, cmp);
+			}
 
 			script.script_name_hash = name_hash;
 		}
@@ -639,6 +651,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		if (mono_class_get_method_from_name(mono_class, "update", 1))
 		{
 			m_updates.push(script.gc_handle);
+			script.has_update = true;
 		}
 	}
 
@@ -654,7 +667,6 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 	void createCSharpEntity(ScriptComponent& cmp)
 	{
-		// TODO cleanup
 		cmp.entity_gc_handle = createObject("Lumix", "Entity");
 		
 		MonoObject* obj = mono_gchandle_get_target(cmp.entity_gc_handle);
@@ -699,9 +711,10 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 		Entity entity = {component.index};
 		auto* script = m_scripts[entity];
-		for (auto& scr : script->scripts)
+		if (script->entity_gc_handle != INVALID_GC_HANDLE) mono_gchandle_free(script->entity_gc_handle);
+		for (Script& scr : script->scripts)
 		{
-			mono_gchandle_free(scr.gc_handle);
+			setScriptNameHash(*script, scr, 0);
 		}
 		LUMIX_DELETE(m_system.m_allocator, script);
 		m_scripts.erase(entity);
@@ -853,6 +866,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 			{
 				setScriptNameHash(*script_cmp, script, 0);
 			}
+			if (script_cmp->entity_gc_handle != INVALID_GC_HANDLE) mono_gchandle_free(script_cmp->entity_gc_handle);
 			LUMIX_DELETE(m_system.m_allocator, script_cmp);
 		}
 		m_scripts.clear();

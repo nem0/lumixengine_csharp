@@ -537,6 +537,25 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 	void update(float)
 	{
 		if (m_deferred_compile) compile();
+		if (!m_compile_process) return;
+		if (PlatformInterface::isProcessFinished(*m_compile_process))
+		{
+			if (PlatformInterface::getProcessExitCode(*m_compile_process) != 0)
+			{
+				char tmp[1024];
+				int tmp_size = PlatformInterface::getProcessOutput(*m_compile_process, tmp, lengthOf(tmp) - 1);
+				if (tmp_size != -1) tmp[tmp_size] = 0;
+				g_log_error.log("C#") << tmp;
+			}
+			else
+			{
+				CSharpScriptScene* scene = getScene();
+				CSharpPlugin& plugin = (CSharpPlugin&)scene->getPlugin();
+				plugin.loadAssembly();
+			}
+			PlatformInterface::destroyProcess(*m_compile_process);
+			m_compile_process = nullptr;
+		}
 	}
 
 
@@ -644,22 +663,6 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 		if (m_compile_process)
 		{
 			ImGui::Text("Compiling...");
-			if (PlatformInterface::isProcessFinished(*m_compile_process))
-			{
-				if (PlatformInterface::getProcessExitCode(*m_compile_process) != 0)
-				{
-					char tmp[1024];
-					int tmp_size = PlatformInterface::getProcessOutput(*m_compile_process, tmp, lengthOf(tmp) - 1);
-					if(tmp_size != -1) tmp[tmp_size] = 0;
-					g_log_error.log("C#") << tmp;
-				}
-				else
-				{
-					plugin.loadAssembly();
-				}
-				PlatformInterface::destroyProcess(*m_compile_process);
-				m_compile_process = nullptr;
-			}
 		}
 		else
 		{
