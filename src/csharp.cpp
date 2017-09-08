@@ -260,6 +260,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	{
 		for (ScriptComponent* cmp : m_scripts)
 		{
+			createCSharpEntity(*cmp);
 			Array<Script>& scripts = cmp->scripts;
 			for (Script& script : scripts)
 			{
@@ -645,6 +646,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		ASSERT(field);
 
 		MonoObject* entity_obj = mono_gchandle_get_target(cmp.entity_gc_handle);
+		ASSERT(entity_obj);
 
 		mono_field_set_value(obj, field, entity_obj);
 
