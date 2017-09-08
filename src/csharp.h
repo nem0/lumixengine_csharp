@@ -35,6 +35,7 @@ struct CSharpScriptScene : IScene
 	virtual void setScriptNameHash(ComponentHandle cmp, int scr_index, u32 name_hash) = 0;
 	virtual const char* getScriptName(ComponentHandle cmp, int scr_index) = 0;
 	virtual u32 getGCHandle(ComponentHandle cmp, int scr_index) const = 0;
+	virtual u32 getEntityGCHandle(Entity entity) = 0;
 };
 
 

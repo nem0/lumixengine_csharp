@@ -225,7 +225,6 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 		Array<Script> scripts;
 		Entity entity;
-		u32 entity_gc_handle;
 	};
 
 
@@ -233,6 +232,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		: m_system(plugin)
 		, m_universe(universe)
 		, m_scripts(plugin.m_allocator)
+		, m_entities_gc_handles(plugin.m_allocator)
 		, m_updates(plugin.m_allocator)
 		, m_is_game_running(false)
 	{
@@ -260,7 +260,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	{
 		for (ScriptComponent* cmp : m_scripts)
 		{
-			createCSharpEntity(*cmp);
+			createCSharpEntity(cmp->entity);
 			Array<Script>& scripts = cmp->scripts;
 			for (Script& script : scripts)
 			{
@@ -273,10 +273,13 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	void onAssemblyUnload()
 	{
 		m_updates.clear();
+		for(u32 handle : m_entities_gc_handles)
+		{
+			mono_gchandle_free(handle);
+		}
+		m_entities_gc_handles.clear();
 		for (ScriptComponent* cmp : m_scripts)
 		{
-			if(cmp->entity_gc_handle != INVALID_GC_HANDLE) mono_gchandle_free(cmp->entity_gc_handle);
-			cmp->entity_gc_handle = INVALID_GC_HANDLE;
 			Array<Script>& scripts = cmp->scripts;
 			for (Script& script : scripts)
 			{
@@ -475,11 +478,32 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 				serializer.write("type", type);
 				switch (type)
 				{
+					case MONO_TYPE_BOOLEAN:
+					{
+						bool value;
+						mono_field_get_value(obj, field, &value);
+						serializer.write("value", value);
+						break;
+					}
 					case MONO_TYPE_R4:
 					{
 						float value;
 						mono_field_get_value(obj, field, &value);
 						serializer.write("value", value);
+						break;
+					}
+					case MONO_TYPE_I4:
+					{
+						i32 value;
+						mono_field_get_value(obj, field, &value);
+						serializer.write("value", value);
+						break;
+					}
+					case MONO_TYPE_STRING:
+					{
+						MonoString* str;
+						mono_field_get_value(obj, field, &str);
+						serializer.write("value", mono_string_to_utf8(str));
 						break;
 					}
 					default: ASSERT(false);
@@ -496,7 +520,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		ComponentHandle cmp = { entity.index };
 		script->entity = entity;
 		m_scripts.insert(entity, script);
-		createCSharpEntity(*script);
+		createCSharpEntity(script->entity);
 
 		int count;
 		serializer.read(&count);
@@ -521,16 +545,44 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 				MonoObject* obj = mono_gchandle_get_target(inst.gc_handle);
 				MonoClass* mono_class = mono_object_get_class(obj);
 				MonoClassField* field = mono_class_get_field_from_name(mono_class, name);
+				MonoType* mono_type = mono_field_get_type(field);
+				bool is_matching = mono_type_get_type(mono_type) == type;
 
 				switch (type)
 				{
+					case MONO_TYPE_BOOLEAN:
+					{
+						bool value;
+						serializer.read(&value);
+						if(is_matching) mono_field_set_value(obj, field, &value);
+						break;
+					}
+					case MONO_TYPE_I4:
+					{
+						i32 value;
+						serializer.read(&value);
+						if(is_matching) mono_field_set_value(obj, field, &value);
+						break;
+					}
 					case MONO_TYPE_R4:
 					{
 						float value;
 						serializer.read(&value);
-						mono_field_set_value(obj, field, &value);
+						if (is_matching) mono_field_set_value(obj, field, &value);
 						break;
 					}
+					case MONO_TYPE_STRING:
+					{
+						char tmp[1024];
+						serializer.read(tmp, lengthOf(tmp));
+						if (is_matching)
+						{
+							MonoString* str = mono_string_new(mono_domain_get(), tmp);
+							mono_field_set_value(obj, field, str);
+						}
+						break;
+					}
+
 					default: ASSERT(false);
 				}
 			}
@@ -573,6 +625,16 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	{
 		setScriptNameHash(cmp, scr_index, 0);
 		m_scripts[{cmp.index}]->scripts.erase(scr_index);
+	}
+
+
+	u32 getEntityGCHandle(Entity entity) override
+	{
+		if (!entity.isValid()) return INVALID_GC_HANDLE;
+		auto iter = m_entities_gc_handles.find(entity);
+		if (iter.isValid()) return iter.value();
+		u32 handle = createCSharpEntity(entity);
+		return handle;
 	}
 
 
@@ -645,7 +707,8 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		MonoClassField* field = mono_class_get_field_from_name(mono_class, "entity");
 		ASSERT(field);
 
-		MonoObject* entity_obj = mono_gchandle_get_target(cmp.entity_gc_handle);
+		u32 handle = m_entities_gc_handles[cmp.entity];
+		MonoObject* entity_obj = mono_gchandle_get_target(handle);
 		ASSERT(entity_obj);
 
 		mono_field_set_value(obj, field, entity_obj);
@@ -667,18 +730,19 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	}
 
 
-	void createCSharpEntity(ScriptComponent& cmp)
+	u32 createCSharpEntity(Entity entity)
 	{
-		cmp.entity_gc_handle = createObject("Lumix", "Entity");
-		
-		MonoObject* obj = mono_gchandle_get_target(cmp.entity_gc_handle);
+		u32 handle = createObject("Lumix", "Entity");
+		m_entities_gc_handles.insert(entity, handle);
+
+		MonoObject* obj = mono_gchandle_get_target(handle);
 		ASSERT(obj);
 		MonoClass* mono_class = mono_object_get_class(obj);
 		
 		MonoClassField* field = mono_class_get_field_from_name(mono_class, "_entity_id");
 		ASSERT(field);
 
-		mono_field_set_value(obj, field, &cmp.entity.index);
+		mono_field_set_value(obj, field, &entity.index);
 
 		MonoClassField* universe_field = mono_class_get_field_from_name(mono_class, "_universe");
 		ASSERT(universe_field);
@@ -688,6 +752,8 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 		Universe* x;
 		mono_field_get_value(obj, universe_field, &x);
+
+		return handle;
 	}
 
 
@@ -701,7 +767,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		ComponentHandle cmp = {entity.index};
 		script->entity = entity;
 		m_scripts.insert(entity, script);
-		createCSharpEntity(*script);
+		createCSharpEntity(script->entity);
 		m_universe.addComponent(entity, type, this, cmp);
 		return cmp;
 	}
@@ -713,7 +779,12 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 		Entity entity = {component.index};
 		auto* script = m_scripts[entity];
-		if (script->entity_gc_handle != INVALID_GC_HANDLE) mono_gchandle_free(script->entity_gc_handle);
+		auto handle_iter = m_entities_gc_handles.find(script->entity);
+		if(handle_iter.isValid())
+		{
+			mono_gchandle_free(handle_iter.value());
+			m_entities_gc_handles.erase(handle_iter);
+		}
 		for (Script& scr : script->scripts)
 		{
 			setScriptNameHash(*script, scr, 0);
@@ -761,11 +832,49 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 					serializer.write(type);
 					switch (type)
 					{
+						case MONO_TYPE_BOOLEAN:
+						{
+							bool value;
+							mono_field_get_value(obj, field, &value);
+							serializer.write(value);
+							break;
+						}
+						case MONO_TYPE_I4:
+						{
+							i32 value;
+							mono_field_get_value(obj, field, &value);
+							serializer.write(value);
+							break;
+						}
 						case MONO_TYPE_R4:
 						{
 							float value;
 							mono_field_get_value(obj, field, &value);
 							serializer.write(value);
+							break;
+						}
+						case MONO_TYPE_STRING:
+						{
+							MonoString* str_val;
+							mono_field_get_value(obj, field, &str_val);
+							serializer.writeString(mono_string_to_utf8(str_val));
+							break;
+						}
+						case MONO_TYPE_CLASS:
+						{
+							MonoType* type = mono_field_get_type(field);
+							MonoClass* mono_class = mono_type_get_class(type);
+							if (equalStrings(mono_class_get_name(mono_class), "Entity"))
+							{
+								MonoObject* field_obj = mono_field_get_value_object(mono_domain_get(), field, obj);
+								Entity entity = INVALID_ENTITY;
+								MonoClassField* entity_id_field = mono_class_get_field_from_name(mono_class, "_entity_id");
+								if (field_obj)
+								{
+									mono_field_get_value(field_obj, entity_id_field, &entity.index);
+								}
+								serializer.write(entity.index);
+							}
 							break;
 						}
 						default: ASSERT(false);
@@ -787,7 +896,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 			serializer.read(script->entity);
 			m_scripts.insert(script->entity, script);
-			createCSharpEntity(*script);
+			createCSharpEntity(script->entity);
 			int scr_count;
 			serializer.read(scr_count);
 			for (int j = 0; j < scr_count; ++j)
@@ -814,11 +923,47 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 					switch (type)
 					{
+						case MONO_TYPE_BOOLEAN:
+						{
+							bool value;
+							serializer.read(value);
+							mono_field_set_value(obj, field, &value);
+							break;
+						}
+						case MONO_TYPE_I4:
+						{
+							i32 value;
+							serializer.read(value);
+							mono_field_set_value(obj, field, &value);
+							break;
+						}
 						case MONO_TYPE_R4:
 						{
 							float value;
 							serializer.read(value);
 							mono_field_set_value(obj, field, &value);
+							break;
+						}
+						case MONO_TYPE_STRING:
+						{
+							char tmp[1024];
+							serializer.readString(tmp, lengthOf(tmp));
+							MonoString* str = mono_string_new(mono_domain_get(), tmp);
+							mono_field_set_value(obj, field, str);
+							break;
+						}
+						case MONO_TYPE_CLASS:
+						{
+							MonoType* type = mono_field_get_type(field);
+							MonoClass* mono_class = mono_type_get_class(type);
+							if (equalStrings(mono_class_get_name(mono_class), "Entity"))
+							{
+								Entity entity;
+								serializer.read(entity.index);
+								u32 handle = getEntityGCHandle(entity);
+								MonoObject* entity_obj = mono_gchandle_get_target(handle);
+								mono_field_set_value(obj, field, entity_obj);
+							}
 							break;
 						}
 						default: ASSERT(false);
@@ -862,13 +1007,17 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 	void clear() override
 	{
+		for (u32 handle : m_entities_gc_handles)
+		{
+			mono_gchandle_free(handle);
+		}
+		m_entities_gc_handles.clear();
 		for (ScriptComponent* script_cmp : m_scripts)
 		{
 			for (Script& script : script_cmp->scripts)
 			{
 				setScriptNameHash(*script_cmp, script, 0);
 			}
-			if (script_cmp->entity_gc_handle != INVALID_GC_HANDLE) mono_gchandle_free(script_cmp->entity_gc_handle);
 			LUMIX_DELETE(m_system.m_allocator, script_cmp);
 		}
 		m_scripts.clear();
@@ -954,6 +1103,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 
 	AssociativeArray<Entity, ScriptComponent*> m_scripts;
+	HashMap<Entity, u32> m_entities_gc_handles;
 	Array<u32> m_updates;
 	CSharpPluginImpl& m_system;
 	Universe& m_universe;

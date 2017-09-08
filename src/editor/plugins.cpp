@@ -4,6 +4,7 @@
 #include "editor/platform_interface.h"
 #include "editor/property_grid.h"
 #include "editor/studio_app.h"
+#include "editor/utils.h"
 #include "editor/world_editor.h"
 #include "engine/blob.h"
 #include "engine/crc32.h"
@@ -301,7 +302,6 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 		u32 gc_handle = scene->getGCHandle(cmp.handle, script_idx);
 		if (gc_handle == INVALID_GC_HANDLE) return;
 
-
 		MonoObject* obj = mono_gchandle_get_target(gc_handle);
 		MonoClass* mono_class = mono_object_get_class(obj);
 
@@ -369,6 +369,28 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 						auto* set_prop_cmd = LUMIX_NEW(allocator, PropertyGridCSharpPlugin::SetPropertyCommand)(
 							editor, cmp.handle, script_idx, field_name, tmp, allocator);
 						editor.executeCommand(set_prop_cmd);
+					}
+					break;
+				}
+				case MONO_TYPE_CLASS:
+				{
+					MonoType* mono_type = mono_field_get_type(field);
+					MonoClass* mono_class = mono_type_get_class(mono_type);
+					if (equalStrings(mono_class_get_name(mono_class), "Entity"))
+					{
+						MonoObject* field_obj = mono_field_get_value_object(mono_domain_get(), field, obj);
+						Entity entity = INVALID_ENTITY;
+						MonoClassField* entity_id_field = mono_class_get_field_from_name(mono_class, "_entity_id");
+						if (field_obj)
+						{
+							mono_field_get_value(field_obj, entity_id_field, &entity.index);
+						}
+						if (m_app.getPropertyGrid()->entityInput(field_name, field_name, entity))
+						{
+							u32 entity_gc_handle = scene->getEntityGCHandle(entity);
+							MonoObject* entity_obj = mono_gchandle_get_target(entity_gc_handle);
+							mono_field_set_value(obj, field, entity_obj);
+						}
 					}
 					break;
 				}
