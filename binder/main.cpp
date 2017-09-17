@@ -352,6 +352,6 @@ bool writeCSharp(const char* out_dir, std::vector<Property>& properties)
 int main()
 {
 	std::vector<Property> properties;
-	parse("C:\\projects\\lumixengine_csharp\\src\\csharp.cpp", properties);
-	writeCSharp("C:\\projects\\lumixengine_csharp\\cs\\", properties);
+	parse("../../../../lumixengine_csharp/src/csharp.cpp", properties);
+	writeCSharp("../../../../lumixengine_csharp/cs/", properties);
 }
