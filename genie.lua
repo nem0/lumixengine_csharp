@@ -1,5 +1,5 @@
 function linkMono()
-	libdirs {[[C:\Program Files\Mono\lib]]}
+	libdirs {"../../lumixengine_csharp/external/lib/"}
 end
 
 project "lumixengine_csharp"
@@ -10,8 +10,7 @@ project "lumixengine_csharp"
 		"src/**.h",
 		"genie.lua"
 	}
-	includedirs { "../lumixengine_csharp/src", [[C:\Program Files\Mono\include\mono-2.0]] }
-	linkMono()
+	includedirs { "../lumixengine_csharp/src", [[external/include/mono-2.0]] }
 	buildoptions { "/wd4267", "/wd4244" }
 	defines { "BUILDING_CSHARP" }
 	links { "engine" }
