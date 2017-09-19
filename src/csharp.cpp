@@ -1178,8 +1178,9 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	}
 
 
-	bool tryCallMethod(u32 gc_handle, const char* method_name)
+	bool tryCallMethod(u32 gc_handle, const char* method_name) override
 	{
+		if (gc_handle == INVALID_GC_HANDLE) return false;
 		MonoObject* obj = mono_gchandle_get_target(gc_handle);
 		ASSERT(obj);
 		MonoClass* mono_class = mono_object_get_class(obj);

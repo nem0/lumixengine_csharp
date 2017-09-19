@@ -7,6 +7,23 @@ namespace Lumix
 {
 
 
+public struct Vec4
+{
+    float x;
+    float y;
+	float z;
+	float w;
+	
+	public Vec4(float _x, float _y, float _z, float _w)
+	{
+		x = _x;
+		y = _y;
+		z = _z;
+		w = _w;
+	}
+}
+
+
 public struct Vec3
 {
     float x;
@@ -20,7 +37,6 @@ public struct Vec3
 		z = _z;
 	}
 }
-
 
 public struct Vec2
 {
