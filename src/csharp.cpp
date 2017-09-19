@@ -131,6 +131,45 @@ template <typename T> T fromCSharpValue(T val) { return val; }
 const char* fromCSharpValue(MonoString* val) { return mono_string_to_utf8(val); }
 
 
+template<typename T> struct CSharpTypeConvertor
+{
+	using Type = T;
+
+	static Type convert(Type val) { return val; }
+};
+
+
+template<> struct CSharpTypeConvertor<const char*>
+{
+	using Type = MonoString*;
+	
+	static const char* convert(MonoString* val) { return mono_string_to_utf8(val); }
+};
+
+template<typename T> struct CSharpTypeConvertor<const T&>
+{
+	using Type = T;
+
+	static const T& convert(T& val) { return val; }
+};
+
+
+template<typename F> struct CSharpFunctionProxy;
+
+
+template<typename R, typename... Args>
+struct CSharpFunctionProxy<R (Args...)>
+{
+	using F = R (Args...);
+
+	template<F fnc>
+	static R call(typename CSharpTypeConvertor<Args>::Type... args)
+	{
+		return fnc(CSharpTypeConvertor<Args>::convert(args)...);
+	}
+};
+
+
 template <typename R, typename C, R(C::*Function)(ComponentHandle)>
 typename ToCSharpType<R>::Type csharp_getProperty(C* scene, int cmp)
 {
@@ -239,6 +278,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		universe.registerComponentType(CSHARP_SCRIPT_TYPE, this, &CSharpScriptSceneImpl::serializeCSharpScript, &CSharpScriptSceneImpl::deserializeCSharpScript);
 
 		createEngineAPI();
+		createImGuiAPI();
 		createRendererAPI();
 		createPhysicsAPI();
 		createAnimationAPI();
@@ -287,6 +327,72 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 				script.gc_handle = INVALID_GC_HANDLE;
 			}
 		}
+	}
+
+
+	static void imgui_Text(const char* text)
+	{
+		ImGui::Text("%s", text);
+	}
+
+
+	static void imgui_LabelText(const char* label, const char* text)
+	{
+		ImGui::LabelText(label, "%s", text);
+	}
+
+
+	void createImGuiAPI()
+	{
+		mono_add_internal_call("ImGui::Begin", &CSharpFunctionProxy<bool(const char*, bool*, ImGuiWindowFlags)>::call<ImGui::Begin>);
+		mono_add_internal_call("ImGui::CollapsingHeader", &CSharpFunctionProxy<bool(const char*, bool*, ImGuiTreeNodeFlags)>::call<ImGui::CollapsingHeader>);
+		mono_add_internal_call("ImGui::LabelText", &CSharpFunctionProxy<void(const char*, const char*)>::call<imgui_LabelText>);
+		mono_add_internal_call("ImGui::PushID", &CSharpFunctionProxy<void(const char*)>::call<ImGui::PushID>);
+		mono_add_internal_call("ImGui::Selectable", &CSharpFunctionProxy<bool(const char*, bool, ImGuiSelectableFlags, const ImVec2&)>::call<ImGui::Selectable>);
+		mono_add_internal_call("ImGui::Text", &CSharpFunctionProxy<void(const char*)>::call<imgui_Text>);
+		#define REGISTER_FUNCTION(F) \
+			mono_add_internal_call("ImGui::" #F, &CSharpFunctionProxy<decltype(ImGui::F)>::call<ImGui::F>);
+
+		REGISTER_FUNCTION(AlignFirstTextHeightToWidgets);
+		REGISTER_FUNCTION(BeginChildFrame);
+		REGISTER_FUNCTION(BeginDock);
+		REGISTER_FUNCTION(BeginPopup);
+		REGISTER_FUNCTION(Button);
+		REGISTER_FUNCTION(Checkbox);
+		REGISTER_FUNCTION(Columns);
+		REGISTER_FUNCTION(DragFloat);
+		REGISTER_FUNCTION(Dummy);
+		REGISTER_FUNCTION(End);
+		REGISTER_FUNCTION(EndChildFrame);
+		REGISTER_FUNCTION(EndDock);
+		REGISTER_FUNCTION(EndPopup);
+		REGISTER_FUNCTION(GetColumnWidth);
+		REGISTER_FUNCTION(GetWindowWidth);
+		REGISTER_FUNCTION(GetWindowHeight);
+		REGISTER_FUNCTION(Indent);
+		REGISTER_FUNCTION(IsItemHovered);
+		REGISTER_FUNCTION(IsMouseClicked);
+		REGISTER_FUNCTION(IsMouseDown);
+		REGISTER_FUNCTION(NewLine);
+		REGISTER_FUNCTION(NextColumn);
+		REGISTER_FUNCTION(OpenPopup);
+		REGISTER_FUNCTION(PopItemWidth);
+		REGISTER_FUNCTION(PopID);
+		REGISTER_FUNCTION(PopStyleColor);
+		REGISTER_FUNCTION(PushItemWidth);
+		REGISTER_FUNCTION(PushStyleColor);
+		REGISTER_FUNCTION(Rect);
+		REGISTER_FUNCTION(SameLine);
+		REGISTER_FUNCTION(Separator);
+		REGISTER_FUNCTION(SetCursorScreenPos);
+		REGISTER_FUNCTION(SetNextWindowPos);
+		REGISTER_FUNCTION(SetNextWindowPosCenter);
+		REGISTER_FUNCTION(SetNextWindowSize);
+		REGISTER_FUNCTION(ShowTestWindow);
+		REGISTER_FUNCTION(SliderFloat);
+		REGISTER_FUNCTION(Unindent);
+
+		#undef REGISTER_FUNCTION
 	}
 
 
