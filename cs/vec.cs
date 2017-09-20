@@ -9,10 +9,10 @@ namespace Lumix
 
 public struct Vec4
 {
-    float x;
-    float y;
-	float z;
-	float w;
+    public float x;
+    public float y;
+	public float z;
+	public float w;
 	
 	public Vec4(float _x, float _y, float _z, float _w)
 	{
@@ -26,9 +26,9 @@ public struct Vec4
 
 public struct Vec3
 {
-    float x;
-    float y;
-	float z;
+    public float x;
+    public float y;
+	public float z;
 	
 	public Vec3(float _x, float _y, float _z)
 	{
@@ -40,8 +40,8 @@ public struct Vec3
 
 public struct Vec2
 {
-    float x;
-    float y;
+    public float x;
+    public float y;
 	
 	public Vec2(float _x, float _y)
 	{

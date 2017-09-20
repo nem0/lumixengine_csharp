@@ -54,10 +54,27 @@ public class ImGui
 	public extern static float GetWindowHeight();
 
 	[MethodImplAttribute(MethodImplOptions.InternalCall)]
+	public extern static Lumix.Vec2 GetWindowSize();
+
+	[MethodImplAttribute(MethodImplOptions.InternalCall)]
 	public extern static void Indent(float w);
 
 	[MethodImplAttribute(MethodImplOptions.InternalCall)]
 	public extern static bool IsItemHovered();
+
+	[MethodImplAttribute(MethodImplOptions.InternalCall)]
+	public extern static bool InputInt(string label, ref int v, int step, int step_fast, int extra_flags);
+
+	public unsafe static bool InputText(string label, byte[] textBuffer, int flags, IntPtr textEditCallback, IntPtr userData)
+	{
+		fixed (byte* ptrBuf = textBuffer)
+		{
+			return InputText(label, new IntPtr(ptrBuf), (uint)textBuffer.Length, flags, textEditCallback, userData);
+		}
+	}
+
+	[MethodImplAttribute(MethodImplOptions.InternalCall)]
+	public extern static bool InputText(string label, IntPtr buf, uint buf_size, int flags, IntPtr callback, IntPtr user_data);
 
 	[MethodImplAttribute(MethodImplOptions.InternalCall)]
 	public extern static bool IsMouseClicked(int button, bool repeat);
@@ -96,6 +113,10 @@ public class ImGui
 	public extern static void SameLine(float pos_x, float spacing);
 
 	[MethodImplAttribute(MethodImplOptions.InternalCall)]
+
+	public extern static bool Selectable(string label, bool selected, int flags, Lumix.Vec2 size_arg);
+
+	[MethodImplAttribute(MethodImplOptions.InternalCall)]
 	public extern static void Separator();
 
 	[MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -116,6 +137,9 @@ public class ImGui
 	[MethodImplAttribute(MethodImplOptions.InternalCall)]
 	public extern static bool SliderFloat(string label, ref float v, float v_min, float v_max, string display_format, float power);
 
-	[MethodImplAttribute(MethodImplOptions.InternalCall)]
+    [MethodImplAttribute(MethodImplOptions.InternalCall)]
+    public extern static void Text(string val);
+
+    [MethodImplAttribute(MethodImplOptions.InternalCall)]
 	public extern static void Unindent(float w);
 }

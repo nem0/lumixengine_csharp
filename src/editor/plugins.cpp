@@ -440,7 +440,7 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 			{
 				ImGui::PushID(j);
 				u32 gc_handle = scene->getGCHandle(cmp.handle, j);
-				scene->tryCallMethod(gc_handle, "onInspector");
+				scene->tryCallMethod(gc_handle, "onInspector", true);
 				if (ImGui::Button("Edit"))
 				{
 					StaticString<MAX_PATH_LENGTH> full_path(editor.getEngine().getDiskFileDevice()->getBasePath(), "cs/", script_name, ".cs");
@@ -745,7 +745,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 		CSharpPlugin& plugin = (CSharpPlugin&)scene->getPlugin();
 		plugin.unloadAssembly();
 		IAllocator& allocator = m_app.getWorldEditor()->getAllocator();
-		m_compile_process = PlatformInterface::createProcess("c:\\windows\\system32\\cmd.exe", "/c \"\"C:\\Program Files\\Mono\\bin\\mcs.bat\" -out:\"cs\\main.dll\" -target:library -recurse:\"cs\\*.cs\"", allocator);
+		m_compile_process = PlatformInterface::createProcess("c:\\windows\\system32\\cmd.exe", "/c \"\"C:\\Program Files\\Mono\\bin\\mcs.bat\" -out:\"cs\\main.dll\" -target:library -unsafe -recurse:\"cs\\*.cs\"", allocator);
 	}
 
 	PlatformInterface::Process* m_compile_process = nullptr;

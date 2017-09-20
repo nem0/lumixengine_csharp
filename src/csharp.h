@@ -36,7 +36,7 @@ struct CSharpScriptScene : IScene
 	virtual const char* getScriptName(ComponentHandle cmp, int scr_index) = 0;
 	virtual u32 getGCHandle(ComponentHandle cmp, int scr_index) const = 0;
 	virtual u32 getEntityGCHandle(Entity entity) = 0;
-	virtual bool tryCallMethod(u32 gc_handle, const char* method_name) = 0;
+	virtual bool tryCallMethod(u32 gc_handle, const char* method_name, bool try_parents) = 0;
 };
 
 

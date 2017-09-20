@@ -19,6 +19,7 @@
 
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
+#include <mono/metadata/debug-helpers.h>
 #include <mono/metadata/mono-config.h>
 #include <mono/metadata/tokentype.h>
 
@@ -146,11 +147,32 @@ template<> struct CSharpTypeConvertor<const char*>
 	static const char* convert(MonoString* val) { return mono_string_to_utf8(val); }
 };
 
+
+template <> struct CSharpTypeConvertor<const ImVec2&>
+{
+	struct Vec2POD { float x; float y; };
+	using Type = Vec2POD;
+
+	static ImVec2 convert(Type& val) { return *(const ImVec2*)&val; }
+};
+
+
+template <> struct CSharpTypeConvertor<ImVec2>
+{
+	struct Vec2POD { float x; float y; };
+	using Type = Vec2POD;
+
+	static Type convert(ImVec2& val) { return *(Vec2POD*)&val; }
+	static Type convert(const ImVec2& val) { return *(Vec2POD*)&val; }
+};
+
+
 template<typename T> struct CSharpTypeConvertor<const T&>
 {
 	using Type = T;
 
-	static const T& convert(T& val) { return val; }
+	static T convert(T& val) { return val; }
+	static T convert(const T& val) { return val; }
 };
 
 
@@ -163,9 +185,22 @@ struct CSharpFunctionProxy<R (Args...)>
 	using F = R (Args...);
 
 	template<F fnc>
-	static R call(typename CSharpTypeConvertor<Args>::Type... args)
+	static typename CSharpTypeConvertor<R>::Type call(typename CSharpTypeConvertor<Args>::Type... args)
 	{
-		return fnc(CSharpTypeConvertor<Args>::convert(args)...);
+		return CSharpTypeConvertor<R>::convert(fnc(CSharpTypeConvertor<Args>::convert(args)...));
+	}
+};
+
+
+template<typename... Args>
+struct CSharpFunctionProxy<void(Args...)>
+{
+	using F = void(Args...);
+
+	template<F fnc>
+	static void call(typename CSharpTypeConvertor<Args>::Type... args)
+	{
+		fnc(CSharpTypeConvertor<Args>::convert(args)...);
 	}
 };
 
@@ -350,6 +385,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		mono_add_internal_call("ImGui::PushID", &CSharpFunctionProxy<void(const char*)>::call<ImGui::PushID>);
 		mono_add_internal_call("ImGui::Selectable", &CSharpFunctionProxy<bool(const char*, bool, ImGuiSelectableFlags, const ImVec2&)>::call<ImGui::Selectable>);
 		mono_add_internal_call("ImGui::Text", &CSharpFunctionProxy<void(const char*)>::call<imgui_Text>);
+		mono_add_internal_call("ImGui::InputText", &CSharpFunctionProxy<decltype(ImGui::InputText)>::call<ImGui::InputText>);
 		#define REGISTER_FUNCTION(F) \
 			mono_add_internal_call("ImGui::" #F, &CSharpFunctionProxy<decltype(ImGui::F)>::call<ImGui::F>);
 
@@ -369,10 +405,12 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		REGISTER_FUNCTION(GetColumnWidth);
 		REGISTER_FUNCTION(GetWindowWidth);
 		REGISTER_FUNCTION(GetWindowHeight);
+		REGISTER_FUNCTION(GetWindowSize);
 		REGISTER_FUNCTION(Indent);
 		REGISTER_FUNCTION(IsItemHovered);
 		REGISTER_FUNCTION(IsMouseClicked);
 		REGISTER_FUNCTION(IsMouseDown);
+		REGISTER_FUNCTION(InputInt);
 		REGISTER_FUNCTION(NewLine);
 		REGISTER_FUNCTION(NextColumn);
 		REGISTER_FUNCTION(OpenPopup);
@@ -523,7 +561,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 			Array<Script>& scripts = cmp->scripts;
 			for (Script& script : scripts)
 			{
-				tryCallMethod(script.gc_handle, "startGame");
+				tryCallMethod(script.gc_handle, "startGame", false);
 			}
 		}
 		m_is_game_running = true;
@@ -1178,14 +1216,24 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	}
 
 
-	bool tryCallMethod(u32 gc_handle, const char* method_name) override
+	bool tryCallMethod(u32 gc_handle, const char* method_name, bool try_parents) override
 	{
 		if (gc_handle == INVALID_GC_HANDLE) return false;
 		MonoObject* obj = mono_gchandle_get_target(gc_handle);
 		ASSERT(obj);
 		MonoClass* mono_class = mono_object_get_class(obj);
+
 		ASSERT(mono_class);
 		MonoMethod* method = mono_class_get_method_from_name(mono_class, method_name, 0);
+		if (!method && try_parents)
+		{
+			while (!method)
+			{
+				mono_class = mono_class_get_parent(mono_class);
+				if (!mono_class) return false;
+				method = mono_class_get_method_from_name(mono_class, method_name, 0);
+			}
+		}
 		if (!method) return false;
 
 		MonoObject* exc = nullptr;
