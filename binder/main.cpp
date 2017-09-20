@@ -204,8 +204,16 @@ void writeCSharpHeader(FILE* fp, const char* obj, const std::vector<Property>& p
 		"		private int component_id;\n"
 		"		private IntPtr scene;\n"
 		"\n"
+		"		public static string GetCmpType() { return \"%s\"; }\n"
 		"\n"
-		"		public override void create()\n"
+		"		public %s(Entity _entity, int _component_id)\n"
+		"		{\n"
+		"			entity = _entity;\n"
+		"			component_id = _component_id;\n"
+		"			scene = getScene(entity._universe, \"%s\");\n"
+		"		}\n"
+		"\n"
+		"		public %s(Entity entity)\n"
 		"		{\n"
 		"			component_id = create(entity._universe, entity._entity_id, \"%s\");\n"
 		"			if (component_id < 0) throw new Exception(\"Failed to create component\");\n"
@@ -233,7 +241,7 @@ void writeCSharpHeader(FILE* fp, const char* obj, const std::vector<Property>& p
 		++in;
 	}
 	*c = '\0';
-	fprintf(fp, header, obj, cmp_name, cmp_name);
+	fprintf(fp, header, obj, cmp_name, obj, cmp_name, obj, cmp_name, cmp_name);
 
 	static const char* header_end = 
 		"		}\n"

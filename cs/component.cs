@@ -17,8 +17,6 @@ namespace Lumix
 
 		public Entity entity;
 
-		public virtual void create() { }
-
 		public virtual void onInspector()
 		{
 			/*var type = this.GetType();

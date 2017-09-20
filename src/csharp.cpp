@@ -12,6 +12,7 @@
 #include "engine/path_utils.h"
 #include "engine/property_register.h"
 #include "engine/serializer.h"
+#include "engine/universe/component.h"
 #include "engine/universe/universe.h"
 #include "imgui/imgui.h"
 #include "physics/physics_scene.h"
@@ -54,6 +55,13 @@ struct CSharpPluginImpl : public CSharpPlugin
 	DelegateList<void()> m_on_assembly_unload;
 	DelegateList<void()> m_on_assembly_load;
 };
+
+
+ComponentHandle csharp_Entity_getComponent(Universe* universe, Entity entity, MonoString* cmp_type)
+{
+	const char* type = mono_string_to_utf8(cmp_type);
+	return universe->getComponent(entity, PropertyRegister::getComponentType(type)).handle;
+}
 
 
 IScene* csharp_Component_getScene(Universe* universe, MonoString* type_str)
@@ -439,6 +447,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		mono_add_internal_call("Lumix.Engine::logError", csharp_logError);
 		mono_add_internal_call("Lumix.Component::create", csharp_Component_create);
 		mono_add_internal_call("Lumix.Component::getScene", csharp_Component_getScene);
+		mono_add_internal_call("Lumix.Entity::getComponent", csharp_Entity_getComponent);
 		mono_add_internal_call("Lumix.Entity::destroy", csharp_Entity_destroy);
 		mono_add_internal_call("Lumix.Entity::setPosition", csharp_Entity_setPosition);
 		mono_add_internal_call("Lumix.Entity::getPosition", csharp_Entity_getPosition);

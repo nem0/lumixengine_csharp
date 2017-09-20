@@ -35,50 +35,63 @@ public class Entity
 	[MethodImplAttribute(MethodImplOptions.InternalCall)]
 	private extern static void destroy(IntPtr universe, int entity);
 	
+	[MethodImplAttribute(MethodImplOptions.InternalCall)]
+	private extern static int getComponent(IntPtr universe, int entity, string cmp_type);
 	
-	public void destroy()
+	public void Destroy()
 	{
 		destroy(_universe, _entity_id);
 		_entity_id = -1;
 	}
 	
 	
-	public T getComponent<T>() where T : Component
+	public T GetComponent<T>() where T : Component
 	{
 		for (int i = 0, c = components.Count; i < c; ++i)
 		{
 			var cmp = components[i];
 			if (cmp is T) return cmp as T;
 		}
+		
+		if(typeof(T).IsSubclassOf(typeof(NativeComponent)))
+		{
+			string cmp_type = (string)typeof(T).GetMethod("GetCmpType").Invoke(null, new object[]{});
+			
+			int cmp_id = getComponent(_universe, _entity_id, cmp_type);
+			if (cmp_id < 0) return null;
+			
+			var cmp = (T)Activator.CreateInstance(typeof(T), this, cmp_id);
+			components.Add(cmp);
+			return cmp;
+		}
+		
 		return null;
 	}
 	
 	
-	public T createComponent<T>() where T : Component, new()
+	public T CreateComponent<T>() where T : Component
 	{
-		T cmp = new T();
-		cmp.entity = this;
-		cmp.create();
+		T cmp = (T)Activator.CreateInstance(typeof(T), this);
 		components.Add(cmp);
 		return cmp;
 	}
 	
 	
-	public string name
+	public string Name
 	{
 		get { return getName(_universe, _entity_id); }
 		set { setName(_universe, _entity_id, value); }
 	}
 	
 	
-	public Vec3 position
+	public Vec3 Position
 	{
 		get { return getPosition(_universe, _entity_id); }
 		set { setPosition(_universe, _entity_id, value); }
 	}
 	
 	
-	public Quat rotation
+	public Quat Rotation
 	{
 		get { return getRotation(_universe, _entity_id); }
 		set { setRotation(_universe, _entity_id, value); }

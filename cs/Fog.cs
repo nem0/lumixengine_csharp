@@ -12,8 +12,16 @@ namespace Lumix
 		private int component_id;
 		private IntPtr scene;
 
+		public static string GetCmpType() { return "fog"; }
 
-		public override void create()
+		public Fog(Entity _entity, int _component_id)
+		{
+			entity = _entity;
+			component_id = _component_id;
+			scene = getScene(entity._universe, "fog");
+		}
+
+		public Fog(Entity entity)
 		{
 			component_id = create(entity._universe, entity._entity_id, "fog");
 			if (component_id < 0) throw new Exception("Failed to create component");

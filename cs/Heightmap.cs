@@ -12,8 +12,16 @@ namespace Lumix
 		private int component_id;
 		private IntPtr scene;
 
+		public static string GetCmpType() { return "heightmap"; }
 
-		public override void create()
+		public Heightmap(Entity _entity, int _component_id)
+		{
+			entity = _entity;
+			component_id = _component_id;
+			scene = getScene(entity._universe, "heightmap");
+		}
+
+		public Heightmap(Entity entity)
 		{
 			component_id = create(entity._universe, entity._entity_id, "heightmap");
 			if (component_id < 0) throw new Exception("Failed to create component");
