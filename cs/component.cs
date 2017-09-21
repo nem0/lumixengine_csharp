@@ -17,8 +17,9 @@ namespace Lumix
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		protected extern static void setCSharpProperty(IntPtr editor, IntPtr universe, int entity, Component cmp, string property, string value);
-		
-		public Entity entity;
+
+		public Entity entity_;
+		public Entity entity { get { return entity_; } }
 
 		public virtual void onInspector(IntPtr editor)
 		{

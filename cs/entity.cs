@@ -55,8 +55,9 @@ public class Entity
 		
 		if(typeof(T).IsSubclassOf(typeof(NativeComponent)))
 		{
-			string cmp_type = (string)typeof(T).GetMethod("GetCmpType").Invoke(null, new object[]{});
-			
+			var prop = typeof(T).GetProperty("GetCmpType", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+			string cmp_type = (string)prop.GetValue(null, null);
+
 			int cmp_id = getComponent(_universe, _entity_id, cmp_type);
 			if (cmp_id < 0) return null;
 			

@@ -51,4 +51,15 @@ public struct Vec2
 }
 
 
+public struct Int2
+{
+    public int x;
+    public int y;
+	
+	public Int2(int _x, int _y)
+	{
+		x = _x;
+		y = _y;
+	}
+}
 }

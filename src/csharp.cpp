@@ -1,4 +1,5 @@
 #include "csharp.h"
+#include "audio/audio_scene.h"
 #include "animation/animation.h"
 #include "animation/animation_system.h"
 #include "engine/blob.h"
@@ -15,6 +16,7 @@
 #include "engine/universe/component.h"
 #include "engine/universe/universe.h"
 #include "imgui/imgui.h"
+#include "navigation/navigation_system.h"
 #include "physics/physics_scene.h"
 #include "renderer/render_scene.h"
 
@@ -320,11 +322,13 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	{
 		universe.registerComponentType(CSHARP_SCRIPT_TYPE, this, &CSharpScriptSceneImpl::serializeCSharpScript, &CSharpScriptSceneImpl::deserializeCSharpScript);
 
-		createEngineAPI();
+		#include "api.h"
+
 		createImGuiAPI();
-		createRendererAPI();
+		createEngineAPI();
+		/*createRendererAPI();
 		createPhysicsAPI();
-		createAnimationAPI();
+		createAnimationAPI();*/
 
 		m_system.m_on_assembly_load.bind<CSharpScriptSceneImpl, &CSharpScriptSceneImpl::onAssemblyLoad>(this);
 		m_system.m_on_assembly_unload.bind<CSharpScriptSceneImpl, &CSharpScriptSceneImpl::onAssemblyUnload>(this);
@@ -857,7 +861,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		ASSERT(obj);
 		MonoClass* mono_class = mono_object_get_class(obj);
 
-		MonoClassField* field = mono_class_get_field_from_name(mono_class, "entity");
+		MonoClassField* field = mono_class_get_field_from_name(mono_class, "entity_");
 		ASSERT(field);
 
 		u32 handle = m_entities_gc_handles[cmp.entity];
