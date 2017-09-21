@@ -238,6 +238,7 @@ template<typename R, typename T, typename... Args>
 struct CSharpMethodProxy<R (T::*)(Args...) const>
 {
 	using F = R (T::*)(Args...)const;
+	using ConvertedR = typename CSharpTypeConvertor<R>::Type;
 
 	template<F fnc, typename Ret = R>
 	static typename enable_if<is_same<Ret, void>::value, Ret>::type call(T* inst, typename CSharpTypeConvertor<Args>::Type... args)
@@ -246,29 +247,29 @@ struct CSharpMethodProxy<R (T::*)(Args...) const>
 	}
 
 	template<F fnc, typename Ret = R>
-	static typename enable_if<!is_same<Ret, void>::value, Ret>::type call(T* inst, typename CSharpTypeConvertor<Args>::Type... args)
+	static typename enable_if<!is_same<Ret, void>::value, ConvertedR>::type call(T* inst, typename CSharpTypeConvertor<Args>::Type... args)
 	{
-		return (inst->*fnc)(CSharpTypeConvertor<Args>::convert(args)...);
+		return CSharpTypeConvertor<R>::convert((inst->*fnc)(CSharpTypeConvertor<Args>::convert(args)...));
 	}
 };
-
 
 
 template<typename R, typename T, typename... Args>
 struct CSharpMethodProxy<R(T::*)(Args...)>
 {
 	using F = R(T::*)(Args...);
+	using ConvertedR = typename CSharpTypeConvertor<R>::Type;
 
 	template<F fnc, typename Ret = R>
-	static typename enable_if<is_same<Ret, void>::value, Ret>::type call(T* inst, typename CSharpTypeConvertor<Args>::Type... args)
+	static typename enable_if<is_same<Ret, void>::value, void>::type call(T* inst, typename CSharpTypeConvertor<Args>::Type... args)
 	{
 		(inst->*fnc)(CSharpTypeConvertor<Args>::convert(args)...);
 	}
 
 	template<F fnc, typename Ret = R>
-	static typename enable_if<!is_same<Ret, void>::value, Ret>::type call(T* inst, typename CSharpTypeConvertor<Args>::Type... args)
+	static typename enable_if<!is_same<Ret, void>::value, ConvertedR>::type call(T* inst, typename CSharpTypeConvertor<Args>::Type... args)
 	{
-		return (inst->*fnc)(CSharpTypeConvertor<Args>::convert(args)...);
+		return CSharpTypeConvertor<R>::convert((inst->*fnc)(CSharpTypeConvertor<Args>::convert(args)...));
 	}
 };
 
