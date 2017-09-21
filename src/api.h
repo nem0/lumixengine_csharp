@@ -73,9 +73,9 @@ mono_add_internal_call("Lumix.SphereRigidActor::getSphereRadius", fPhysicsScene_
 auto fPhysicsScene_setSphereRadius = &csharp_setProperty<float, PhysicsScene, &PhysicsScene::setSphereRadius>;
 mono_add_internal_call("Lumix.SphereRigidActor::setSphereRadius", fPhysicsScene_setSphereRadius);
 
-auto fPhysicsScene_getDynamicType = &csharp_getProperty<PhysicsScene::DynamicType, PhysicsScene, &PhysicsScene::getDynamicType>;
+auto fPhysicsScene_getDynamicType = &csharp_getProperty<Lumix::PhysicsScene::DynamicType, PhysicsScene, &PhysicsScene::getDynamicType>;
 mono_add_internal_call("Lumix.SphereRigidActor::getDynamicType", fPhysicsScene_getDynamicType);
-auto fPhysicsScene_setDynamicType = &csharp_setProperty<PhysicsScene::DynamicType, PhysicsScene, &PhysicsScene::setDynamicType>;
+auto fPhysicsScene_setDynamicType = &csharp_setProperty<Lumix::PhysicsScene::DynamicType, PhysicsScene, &PhysicsScene::setDynamicType>;
 mono_add_internal_call("Lumix.SphereRigidActor::setDynamicType", fPhysicsScene_setDynamicType);
 
 auto fPhysicsScene_isTrigger = &csharp_getProperty<bool, PhysicsScene, &PhysicsScene::isTrigger>;
@@ -93,9 +93,9 @@ mono_add_internal_call("Lumix.CapsuleRigidActor::getCapsuleHeight", fPhysicsScen
 auto fPhysicsScene_setCapsuleHeight = &csharp_setProperty<float, PhysicsScene, &PhysicsScene::setCapsuleHeight>;
 mono_add_internal_call("Lumix.CapsuleRigidActor::setCapsuleHeight", fPhysicsScene_setCapsuleHeight);
 
-auto fPhysicsScene_getDynamicType = &csharp_getProperty<PhysicsScene::DynamicType, PhysicsScene, &PhysicsScene::getDynamicType>;
+auto fPhysicsScene_getDynamicType = &csharp_getProperty<Lumix::PhysicsScene::DynamicType, PhysicsScene, &PhysicsScene::getDynamicType>;
 mono_add_internal_call("Lumix.CapsuleRigidActor::getDynamicType", fPhysicsScene_getDynamicType);
-auto fPhysicsScene_setDynamicType = &csharp_setProperty<PhysicsScene::DynamicType, PhysicsScene, &PhysicsScene::setDynamicType>;
+auto fPhysicsScene_setDynamicType = &csharp_setProperty<Lumix::PhysicsScene::DynamicType, PhysicsScene, &PhysicsScene::setDynamicType>;
 mono_add_internal_call("Lumix.CapsuleRigidActor::setDynamicType", fPhysicsScene_setDynamicType);
 
 auto fPhysicsScene_isTrigger = &csharp_getProperty<bool, PhysicsScene, &PhysicsScene::isTrigger>;
@@ -118,34 +118,34 @@ mono_add_internal_call("Lumix.D6Joint::getJointAxisDirection", fPhysicsScene_get
 auto fPhysicsScene_setJointAxisDirection = &csharp_setProperty<Vec3, PhysicsScene, &PhysicsScene::setJointAxisDirection>;
 mono_add_internal_call("Lumix.D6Joint::setJointAxisDirection", fPhysicsScene_setJointAxisDirection);
 
-auto fPhysicsScene_getD6JointXMotion = &csharp_getProperty<int, PhysicsScene, &PhysicsScene::getD6JointXMotion>;
+auto fPhysicsScene_getD6JointXMotion = &csharp_getProperty<Lumix::PhysicsScene::D6Motion, PhysicsScene, &PhysicsScene::getD6JointXMotion>;
 mono_add_internal_call("Lumix.D6Joint::getD6JointXMotion", fPhysicsScene_getD6JointXMotion);
-auto fPhysicsScene_setD6JointXMotion = &csharp_setProperty<int, PhysicsScene, &PhysicsScene::setD6JointXMotion>;
+auto fPhysicsScene_setD6JointXMotion = &csharp_setProperty<Lumix::PhysicsScene::D6Motion, PhysicsScene, &PhysicsScene::setD6JointXMotion>;
 mono_add_internal_call("Lumix.D6Joint::setD6JointXMotion", fPhysicsScene_setD6JointXMotion);
 
-auto fPhysicsScene_getD6JointYMotion = &csharp_getProperty<int, PhysicsScene, &PhysicsScene::getD6JointYMotion>;
+auto fPhysicsScene_getD6JointYMotion = &csharp_getProperty<Lumix::PhysicsScene::D6Motion, PhysicsScene, &PhysicsScene::getD6JointYMotion>;
 mono_add_internal_call("Lumix.D6Joint::getD6JointYMotion", fPhysicsScene_getD6JointYMotion);
-auto fPhysicsScene_setD6JointYMotion = &csharp_setProperty<int, PhysicsScene, &PhysicsScene::setD6JointYMotion>;
+auto fPhysicsScene_setD6JointYMotion = &csharp_setProperty<Lumix::PhysicsScene::D6Motion, PhysicsScene, &PhysicsScene::setD6JointYMotion>;
 mono_add_internal_call("Lumix.D6Joint::setD6JointYMotion", fPhysicsScene_setD6JointYMotion);
 
-auto fPhysicsScene_getD6JointZMotion = &csharp_getProperty<int, PhysicsScene, &PhysicsScene::getD6JointZMotion>;
+auto fPhysicsScene_getD6JointZMotion = &csharp_getProperty<Lumix::PhysicsScene::D6Motion, PhysicsScene, &PhysicsScene::getD6JointZMotion>;
 mono_add_internal_call("Lumix.D6Joint::getD6JointZMotion", fPhysicsScene_getD6JointZMotion);
-auto fPhysicsScene_setD6JointZMotion = &csharp_setProperty<int, PhysicsScene, &PhysicsScene::setD6JointZMotion>;
+auto fPhysicsScene_setD6JointZMotion = &csharp_setProperty<Lumix::PhysicsScene::D6Motion, PhysicsScene, &PhysicsScene::setD6JointZMotion>;
 mono_add_internal_call("Lumix.D6Joint::setD6JointZMotion", fPhysicsScene_setD6JointZMotion);
 
-auto fPhysicsScene_getD6JointSwing1Motion = &csharp_getProperty<int, PhysicsScene, &PhysicsScene::getD6JointSwing1Motion>;
+auto fPhysicsScene_getD6JointSwing1Motion = &csharp_getProperty<Lumix::PhysicsScene::D6Motion, PhysicsScene, &PhysicsScene::getD6JointSwing1Motion>;
 mono_add_internal_call("Lumix.D6Joint::getD6JointSwing1Motion", fPhysicsScene_getD6JointSwing1Motion);
-auto fPhysicsScene_setD6JointSwing1Motion = &csharp_setProperty<int, PhysicsScene, &PhysicsScene::setD6JointSwing1Motion>;
+auto fPhysicsScene_setD6JointSwing1Motion = &csharp_setProperty<Lumix::PhysicsScene::D6Motion, PhysicsScene, &PhysicsScene::setD6JointSwing1Motion>;
 mono_add_internal_call("Lumix.D6Joint::setD6JointSwing1Motion", fPhysicsScene_setD6JointSwing1Motion);
 
-auto fPhysicsScene_getD6JointSwing2Motion = &csharp_getProperty<int, PhysicsScene, &PhysicsScene::getD6JointSwing2Motion>;
+auto fPhysicsScene_getD6JointSwing2Motion = &csharp_getProperty<Lumix::PhysicsScene::D6Motion, PhysicsScene, &PhysicsScene::getD6JointSwing2Motion>;
 mono_add_internal_call("Lumix.D6Joint::getD6JointSwing2Motion", fPhysicsScene_getD6JointSwing2Motion);
-auto fPhysicsScene_setD6JointSwing2Motion = &csharp_setProperty<int, PhysicsScene, &PhysicsScene::setD6JointSwing2Motion>;
+auto fPhysicsScene_setD6JointSwing2Motion = &csharp_setProperty<Lumix::PhysicsScene::D6Motion, PhysicsScene, &PhysicsScene::setD6JointSwing2Motion>;
 mono_add_internal_call("Lumix.D6Joint::setD6JointSwing2Motion", fPhysicsScene_setD6JointSwing2Motion);
 
-auto fPhysicsScene_getD6JointTwistMotion = &csharp_getProperty<int, PhysicsScene, &PhysicsScene::getD6JointTwistMotion>;
+auto fPhysicsScene_getD6JointTwistMotion = &csharp_getProperty<Lumix::PhysicsScene::D6Motion, PhysicsScene, &PhysicsScene::getD6JointTwistMotion>;
 mono_add_internal_call("Lumix.D6Joint::getD6JointTwistMotion", fPhysicsScene_getD6JointTwistMotion);
-auto fPhysicsScene_setD6JointTwistMotion = &csharp_setProperty<int, PhysicsScene, &PhysicsScene::setD6JointTwistMotion>;
+auto fPhysicsScene_setD6JointTwistMotion = &csharp_setProperty<Lumix::PhysicsScene::D6Motion, PhysicsScene, &PhysicsScene::setD6JointTwistMotion>;
 mono_add_internal_call("Lumix.D6Joint::setD6JointTwistMotion", fPhysicsScene_setD6JointTwistMotion);
 
 auto fPhysicsScene_getD6JointLinearLimit = &csharp_getProperty<float, PhysicsScene, &PhysicsScene::getD6JointLinearLimit>;
@@ -233,9 +233,9 @@ mono_add_internal_call("Lumix.PhysicalController::getControllerLayer", fPhysicsS
 auto fPhysicsScene_setControllerLayer = &csharp_setProperty<int, PhysicsScene, &PhysicsScene::setControllerLayer>;
 mono_add_internal_call("Lumix.PhysicalController::setControllerLayer", fPhysicsScene_setControllerLayer);
 
-auto fPhysicsScene_getDynamicType = &csharp_getProperty<PhysicsScene::DynamicType, PhysicsScene, &PhysicsScene::getDynamicType>;
+auto fPhysicsScene_getDynamicType = &csharp_getProperty<Lumix::PhysicsScene::DynamicType, PhysicsScene, &PhysicsScene::getDynamicType>;
 mono_add_internal_call("Lumix.BoxRigidActor::getDynamicType", fPhysicsScene_getDynamicType);
-auto fPhysicsScene_setDynamicType = &csharp_setProperty<PhysicsScene::DynamicType, PhysicsScene, &PhysicsScene::setDynamicType>;
+auto fPhysicsScene_setDynamicType = &csharp_setProperty<Lumix::PhysicsScene::DynamicType, PhysicsScene, &PhysicsScene::setDynamicType>;
 mono_add_internal_call("Lumix.BoxRigidActor::setDynamicType", fPhysicsScene_setDynamicType);
 
 auto fPhysicsScene_isTrigger = &csharp_getProperty<bool, PhysicsScene, &PhysicsScene::isTrigger>;
@@ -258,9 +258,9 @@ mono_add_internal_call("Lumix.MeshRigidActor::getShapeSource", fPhysicsScene_get
 auto fPhysicsScene_setShapeSource = &csharp_setProperty<Path, PhysicsScene, &PhysicsScene::setShapeSource>;
 mono_add_internal_call("Lumix.MeshRigidActor::setShapeSource", fPhysicsScene_setShapeSource);
 
-auto fPhysicsScene_getDynamicType = &csharp_getProperty<PhysicsScene::DynamicType, PhysicsScene, &PhysicsScene::getDynamicType>;
+auto fPhysicsScene_getDynamicType = &csharp_getProperty<Lumix::PhysicsScene::DynamicType, PhysicsScene, &PhysicsScene::getDynamicType>;
 mono_add_internal_call("Lumix.MeshRigidActor::getDynamicType", fPhysicsScene_getDynamicType);
-auto fPhysicsScene_setDynamicType = &csharp_setProperty<PhysicsScene::DynamicType, PhysicsScene, &PhysicsScene::setDynamicType>;
+auto fPhysicsScene_setDynamicType = &csharp_setProperty<Lumix::PhysicsScene::DynamicType, PhysicsScene, &PhysicsScene::setDynamicType>;
 mono_add_internal_call("Lumix.MeshRigidActor::setDynamicType", fPhysicsScene_setDynamicType);
 
 auto fPhysicsScene_getActorLayer = &csharp_getProperty<int, PhysicsScene, &PhysicsScene::getActorLayer>;
