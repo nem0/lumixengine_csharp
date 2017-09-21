@@ -15,11 +15,14 @@ namespace Lumix
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		protected extern static IntPtr getScene(IntPtr universe, string cmp_type);
 
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		protected extern static void setCSharpProperty(IntPtr editor, IntPtr universe, int entity, Component cmp, string property, string value);
+		
 		public Entity entity;
 
-		public virtual void onInspector()
+		public virtual void onInspector(IntPtr editor)
 		{
-			/*var type = this.GetType();
+			var type = this.GetType();
 			foreach (var f in type.GetFields())
 			{
 				if (!f.IsPublic) continue;
@@ -30,17 +33,26 @@ namespace Lumix
 				if (val_type == typeof(float))
 				{
 					float f_val = (float)val;
-					ImGui.DragFloat(f.Name, ref f_val, 0.1f, float.MaxValue, float.MaxValue, "%f", 1);
+					if(ImGui.DragFloat(f.Name, ref f_val, 0.1f, float.MaxValue, float.MaxValue, "%f", 1))
+					{
+						setCSharpProperty(editor, entity._universe, entity._entity_id, this, f.Name, f_val.ToString());
+					}
 				}
 				else if (val_type == typeof(bool))
 				{
 					bool b_val = (bool)val;
-					ImGui.Checkbox(f.Name, ref b_val);
+					if(ImGui.Checkbox(f.Name, ref b_val))
+					{
+						setCSharpProperty(editor, entity._universe, entity._entity_id, this, f.Name, b_val.ToString());
+					}
 				}
 				else if (val_type == typeof(int))
 				{
 					int i_val = (int)val;
-					ImGui.InputInt(f.Name, ref i_val, 1, 10, 0);
+					if(ImGui.InputInt(f.Name, ref i_val, 1, 10, 0))
+					{
+						setCSharpProperty(editor, entity._universe, entity._entity_id, this, f.Name, i_val.ToString());
+					}
 				}
 				else if (val_type == typeof(string))
 				{
@@ -50,14 +62,14 @@ namespace Lumix
 					if (ImGui.InputText(f.Name, s_imgui_text_buffer, 0, IntPtr.Zero, IntPtr.Zero))
 					{
 						string new_val = System.Text.Encoding.ASCII.GetString(s_imgui_text_buffer);
-						f.SetValue(this, new_val);
+						setCSharpProperty(editor, entity._universe, entity._entity_id, this, f.Name, new_val);
 					}
 				}
 				else
 				{
 					ImGui.Text(f.Name + " = " + val.ToString());
 				}
-			}*/
+			}
 		}
 	}
 

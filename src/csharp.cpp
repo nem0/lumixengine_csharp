@@ -1139,7 +1139,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 		for (u32 gc_handle : m_updates)
 		{
-			tryCallMethod(gc_handle, "update", time_delta);
+			tryCallMethodInternal(gc_handle, "update", time_delta);
 		}
 	}
 	
@@ -1207,7 +1207,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 
 	template <typename T>
-	bool tryCallMethod(u32 gc_handle, const char* method_name, T arg0)
+	bool tryCallMethodInternal(u32 gc_handle, const char* method_name, T arg0)
 	{
 		MonoObject* obj = mono_gchandle_get_target(gc_handle);
 		ASSERT(obj);
@@ -1248,6 +1248,35 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		MonoObject* exc = nullptr;
 		mono_runtime_invoke(method, obj, nullptr, &exc);
 		
+		handleException(exc);
+		return exc == nullptr;
+	}
+
+
+	bool tryCallMethod(u32 gc_handle, const char* method_name, void* arg, bool try_parents) override
+	{
+		if (gc_handle == INVALID_GC_HANDLE) return false;
+		MonoObject* obj = mono_gchandle_get_target(gc_handle);
+		ASSERT(obj);
+		MonoClass* mono_class = mono_object_get_class(obj);
+
+		ASSERT(mono_class);
+		MonoMethod* method = mono_class_get_method_from_name(mono_class, method_name, 1);
+		if (!method && try_parents)
+		{
+			while (!method)
+			{
+				mono_class = mono_class_get_parent(mono_class);
+				if (!mono_class) return false;
+				method = mono_class_get_method_from_name(mono_class, method_name, 1);
+			}
+		}
+		if (!method) return false;
+
+		MonoObject* exc = nullptr;
+		void* args[] = { &arg };
+		mono_runtime_invoke(method, obj, args, &exc);
+
 		handleException(exc);
 		return exc == nullptr;
 	}

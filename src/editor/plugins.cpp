@@ -51,102 +51,150 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 			const char* val,
 			IAllocator& allocator)
 			: property_name(property_name, allocator)
-			, value(val, allocator)
+			, value(allocator)
 			, old_value(allocator)
 			, component(cmp)
 			, script_index(scr_index)
 			, editor(_editor)
 		{
 			CSharpScriptScene* scene = static_cast<CSharpScriptScene*>(editor.getUniverse()->getScene(crc32("csharp_script")));
-			StaticString<32> tmp("", scene->getScriptNameHash(component, script_index));
-			old_value = tmp;
-		}
-
-
-		bool execute() override
-		{
-			CSharpScriptScene* scene = static_cast<CSharpScriptScene*>(editor.getUniverse()->getScene(crc32("csharp_script")));
-			u32 name_hash;
 			if (property_name[0] == '-')
 			{
-				fromCString(value.c_str(), value.length(), &name_hash);
-				scene->setScriptNameHash(component, script_index, name_hash);
+				u32 hash = scene->getScriptNameHash(component, script_index);
+				old_value.write(hash);
+				u32 new_hash;
+				fromCString(val, stringLength(val), &new_hash);
+				value.write(new_hash);
 			}
 			else
 			{
 				u32 gc_handle = scene->getGCHandle(component, script_index);
 				MonoObject* obj = mono_gchandle_get_target(gc_handle);
 				MonoClass* mono_class = mono_object_get_class(obj);
-				MonoClassField* field = mono_class_get_field_from_name(mono_class, property_name.c_str());
+				MonoClassField* field = mono_class_get_field_from_name(mono_class, property_name);
 
-				int type = mono_type_get_type(mono_field_get_type(field));
+				value_type = mono_type_get_type(mono_field_get_type(field));
 				const char* field_name = mono_field_get_name(field);
-				switch (type)
+				switch (value_type)
 				{
 					case MONO_TYPE_BOOLEAN:
 					{
-						bool b = value[0] != '0';
-						mono_field_set_value(obj, field, &b);
+						bool b;
+						mono_field_get_value(obj, field, &b);
+						old_value.write(b);
+						value.write(val[0] == 'T' || val[0] == 't' ? true : false);
 						break;
 					}
 					case MONO_TYPE_R4:
 					{
-						float f = atof(value.c_str());
-						mono_field_set_value(obj, field, &f);
+						float f;
+						mono_field_get_value(obj, field, &f);
+						old_value.write(f);
+						f = (float)atof(val);
+						value.write(f);
 						break;
 					}
 					case MONO_TYPE_I4:
 					{
 						int i;
-						fromCString(value.c_str(), value.length(), &i);
+						mono_field_get_value(obj, field, &i);
+						old_value.write(i);
+						fromCString(val, stringLength(val), &i);
+						value.write(i);
+						break;
+					}
+					case MONO_TYPE_STRING:
+					{
+						MonoString* str;
+						mono_field_get_value(obj, field, &str);
+						char* tmp = mono_string_to_utf8(str);
+						old_value.write(tmp, stringLength(tmp) + 1);
+						mono_free(tmp);
+						value.write(val, stringLength(val) + 1);
+						break;
+					}
+					default: ASSERT(false); break;
+				}
+			}
+		}
+
+
+		bool execute() override
+		{
+			set(value);
+			return true;
+		}
+
+
+		void set(const OutputBlob& value)
+		{
+			CSharpScriptScene* scene = static_cast<CSharpScriptScene*>(editor.getUniverse()->getScene(crc32("csharp_script")));
+			if (property_name[0] == '-')
+			{
+				u32 hash = InputBlob(value).read<u32>();
+				scene->setScriptNameHash(component, script_index, hash);
+			}
+			else
+			{
+				u32 gc_handle = scene->getGCHandle(component, script_index);
+				MonoObject* obj = mono_gchandle_get_target(gc_handle);
+				if (!obj) return;
+
+				MonoClass* mono_class = mono_object_get_class(obj);
+				MonoClassField* field = mono_class_get_field_from_name(mono_class, property_name.c_str());
+				if (!field) return;
+
+				int type = mono_type_get_type(mono_field_get_type(field));
+				if (type != value_type) return;
+
+				const char* field_name = mono_field_get_name(field);
+				switch (type)
+				{
+					case MONO_TYPE_BOOLEAN:
+					{
+						bool b = InputBlob(value).read<bool>();
+						mono_field_set_value(obj, field, &b);
+						break;
+					}
+					case MONO_TYPE_R4:
+					{
+						float f = InputBlob(value).read<float>();
+						mono_field_set_value(obj, field, &f);
+						break;
+					}
+					case MONO_TYPE_I4:
+					{
+						int i = InputBlob(value).read<int>();;
 						mono_field_set_value(obj, field, &i);
 						break;
 					}
 					case MONO_TYPE_STRING:
 					{
-						MonoString* str = mono_string_new(mono_domain_get(), value.c_str());
+						MonoString* str = mono_string_new(mono_domain_get(), (const char*)value.getData());
 						mono_field_set_value(obj, field, str);
 						break;
 					}
 					default: ASSERT(false); break;
 				}
-
-				
 			}
-			return true;
 		}
 
 
 		void undo() override
 		{
-			CSharpScriptScene* scene = static_cast<CSharpScriptScene*>(editor.getUniverse()->getScene(crc32("csharp_script")));
-			u32 name_hash;
-			fromCString(old_value.c_str(), old_value.length(), &name_hash);
-			scene->setScriptNameHash(component, script_index, name_hash);
+			set(old_value);
 		}
 
 
 		void serialize(JsonSerializer& serializer) override
 		{
-			serializer.serialize("component", component);
-			serializer.serialize("script_index", script_index);
-			serializer.serialize("property_name", property_name.c_str());
-			serializer.serialize("value", value.c_str());
-			serializer.serialize("old_value", old_value.c_str());
+			// TODO
 		}
 
 
 		void deserialize(JsonSerializer& serializer) override
 		{
-			serializer.deserialize("component", component, INVALID_COMPONENT);
-			serializer.deserialize("script_index", script_index, 0);
-			char buf[256];
-			serializer.deserialize("property_name", buf, lengthOf(buf), "");
-			property_name = buf;
-			serializer.deserialize("value", buf, lengthOf(buf), "");
-			value = buf;
-			serializer.deserialize("old_value", buf, lengthOf(buf), "");
-			old_value = buf;
+			// TODO
 		}
 
 
@@ -168,8 +216,9 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 
 		WorldEditor& editor;
 		string property_name;
-		string value;
-		string old_value;
+		OutputBlob value;
+		int value_type;
+		OutputBlob old_value;
 		ComponentHandle component;
 		int script_index;
 	};
@@ -288,9 +337,36 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 	};
 
 
+	static void csharp_Component_setProperty(PropertyGridCSharpPlugin* that, Universe* universe, Entity entity, MonoObject* cmp_obj, MonoString* prop, MonoString* value)
+	{
+		CSharpScriptScene* scene = (CSharpScriptScene*)universe->getScene(CSHARP_SCRIPT_TYPE);
+		ComponentHandle cmp = scene->getComponent(entity, CSHARP_SCRIPT_TYPE);
+		char* prop_str = mono_string_to_utf8(prop);
+		char* value_str = mono_string_to_utf8(value);
+		WorldEditor& editor = *that->m_app.getWorldEditor();
+		IAllocator& allocator = editor.getAllocator();
+		int script_count = scene->getScriptCount(cmp);
+		for (int i = 0; i < script_count; ++i)
+		{
+			u32 gc_handle = scene->getGCHandle(cmp, i);
+			if (mono_gchandle_get_target(gc_handle) == cmp_obj)
+			{
+				auto* set_source_cmd = LUMIX_NEW(allocator, PropertyGridCSharpPlugin::SetPropertyCommand)(
+					editor, cmp, i, prop_str, value_str, allocator);
+				editor.executeCommand(set_source_cmd);
+				break;
+			}
+		}
+		// TODO free all mono_string_to_utf8
+		mono_free(prop_str);
+		mono_free(value_str);
+	}
+
+
 	explicit PropertyGridCSharpPlugin(StudioApp& app)
 		: m_app(app)
 	{
+		mono_add_internal_call("Lumix.Component::setCSharpProperty", &csharp_Component_setProperty);
 	}
 
 
@@ -440,7 +516,7 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 			{
 				ImGui::PushID(j);
 				u32 gc_handle = scene->getGCHandle(cmp.handle, j);
-				scene->tryCallMethod(gc_handle, "onInspector", true);
+				scene->tryCallMethod(gc_handle, "onInspector", this, true);
 				if (ImGui::Button("Edit"))
 				{
 					StaticString<MAX_PATH_LENGTH> full_path(editor.getEngine().getDiskFileDevice()->getBasePath(), "cs/", script_name, ".cs");
