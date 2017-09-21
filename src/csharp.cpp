@@ -26,6 +26,7 @@
 #include <mono/metadata/mono-config.h>
 #include <mono/metadata/tokentype.h>
 
+
 #pragma comment(lib, "mono-2.0-sgen.lib")
 
 
@@ -187,6 +188,7 @@ template<typename T> struct CSharpTypeConvertor<const T&>
 
 
 template<typename F> struct CSharpFunctionProxy;
+template<typename F> struct CSharpMethodProxy;
 
 
 template<typename R, typename... Args>
@@ -201,7 +203,6 @@ struct CSharpFunctionProxy<R (Args...)>
 	}
 };
 
-
 template<typename... Args>
 struct CSharpFunctionProxy<void(Args...)>
 {
@@ -211,6 +212,63 @@ struct CSharpFunctionProxy<void(Args...)>
 	static void call(typename CSharpTypeConvertor<Args>::Type... args)
 	{
 		fnc(CSharpTypeConvertor<Args>::convert(args)...);
+	}
+};
+
+
+template<bool B, class T = void>
+struct enable_if {};
+
+template<class T>
+struct enable_if<true, T> { typedef T type; };
+
+
+template <typename T1, typename T2> struct is_same
+{
+	static constexpr bool value = false;
+};
+
+template <typename T> struct is_same<T, T>
+{
+	static constexpr bool value = true;
+};
+
+
+template<typename R, typename T, typename... Args>
+struct CSharpMethodProxy<R (T::*)(Args...) const>
+{
+	using F = R (T::*)(Args...)const;
+
+	template<F fnc, typename Ret = R>
+	static typename enable_if<is_same<Ret, void>::value, Ret>::type call(T* inst, typename CSharpTypeConvertor<Args>::Type... args)
+	{
+		(inst->*fnc)(CSharpTypeConvertor<Args>::convert(args)...);
+	}
+
+	template<F fnc, typename Ret = R>
+	static typename enable_if<!is_same<Ret, void>::value, Ret>::type call(T* inst, typename CSharpTypeConvertor<Args>::Type... args)
+	{
+		return (inst->*fnc)(CSharpTypeConvertor<Args>::convert(args)...);
+	}
+};
+
+
+
+template<typename R, typename T, typename... Args>
+struct CSharpMethodProxy<R(T::*)(Args...)>
+{
+	using F = R(T::*)(Args...);
+
+	template<F fnc, typename Ret = R>
+	static typename enable_if<is_same<Ret, void>::value, Ret>::type call(T* inst, typename CSharpTypeConvertor<Args>::Type... args)
+	{
+		(inst->*fnc)(CSharpTypeConvertor<Args>::convert(args)...);
+	}
+
+	template<F fnc, typename Ret = R>
+	static typename enable_if<!is_same<Ret, void>::value, Ret>::type call(T* inst, typename CSharpTypeConvertor<Args>::Type... args)
+	{
+		return (inst->*fnc)(CSharpTypeConvertor<Args>::convert(args)...);
 	}
 };
 
