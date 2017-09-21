@@ -8,15 +8,15 @@ mono_add_internal_call("Lumix.Animable::getAnimation", fAnimationScene_getAnimat
 auto fAnimationScene_setAnimation = &csharp_setProperty<Path, AnimationScene, &AnimationScene::setAnimation>;
 mono_add_internal_call("Lumix.Animable::setAnimation", fAnimationScene_setAnimation);
 
-auto fAnimationScene_getStartTime = &csharp_getProperty<float, AnimationScene, &AnimationScene::getAnimableStartTime>;
-mono_add_internal_call("Lumix.Animable::getStartTime", fAnimationScene_getStartTime);
-auto fAnimationScene_setStartTime = &csharp_setProperty<float, AnimationScene, &AnimationScene::setAnimableStartTime>;
-mono_add_internal_call("Lumix.Animable::setStartTime", fAnimationScene_setStartTime);
+auto fAnimationScene_getAnimableStartTime = &csharp_getProperty<float, AnimationScene, &AnimationScene::getAnimableStartTime>;
+mono_add_internal_call("Lumix.Animable::getAnimableStartTime", fAnimationScene_getAnimableStartTime);
+auto fAnimationScene_setAnimableStartTime = &csharp_setProperty<float, AnimationScene, &AnimationScene::setAnimableStartTime>;
+mono_add_internal_call("Lumix.Animable::setAnimableStartTime", fAnimationScene_setAnimableStartTime);
 
-auto fAnimationScene_getTimeScale = &csharp_getProperty<float, AnimationScene, &AnimationScene::getAnimableTimeScale>;
-mono_add_internal_call("Lumix.Animable::getTimeScale", fAnimationScene_getTimeScale);
-auto fAnimationScene_setTimeScale = &csharp_setProperty<float, AnimationScene, &AnimationScene::setAnimableTimeScale>;
-mono_add_internal_call("Lumix.Animable::setTimeScale", fAnimationScene_setTimeScale);
+auto fAnimationScene_getAnimableTimeScale = &csharp_getProperty<float, AnimationScene, &AnimationScene::getAnimableTimeScale>;
+mono_add_internal_call("Lumix.Animable::getAnimableTimeScale", fAnimationScene_getAnimableTimeScale);
+auto fAnimationScene_setAnimableTimeScale = &csharp_setProperty<float, AnimationScene, &AnimationScene::setAnimableTimeScale>;
+mono_add_internal_call("Lumix.Animable::setAnimableTimeScale", fAnimationScene_setAnimableTimeScale);
 
 auto fAnimationScene_getSharedControllerParent = &csharp_getProperty<Entity, AnimationScene, &AnimationScene::getSharedControllerParent>;
 mono_add_internal_call("Lumix.SharedAnimController::getSharedControllerParent", fAnimationScene_getSharedControllerParent);
@@ -233,9 +233,9 @@ mono_add_internal_call("Lumix.PhysicalController::getControllerLayer", fPhysicsS
 auto fPhysicsScene_setControllerLayer = &csharp_setProperty<int, PhysicsScene, &PhysicsScene::setControllerLayer>;
 mono_add_internal_call("Lumix.PhysicalController::setControllerLayer", fPhysicsScene_setControllerLayer);
 
-auto fPhysicsScene_getDynamicType = &csharp_getProperty<int, PhysicsScene, &PhysicsScene::getDynamicType>;
+auto fPhysicsScene_getDynamicType = &csharp_getProperty<PhysicsScene::DynamicType, PhysicsScene, &PhysicsScene::getDynamicType>;
 mono_add_internal_call("Lumix.BoxRigidActor::getDynamicType", fPhysicsScene_getDynamicType);
-auto fPhysicsScene_setDynamicType = &csharp_setProperty<int, PhysicsScene, &PhysicsScene::setDynamicType>;
+auto fPhysicsScene_setDynamicType = &csharp_setProperty<PhysicsScene::DynamicType, PhysicsScene, &PhysicsScene::setDynamicType>;
 mono_add_internal_call("Lumix.BoxRigidActor::setDynamicType", fPhysicsScene_setDynamicType);
 
 auto fPhysicsScene_isTrigger = &csharp_getProperty<bool, PhysicsScene, &PhysicsScene::isTrigger>;
@@ -258,9 +258,9 @@ mono_add_internal_call("Lumix.MeshRigidActor::getShapeSource", fPhysicsScene_get
 auto fPhysicsScene_setShapeSource = &csharp_setProperty<Path, PhysicsScene, &PhysicsScene::setShapeSource>;
 mono_add_internal_call("Lumix.MeshRigidActor::setShapeSource", fPhysicsScene_setShapeSource);
 
-auto fPhysicsScene_getDynamicType = &csharp_getProperty<int, PhysicsScene, &PhysicsScene::getDynamicType>;
+auto fPhysicsScene_getDynamicType = &csharp_getProperty<PhysicsScene::DynamicType, PhysicsScene, &PhysicsScene::getDynamicType>;
 mono_add_internal_call("Lumix.MeshRigidActor::getDynamicType", fPhysicsScene_getDynamicType);
-auto fPhysicsScene_setDynamicType = &csharp_setProperty<int, PhysicsScene, &PhysicsScene::setDynamicType>;
+auto fPhysicsScene_setDynamicType = &csharp_setProperty<PhysicsScene::DynamicType, PhysicsScene, &PhysicsScene::setDynamicType>;
 mono_add_internal_call("Lumix.MeshRigidActor::setDynamicType", fPhysicsScene_setDynamicType);
 
 auto fPhysicsScene_getActorLayer = &csharp_getProperty<int, PhysicsScene, &PhysicsScene::getActorLayer>;
@@ -512,3 +512,4 @@ auto fRenderScene_getTerrainYScale = &csharp_getProperty<float, RenderScene, &Re
 mono_add_internal_call("Lumix.Terrain::getTerrainYScale", fRenderScene_getTerrainYScale);
 auto fRenderScene_setTerrainYScale = &csharp_setProperty<float, RenderScene, &RenderScene::setTerrainYScale>;
 mono_add_internal_call("Lumix.Terrain::setTerrainYScale", fRenderScene_setTerrainYScale);
+
