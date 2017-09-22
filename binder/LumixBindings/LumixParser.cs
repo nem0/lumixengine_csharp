@@ -128,7 +128,7 @@ namespace LumixBindings
             }
 
 
-            using (StreamWriter tmpWriter = new StreamWriter(@"D:\dev\lumixengine_csharp\src\api.h"))
+            using (StreamWriter tmpWriter = new StreamWriter(Bindings.ApiPath))
             {
                 var natives = knownRegisters_.SortByNativeClass();
                 //write down the template calls for every known property
