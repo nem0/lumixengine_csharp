@@ -8,8 +8,8 @@ namespace LumixBindings
     {
         public static readonly string NativeLib = "LumixSharpNative";
         public static readonly string Version = "0.0.2";
-        public static readonly string RootPath = @"../../../../../LumixEngine/Src";
-        public static readonly string CppSharpPath = @"../../../../../lumixengine_csharp/src/csharp.cpp";
+        public static readonly string RootPath = @"../../../../../../LumixEngine/Src";
+        public static readonly string CppSharpPath = @"../../../../../src/csharp.cpp";
         public static readonly bool DebugToken = false;
         public static readonly bool IgnoreOperator = true;
         public static List<string> StaticClasses = new List<string>()
