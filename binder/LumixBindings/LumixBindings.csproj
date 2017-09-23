@@ -82,6 +82,7 @@
     <Compile Include="NamespaceCollector.cs" />
     <Compile Include="Namespace.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="Project.cs" />
     <Compile Include="ProperterRegister.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TypeMap.cs" />

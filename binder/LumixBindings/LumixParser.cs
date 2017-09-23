@@ -213,20 +213,23 @@ namespace LumixBindings
                 //    }
                 //}
             }
-            using (StreamWriter tmpWriter = new StreamWriter("tmp.cs"))
+
+
+            var klasses = knownRegisters_.SortByClass();
+            var project = new Project("Lumix");
+            //write down components
+
+            foreach (var klass in klasses)
             {
-
-                var klasses = knownRegisters_.SortByClass();
-
-                //write down components
-                //write down the using directives
-                tmpWriter.WriteLine("using System;");
-                tmpWriter.WriteLine("using System.Runtime.InteropServices;");
-                tmpWriter.WriteLine("using System.Runtime.CompilerServices;\n");
-                tmpWriter.WriteLine("namespace Lumix"); ;
-                tmpWriter.WriteLine("{"); ;
-                foreach (var klass in klasses)
+                project.AddClass(klass.Key);
+                using (StreamWriter tmpWriter = new StreamWriter(Path.Combine(Bindings.CSRootPath, klass.Key + ".cs")))
                 {
+                    //write down the using directives
+                    tmpWriter.WriteLine("using System;");
+                    tmpWriter.WriteLine("using System.Runtime.InteropServices;");
+                    tmpWriter.WriteLine("using System.Runtime.CompilerServices;\n");
+                    tmpWriter.WriteLine("namespace Lumix"); ;
+                    tmpWriter.WriteLine("{"); ;
                     //class def
                     tmpWriter.WriteLine("\tpublic class " + klass.Key + " : NativeComponent");
                     tmpWriter.WriteLine("\t{");
@@ -276,7 +279,7 @@ namespace LumixBindings
                     tmpWriter.WriteLine("\t\t\tif (componentId_ < 0) throw new Exception(\"Failed to create component\");");
                     tmpWriter.WriteLine("\t\t\tscene_ = getScene(entity_._universe, \"" + klass.Key.Replace("ModelInstance", "renderable").ToSeperateLower() + "\");");
                     tmpWriter.WriteLine("\t\t}\n");
-                    
+
                     //write down all known properties
                     foreach (var func in klass.Value)
                     {
@@ -305,9 +308,9 @@ namespace LumixBindings
                         if (!func.IsInClass(klass.Key))
                             continue;
 
-                        if(func.HasSceneGetter)
+                        if (func.HasSceneGetter)
                         {
-                            tmpWriter.WriteLine("\t\tpublic " + func.NativeClass.Replace("Impl","") + " Scene");
+                            tmpWriter.WriteLine("\t\tpublic " + func.NativeClass.Replace("Impl", "") + " Scene");
                             tmpWriter.WriteLine("\t\t{");
                             tmpWriter.WriteLine("\t\t\tget { return new " + func.NativeClass.Replace("Impl", "") + "( scene_ ); }");
                             tmpWriter.WriteLine("\t\t}\n");
@@ -317,26 +320,50 @@ namespace LumixBindings
                     }
 
                     tmpWriter.WriteLine("\t}//end class\n");
-
+                    tmpWriter.WriteLine("}//end namespace");
+                    tmpWriter.Flush();
+                    tmpWriter.Close();
                 }
 
                 var staticClasses = knownFunctions.GetClasses();
                 //write down classes
                 foreach (var kvp in staticClasses)
                 {
-                    WriteCsharpClass(tmpWriter, kvp.Value, kvp.Key, true);
+                    project.AddClass(kvp.Key);
+                    using (var tmpWriter = new StreamWriter(Path.Combine(Bindings.CSRootPath, kvp.Key + ".cs")))
+                    {
+                        //write down the using directives
+                        tmpWriter.WriteLine("using System;");
+                        tmpWriter.WriteLine("using System.Runtime.InteropServices;");
+                        tmpWriter.WriteLine("using System.Runtime.CompilerServices;\n");
+                        tmpWriter.WriteLine("namespace Lumix"); ;
+                        tmpWriter.WriteLine("{");
+                        WriteCsharpClass(tmpWriter, kvp.Value, kvp.Key, true);
+                        tmpWriter.WriteLine("}");
+                    }
                 }
 
                 var normalClasses = knownFunctions.GetClasses(false);
                 //write down classes
                 foreach (var kvp in normalClasses)
                 {
-                    WriteCsharpClass(tmpWriter, kvp.Value, kvp.Key, false);
+                    project.AddClass(kvp.Key);
+                    using (var tmpWriter = new StreamWriter(Path.Combine(Bindings.CSRootPath, kvp.Key + ".cs")))
+                    {
+                        //write down the using directives
+                        tmpWriter.WriteLine("using System;");
+                        tmpWriter.WriteLine("using System.Runtime.InteropServices;");
+                        tmpWriter.WriteLine("using System.Runtime.CompilerServices;\n");
+                        tmpWriter.WriteLine("namespace Lumix"); ;
+                        tmpWriter.WriteLine("{");
+                        WriteCsharpClass(tmpWriter, kvp.Value, kvp.Key, false);
+                        tmpWriter.WriteLine("}");
+                    }
                 }
-                tmpWriter.WriteLine("}//end namespace");
-                tmpWriter.Flush();
-                tmpWriter.Close();
+               
             }
+
+            project.Export(Bindings.CSRootPath);
         }
 
         void WriteCsharpClass(StreamWriter _writer,List<FunctionRegister> _methods, string _name, bool _isStatic)
