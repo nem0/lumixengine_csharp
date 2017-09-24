@@ -173,13 +173,13 @@ namespace LumixBindings
                             if (needCast)
                             {
                                 cast = meth[k].CastToFunctionPointer(func.NativeClass.Replace("Impl", ""));
-                                tmpWriter.Write(string.Format("\t\tauto f = &CSharpMethodProxy<{2}>::call<{2}&{0}::{1}>;\n", func.NativeClass.Replace("Impl", ""), func.Name, cast));
+                                tmpWriter.Write(string.Format("\t\tauto f = &CSharpMethodProxy<{2}>::call<({2})&{0}::{1}>;\n", func.NativeClass.Replace("Impl", ""), func.Name, cast));
                                 //construct mono call
                                 tmpWriter.Write(string.Format("\t\tmono_add_internal_call(\"Lumix.{0}::{1}{2}\", f);\n", func.ManagedClass, func.Name,meth[k].CastToManagedArgs()));
                             }
                             else
                             {
-                                tmpWriter.Write(string.Format("\t\tauto f = &CSharpMethodProxy<decltype({2}&{0}::{1})>::call<{2}&{0}::{1}>;\n", func.NativeClass.Replace("Impl", ""), func.Name, cast));
+                                tmpWriter.Write(string.Format("\t\tauto f = &CSharpMethodProxy<decltype({2}&{0}::{1})>::call<({2})&{0}::{1}>;\n", func.NativeClass.Replace("Impl", ""), func.Name, cast));
                                 //construct mono call
                                 tmpWriter.Write(string.Format("\t\tmono_add_internal_call(\"Lumix.{0}::{1}\", f);\n", func.ManagedClass, func.Name));
                             }
@@ -201,13 +201,13 @@ namespace LumixBindings
                                 if (needCast)
                                 {
                                     cast = meth[k].CastToFunctionPointer(func.NativeClass.Replace("Impl", ""));
-                                    tmpWriter.Write(string.Format("\t\tauto f = &CSharpMethodProxy<{2}>::call<{2}&{0}::{1}>;\n", func.NativeClass.Replace("Impl", ""), func.Name, cast));
+                                    tmpWriter.Write(string.Format("\t\tauto f = &CSharpMethodProxy<{2}>::call<({2})&{0}::{1}>;\n", func.NativeClass.Replace("Impl", ""), func.Name, cast));
                                     //construct mono call
                                     tmpWriter.Write(string.Format("\t\tmono_add_internal_call(\"Lumix.{0}::{1}{2}\", f);\n", component, func.Name,meth[k].CastToManagedArgs()));
                                 }
                                 else
                                 {
-                                    tmpWriter.Write(string.Format("\t\tauto f = &CSharpMethodProxy<decltype({2}&{0}::{1})>::call<{2}&{0}::{1}>;\n", func.NativeClass.Replace("Impl", ""), func.Name, cast));
+                                    tmpWriter.Write(string.Format("\t\tauto f = &CSharpMethodProxy<decltype(({2})&{0}::{1})>::call<{2}&{0}::{1}>;\n", func.NativeClass.Replace("Impl", ""), func.Name, cast));
                                     //construct mono call
                                     tmpWriter.Write(string.Format("\t\tmono_add_internal_call(\"Lumix.{0}::{1}\", f);\n", component, func.Name));
                                 }

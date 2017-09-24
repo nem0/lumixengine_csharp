@@ -287,7 +287,7 @@ namespace LumixBindings
         public string CastToManagedArgs()
         {
             //void (AnimationScene::*)(ComponentHandle, int, int)
-            string ret = "(IntPtr" + (Values.Length > 0 ? ", " : "");
+            string ret = "(IntPtr" +(Values.Length > 0 ? ", ":"");
             for (int k = 0; k < Values.Length; k++)
             {
                 ret += Values[k].TypeMap.ToCsharp();
