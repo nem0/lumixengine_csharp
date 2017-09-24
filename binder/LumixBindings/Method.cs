@@ -158,6 +158,15 @@ namespace LumixBindings
                          "\t\tinternal static extern {2} {1}({3});";
             }
         }
+
+        public bool IsConst
+        {
+            get
+            {
+                var test = clang.getTypeSpelling(clang.getCursorType(Cursor)).ToString();
+                return test.Trim().EndsWith("const");
+            }
+        }
         public string CSharpFuncDecl
         {
             get
@@ -263,6 +272,7 @@ namespace LumixBindings
 
         public string CastToFunctionPointer(string _klass)
         {
+            
             //void (AnimationScene::*)(ComponentHandle, int, int)
             string ret = "";
             if(IsReturnSomething)
@@ -281,6 +291,7 @@ namespace LumixBindings
                     ret += ", ";
             }
             ret += ")";
+
             return ret;
         }
 
@@ -295,6 +306,36 @@ namespace LumixBindings
                     ret += ", ";
             }
             ret += ")";
+            return ret;
+        }
+
+        public string ToFunctionTypedef(string _klass)
+        {
+            string ret = "typedef ";
+            if(IsReturnSomething)
+            {
+                if (IsReturnSomething)
+                {
+                    ret += ReturnTypemap.NativeCPP;
+                }
+                else
+                {
+                    ret += "void";
+                }
+            }
+            ret += " (" + _klass + "::*MethodType)(";
+            for (int k = 0; k < Values.Length; k++)
+            {
+                ret += Values[k].TypeMap.CanonicalSTR;
+                if (k + 1 < Values.Length)
+                    ret += ", ";
+            }
+            ret += ")";
+            if (IsConst)
+                ret += " const;";
+            else
+                ret += ";";
+                    
             return ret;
         }
     }

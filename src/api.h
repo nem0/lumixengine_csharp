@@ -720,534 +720,667 @@ mono_add_internal_call("Lumix.Terrain::setTerrainYScale", fRenderScene_setTerrai
 
 }
 	{
-		auto f = &CSharpMethodProxy<decltype(()&AnimationScene::getControllerInputIndex)>::call<&AnimationScene::getControllerInputIndex>;
+		typedef int (AnimationScene::*MethodType)(Lumix::ComponentHandle, const char *) const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::getControllerInputIndex>;
 		mono_add_internal_call("Lumix.AnimController::getControllerInputIndex", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<void(AnimationScene::*)(Lumix::ComponentHandle, int, int)>::call<(void(AnimationScene::*)(Lumix::ComponentHandle, int, int))&AnimationScene::setControllerInput>;
+		typedef  (AnimationScene::*MethodType)(Lumix::ComponentHandle, int, int);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::setControllerInput>;
 		mono_add_internal_call("Lumix.AnimController::setControllerInput(IntPtr, int, int, int)", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<void(AnimationScene::*)(Lumix::ComponentHandle, int, float)>::call<(void(AnimationScene::*)(Lumix::ComponentHandle, int, float))&AnimationScene::setControllerInput>;
+		typedef  (AnimationScene::*MethodType)(Lumix::ComponentHandle, int, float);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::setControllerInput>;
 		mono_add_internal_call("Lumix.AnimController::setControllerInput(IntPtr, int, int, float)", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<void(AnimationScene::*)(Lumix::ComponentHandle, int, bool)>::call<(void(AnimationScene::*)(Lumix::ComponentHandle, int, bool))&AnimationScene::setControllerInput>;
+		typedef  (AnimationScene::*MethodType)(Lumix::ComponentHandle, int, bool);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::setControllerInput>;
 		mono_add_internal_call("Lumix.AnimController::setControllerInput(IntPtr, int, int, bool)", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&NavigationScene::cancelNavigation)>::call<&NavigationScene::cancelNavigation>;
+		typedef  (NavigationScene::*MethodType)(Lumix::ComponentHandle);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&NavigationScene::cancelNavigation>;
 		mono_add_internal_call("Lumix.NavmeshAgent::cancelNavigation", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&NavigationScene::navigate)>::call<&NavigationScene::navigate>;
+		typedef bool (NavigationScene::*MethodType)(Lumix::ComponentHandle, const Lumix::Vec3 &, float, float);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&NavigationScene::navigate>;
 		mono_add_internal_call("Lumix.NavmeshAgent::navigate", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&NavigationScene::getAgentSpeed)>::call<&NavigationScene::getAgentSpeed>;
+		typedef float (NavigationScene::*MethodType)(Lumix::ComponentHandle);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&NavigationScene::getAgentSpeed>;
 		mono_add_internal_call("Lumix.NavmeshAgent::getAgentSpeed", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::getAllocator)>::call<()&Universe::getAllocator>;
+		typedef Lumix::IAllocator & (Universe::*MethodType)();
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::getAllocator>;
 		mono_add_internal_call("Lumix.Engine::getAllocator", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::emplaceEntity)>::call<()&Universe::emplaceEntity>;
+		typedef  (Universe::*MethodType)(Lumix::Entity);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::emplaceEntity>;
 		mono_add_internal_call("Lumix.Engine::emplaceEntity", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::createEntity)>::call<()&Universe::createEntity>;
+		typedef Lumix::Entity (Universe::*MethodType)(const Lumix::Vec3 &, const Lumix::Quat &);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::createEntity>;
 		mono_add_internal_call("Lumix.Engine::createEntity", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::destroyEntity)>::call<()&Universe::destroyEntity>;
+		typedef  (Universe::*MethodType)(Lumix::Entity);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::destroyEntity>;
 		mono_add_internal_call("Lumix.Engine::destroyEntity", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::addComponent)>::call<()&Universe::addComponent>;
+		typedef  (Universe::*MethodType)(Lumix::Entity, Lumix::ComponentType, Lumix::IScene *, Lumix::ComponentHandle);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::addComponent>;
 		mono_add_internal_call("Lumix.Engine::addComponent", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::destroyComponent)>::call<()&Universe::destroyComponent>;
+		typedef  (Universe::*MethodType)(Lumix::Entity, Lumix::ComponentType, Lumix::IScene *, Lumix::ComponentHandle);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::destroyComponent>;
 		mono_add_internal_call("Lumix.Engine::destroyComponent", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::hasComponent)>::call<()&Universe::hasComponent>;
+		typedef bool (Universe::*MethodType)(Lumix::Entity, Lumix::ComponentType) const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::hasComponent>;
 		mono_add_internal_call("Lumix.Engine::hasComponent", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::getComponent)>::call<()&Universe::getComponent>;
+		typedef Lumix::ComponentUID (Universe::*MethodType)(Lumix::Entity, Lumix::ComponentType) const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::getComponent>;
 		mono_add_internal_call("Lumix.Engine::getComponent", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::getFirstComponent)>::call<()&Universe::getFirstComponent>;
+		typedef Lumix::ComponentUID (Universe::*MethodType)(Lumix::Entity) const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::getFirstComponent>;
 		mono_add_internal_call("Lumix.Engine::getFirstComponent", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::getNextComponent)>::call<()&Universe::getNextComponent>;
+		typedef Lumix::ComponentUID (Universe::*MethodType)(const Lumix::ComponentUID &) const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::getNextComponent>;
 		mono_add_internal_call("Lumix.Engine::getNextComponent", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::registerComponentType)>::call<()&Universe::registerComponentType>;
+		typedef Lumix::Universe::ComponentTypeEntry & (Universe::*MethodType)(Lumix::ComponentType);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::registerComponentType>;
 		mono_add_internal_call("Lumix.Engine::registerComponentType", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::getFirstEntity)>::call<()&Universe::getFirstEntity>;
+		typedef Lumix::Entity (Universe::*MethodType)() const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::getFirstEntity>;
 		mono_add_internal_call("Lumix.Engine::getFirstEntity", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::getNextEntity)>::call<()&Universe::getNextEntity>;
+		typedef Lumix::Entity (Universe::*MethodType)(Lumix::Entity) const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::getNextEntity>;
 		mono_add_internal_call("Lumix.Engine::getNextEntity", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::getEntityName)>::call<()&Universe::getEntityName>;
+		typedef const char * (Universe::*MethodType)(Lumix::Entity) const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::getEntityName>;
 		mono_add_internal_call("Lumix.Engine::getEntityName", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::getEntityByName)>::call<()&Universe::getEntityByName>;
+		typedef Lumix::Entity (Universe::*MethodType)(const char *);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::getEntityByName>;
 		mono_add_internal_call("Lumix.Engine::getEntityByName", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::setEntityName)>::call<()&Universe::setEntityName>;
+		typedef  (Universe::*MethodType)(Lumix::Entity, const char *);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::setEntityName>;
 		mono_add_internal_call("Lumix.Engine::setEntityName", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::hasEntity)>::call<()&Universe::hasEntity>;
+		typedef bool (Universe::*MethodType)(Lumix::Entity) const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::hasEntity>;
 		mono_add_internal_call("Lumix.Engine::hasEntity", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::isDescendant)>::call<()&Universe::isDescendant>;
+		typedef bool (Universe::*MethodType)(Lumix::Entity, Lumix::Entity) const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::isDescendant>;
 		mono_add_internal_call("Lumix.Engine::isDescendant", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::getParent)>::call<()&Universe::getParent>;
+		typedef Lumix::Entity (Universe::*MethodType)(Lumix::Entity) const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::getParent>;
 		mono_add_internal_call("Lumix.Engine::getParent", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::getFirstChild)>::call<()&Universe::getFirstChild>;
+		typedef Lumix::Entity (Universe::*MethodType)(Lumix::Entity) const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::getFirstChild>;
 		mono_add_internal_call("Lumix.Engine::getFirstChild", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::getNextSibling)>::call<()&Universe::getNextSibling>;
+		typedef Lumix::Entity (Universe::*MethodType)(Lumix::Entity) const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::getNextSibling>;
 		mono_add_internal_call("Lumix.Engine::getNextSibling", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::getLocalTransform)>::call<()&Universe::getLocalTransform>;
+		typedef Lumix::Transform (Universe::*MethodType)(Lumix::Entity) const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::getLocalTransform>;
 		mono_add_internal_call("Lumix.Engine::getLocalTransform", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::getLocalScale)>::call<()&Universe::getLocalScale>;
+		typedef float (Universe::*MethodType)(Lumix::Entity) const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::getLocalScale>;
 		mono_add_internal_call("Lumix.Engine::getLocalScale", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::setParent)>::call<()&Universe::setParent>;
+		typedef  (Universe::*MethodType)(Lumix::Entity, Lumix::Entity);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::setParent>;
 		mono_add_internal_call("Lumix.Engine::setParent", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::setLocalPosition)>::call<()&Universe::setLocalPosition>;
+		typedef  (Universe::*MethodType)(Lumix::Entity, const Lumix::Vec3 &);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::setLocalPosition>;
 		mono_add_internal_call("Lumix.Engine::setLocalPosition", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::setLocalRotation)>::call<()&Universe::setLocalRotation>;
+		typedef  (Universe::*MethodType)(Lumix::Entity, const Lumix::Quat &);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::setLocalRotation>;
 		mono_add_internal_call("Lumix.Engine::setLocalRotation", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::setLocalTransform)>::call<()&Universe::setLocalTransform>;
+		typedef  (Universe::*MethodType)(Lumix::Entity, const Lumix::Transform &);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::setLocalTransform>;
 		mono_add_internal_call("Lumix.Engine::setLocalTransform", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::computeLocalTransform)>::call<()&Universe::computeLocalTransform>;
+		typedef Lumix::Transform (Universe::*MethodType)(Lumix::Entity, const Lumix::Transform &) const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::computeLocalTransform>;
 		mono_add_internal_call("Lumix.Engine::computeLocalTransform", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::setMatrix)>::call<()&Universe::setMatrix>;
+		typedef  (Universe::*MethodType)(Lumix::Entity, const Lumix::Matrix &);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::setMatrix>;
 		mono_add_internal_call("Lumix.Engine::setMatrix", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::getPositionAndRotation)>::call<()&Universe::getPositionAndRotation>;
+		typedef Lumix::Matrix (Universe::*MethodType)(Lumix::Entity) const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::getPositionAndRotation>;
 		mono_add_internal_call("Lumix.Engine::getPositionAndRotation", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::getMatrix)>::call<()&Universe::getMatrix>;
+		typedef Lumix::Matrix (Universe::*MethodType)(Lumix::Entity) const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::getMatrix>;
 		mono_add_internal_call("Lumix.Engine::getMatrix", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<void(Universe::*)(Lumix::Entity, const Lumix::Transform &)>::call<(void(Universe::*)(Lumix::Entity, const Lumix::Transform &))&Universe::setTransform>;
+		typedef  (Universe::*MethodType)(Lumix::Entity, const Lumix::Transform &);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::setTransform>;
 		mono_add_internal_call("Lumix.Engine::setTransform(IntPtr, System.IntPtr, System.IntPtr)", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<void(Universe::*)(Lumix::Entity, const Lumix::Vec3 &, const Lumix::Quat &, float)>::call<(void(Universe::*)(Lumix::Entity, const Lumix::Vec3 &, const Lumix::Quat &, float))&Universe::setTransform>;
+		typedef  (Universe::*MethodType)(Lumix::Entity, const Lumix::Vec3 &, const Lumix::Quat &, float);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::setTransform>;
 		mono_add_internal_call("Lumix.Engine::setTransform(IntPtr, System.IntPtr, Vec3, System.IntPtr, float)", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::setTransformKeepChildren)>::call<()&Universe::setTransformKeepChildren>;
+		typedef  (Universe::*MethodType)(Lumix::Entity, const Lumix::Transform &);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::setTransformKeepChildren>;
 		mono_add_internal_call("Lumix.Engine::setTransformKeepChildren", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::getTransform)>::call<()&Universe::getTransform>;
+		typedef Lumix::Transform (Universe::*MethodType)(Lumix::Entity) const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::getTransform>;
 		mono_add_internal_call("Lumix.Engine::getTransform", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<void(Universe::*)(Lumix::Entity, float, float, float, float)>::call<(void(Universe::*)(Lumix::Entity, float, float, float, float))&Universe::setRotation>;
+		typedef  (Universe::*MethodType)(Lumix::Entity, float, float, float, float);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::setRotation>;
 		mono_add_internal_call("Lumix.Engine::setRotation(IntPtr, System.IntPtr, float, float, float, float)", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<void(Universe::*)(Lumix::Entity, const Lumix::Quat &)>::call<(void(Universe::*)(Lumix::Entity, const Lumix::Quat &))&Universe::setRotation>;
+		typedef  (Universe::*MethodType)(Lumix::Entity, const Lumix::Quat &);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::setRotation>;
 		mono_add_internal_call("Lumix.Engine::setRotation(IntPtr, System.IntPtr, System.IntPtr)", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<void(Universe::*)(Lumix::Entity, float, float, float)>::call<(void(Universe::*)(Lumix::Entity, float, float, float))&Universe::setPosition>;
+		typedef  (Universe::*MethodType)(Lumix::Entity, float, float, float);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::setPosition>;
 		mono_add_internal_call("Lumix.Engine::setPosition(IntPtr, System.IntPtr, float, float, float)", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<void(Universe::*)(Lumix::Entity, const Lumix::Vec3 &)>::call<(void(Universe::*)(Lumix::Entity, const Lumix::Vec3 &))&Universe::setPosition>;
+		typedef  (Universe::*MethodType)(Lumix::Entity, const Lumix::Vec3 &);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::setPosition>;
 		mono_add_internal_call("Lumix.Engine::setPosition(IntPtr, System.IntPtr, Vec3)", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::setScale)>::call<()&Universe::setScale>;
+		typedef  (Universe::*MethodType)(Lumix::Entity, float);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::setScale>;
 		mono_add_internal_call("Lumix.Engine::setScale", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::instantiatePrefab)>::call<()&Universe::instantiatePrefab>;
+		typedef Lumix::Entity (Universe::*MethodType)(const Lumix::PrefabResource &, const Lumix::Vec3 &, const Lumix::Quat &, float);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::instantiatePrefab>;
 		mono_add_internal_call("Lumix.Engine::instantiatePrefab", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::getScale)>::call<()&Universe::getScale>;
+		typedef float (Universe::*MethodType)(Lumix::Entity) const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::getScale>;
 		mono_add_internal_call("Lumix.Engine::getScale", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::getPosition)>::call<()&Universe::getPosition>;
+		typedef const Lumix::Vec3 & (Universe::*MethodType)(Lumix::Entity) const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::getPosition>;
 		mono_add_internal_call("Lumix.Engine::getPosition", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::getRotation)>::call<()&Universe::getRotation>;
+		typedef const Lumix::Quat & (Universe::*MethodType)(Lumix::Entity) const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::getRotation>;
 		mono_add_internal_call("Lumix.Engine::getRotation", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::getName)>::call<()&Universe::getName>;
+		typedef const char * (Universe::*MethodType)() const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::getName>;
 		mono_add_internal_call("Lumix.Engine::getName", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::setName)>::call<()&Universe::setName>;
+		typedef  (Universe::*MethodType)(const char *);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::setName>;
 		mono_add_internal_call("Lumix.Engine::setName", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::entityTransformed)>::call<()&Universe::entityTransformed>;
+		typedef DelegateList<void (Lumix::Entity)> & (Universe::*MethodType)(Lumix::Entity);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::entityTransformed>;
 		mono_add_internal_call("Lumix.Engine::entityTransformed", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::entityCreated)>::call<()&Universe::entityCreated>;
+		typedef DelegateList<void (Lumix::Entity)> & (Universe::*MethodType)(Lumix::Entity);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::entityCreated>;
 		mono_add_internal_call("Lumix.Engine::entityCreated", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::entityDestroyed)>::call<()&Universe::entityDestroyed>;
+		typedef DelegateList<void (Lumix::Entity)> & (Universe::*MethodType)(Lumix::Entity);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::entityDestroyed>;
 		mono_add_internal_call("Lumix.Engine::entityDestroyed", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::componentDestroyed)>::call<()&Universe::componentDestroyed>;
+		typedef DelegateList<void (const Lumix::ComponentUID &)> & (Universe::*MethodType)(const Lumix::ComponentUID &);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::componentDestroyed>;
 		mono_add_internal_call("Lumix.Engine::componentDestroyed", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::componentAdded)>::call<()&Universe::componentAdded>;
+		typedef DelegateList<void (const Lumix::ComponentUID &)> & (Universe::*MethodType)(const Lumix::ComponentUID &);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::componentAdded>;
 		mono_add_internal_call("Lumix.Engine::componentAdded", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::serializeComponent)>::call<()&Universe::serializeComponent>;
+		typedef  (Universe::*MethodType)(Lumix::ISerializer &, Lumix::ComponentType, Lumix::ComponentHandle);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::serializeComponent>;
 		mono_add_internal_call("Lumix.Engine::serializeComponent", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::deserializeComponent)>::call<()&Universe::deserializeComponent>;
+		typedef  (Universe::*MethodType)(Lumix::IDeserializer &, Lumix::Entity, Lumix::ComponentType, int);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::deserializeComponent>;
 		mono_add_internal_call("Lumix.Engine::deserializeComponent", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::serialize)>::call<()&Universe::serialize>;
+		typedef  (Universe::*MethodType)(Lumix::OutputBlob &);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::serialize>;
 		mono_add_internal_call("Lumix.Engine::serialize", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::deserialize)>::call<()&Universe::deserialize>;
+		typedef  (Universe::*MethodType)(Lumix::InputBlob &);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::deserialize>;
 		mono_add_internal_call("Lumix.Engine::deserialize", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<Lumix::IScene *(Universe::*)(Lumix::ComponentType)>::call<(Lumix::IScene *(Universe::*)(Lumix::ComponentType))&Universe::getScene>;
+		typedef Lumix::IScene * (Universe::*MethodType)(Lumix::ComponentType) const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::getScene>;
 		mono_add_internal_call("Lumix.Engine::getScene(IntPtr, System.IntPtr)", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<Lumix::IScene *(Universe::*)(unsigned int)>::call<(Lumix::IScene *(Universe::*)(unsigned int))&Universe::getScene>;
+		typedef Lumix::IScene * (Universe::*MethodType)(unsigned int) const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::getScene>;
 		mono_add_internal_call("Lumix.Engine::getScene(IntPtr, System.IntPtr)", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::getScenes)>::call<()&Universe::getScenes>;
+		typedef Array<Lumix::IScene *> & (Universe::*MethodType)();
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::getScenes>;
 		mono_add_internal_call("Lumix.Engine::getScenes", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::addScene)>::call<()&Universe::addScene>;
+		typedef  (Universe::*MethodType)(Lumix::IScene *);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::addScene>;
 		mono_add_internal_call("Lumix.Engine::addScene", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::transformEntity)>::call<()&Universe::transformEntity>;
+		typedef  (Universe::*MethodType)(Lumix::Entity, bool);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::transformEntity>;
 		mono_add_internal_call("Lumix.Engine::transformEntity", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::updateGlobalTransform)>::call<()&Universe::updateGlobalTransform>;
+		typedef  (Universe::*MethodType)(Lumix::Entity);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::updateGlobalTransform>;
 		mono_add_internal_call("Lumix.Engine::updateGlobalTransform", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Universe::EntityData)>::call<()&Universe::EntityData>;
+		typedef void (Universe::*MethodType)();
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::EntityData>;
 		mono_add_internal_call("Lumix.Engine::EntityData", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&AudioScene::setEcho)>::call<&AudioScene::setEcho>;
+		typedef  (AudioScene::*MethodType)(int, float, float, float, float);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AudioScene::setEcho>;
 		mono_add_internal_call("Lumix.AudioScene::setEcho", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&AudioScene::play)>::call<&AudioScene::play>;
+		typedef SoundHandle (AudioScene::*MethodType)(Lumix::Entity, Lumix::AudioScene::ClipInfo *, bool);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AudioScene::play>;
 		mono_add_internal_call("Lumix.AudioScene::play", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&AudioScene::stop)>::call<&AudioScene::stop>;
+		typedef  (AudioScene::*MethodType)(int);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AudioScene::stop>;
 		mono_add_internal_call("Lumix.AudioScene::stop", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&AudioScene::setVolume)>::call<&AudioScene::setVolume>;
+		typedef  (AudioScene::*MethodType)(int, float);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AudioScene::setVolume>;
 		mono_add_internal_call("Lumix.AudioScene::setVolume", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&InputSystem::isMouseDown)>::call<()&InputSystem::isMouseDown>;
+		typedef bool (InputSystem::*MethodType)(Lumix::InputSystem::MouseButton);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&InputSystem::isMouseDown>;
 		mono_add_internal_call("Lumix.Input::isMouseDown", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&NavigationScene::load)>::call<&NavigationScene::load>;
+		typedef bool (NavigationScene::*MethodType)(const char *);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&NavigationScene::load>;
 		mono_add_internal_call("Lumix.Navigation::load", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&NavigationScene::save)>::call<&NavigationScene::save>;
+		typedef bool (NavigationScene::*MethodType)(const char *);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&NavigationScene::save>;
 		mono_add_internal_call("Lumix.Navigation::save", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&PhysicsScene::raycast)>::call<&PhysicsScene::raycast>;
+		typedef Lumix::Entity (PhysicsScene::*MethodType)(const Lumix::Vec3 &, const Lumix::Vec3 &, Lumix::Entity);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&PhysicsScene::raycast>;
 		mono_add_internal_call("Lumix.PhysicsScene::raycast", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&PhysicsScene::raycastEx)>::call<&PhysicsScene::raycastEx>;
+		typedef bool (PhysicsScene::*MethodType)(const Lumix::Vec3 &, const Lumix::Vec3 &, float, Lumix::RaycastHit &, Lumix::Entity);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&PhysicsScene::raycastEx>;
 		mono_add_internal_call("Lumix.PhysicsScene::raycastEx", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&PhysicsScene::getCollisionLayerName)>::call<&PhysicsScene::getCollisionLayerName>;
+		typedef const char * (PhysicsScene::*MethodType)(int);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&PhysicsScene::getCollisionLayerName>;
 		mono_add_internal_call("Lumix.PhysicsScene::getCollisionLayerName", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&PhysicsScene::setCollisionLayerName)>::call<&PhysicsScene::setCollisionLayerName>;
+		typedef  (PhysicsScene::*MethodType)(int, const char *);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&PhysicsScene::setCollisionLayerName>;
 		mono_add_internal_call("Lumix.PhysicsScene::setCollisionLayerName", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&PhysicsScene::canLayersCollide)>::call<&PhysicsScene::canLayersCollide>;
+		typedef bool (PhysicsScene::*MethodType)(int, int);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&PhysicsScene::canLayersCollide>;
 		mono_add_internal_call("Lumix.PhysicsScene::canLayersCollide", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&PhysicsScene::setLayersCanCollide)>::call<&PhysicsScene::setLayersCanCollide>;
+		typedef  (PhysicsScene::*MethodType)(int, int, bool);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&PhysicsScene::setLayersCanCollide>;
 		mono_add_internal_call("Lumix.PhysicsScene::setLayersCanCollide", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&PhysicsScene::getCollisionsLayersCount)>::call<&PhysicsScene::getCollisionsLayersCount>;
+		typedef int (PhysicsScene::*MethodType)() const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&PhysicsScene::getCollisionsLayersCount>;
 		mono_add_internal_call("Lumix.PhysicsScene::getCollisionsLayersCount", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&PhysicsScene::addCollisionLayer)>::call<&PhysicsScene::addCollisionLayer>;
+		typedef  (PhysicsScene::*MethodType)();
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&PhysicsScene::addCollisionLayer>;
 		mono_add_internal_call("Lumix.PhysicsScene::addCollisionLayer", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&PhysicsScene::removeCollisionLayer)>::call<&PhysicsScene::removeCollisionLayer>;
+		typedef  (PhysicsScene::*MethodType)();
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&PhysicsScene::removeCollisionLayer>;
 		mono_add_internal_call("Lumix.PhysicsScene::removeCollisionLayer", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Renderer::makeScreenshot)>::call<()&Renderer::makeScreenshot>;
+		typedef  (Renderer::*MethodType)(const Lumix::Path &);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Renderer::makeScreenshot>;
 		mono_add_internal_call("Lumix.Renderer::makeScreenshot", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Renderer::isOpenGL)>::call<()&Renderer::isOpenGL>;
+		typedef bool (Renderer::*MethodType)() const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Renderer::isOpenGL>;
 		mono_add_internal_call("Lumix.Renderer::isOpenGL", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Renderer::getLayersCount)>::call<()&Renderer::getLayersCount>;
+		typedef int (Renderer::*MethodType)() const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Renderer::getLayersCount>;
 		mono_add_internal_call("Lumix.Renderer::getLayersCount", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Renderer::getLayer)>::call<()&Renderer::getLayer>;
+		typedef int (Renderer::*MethodType)(const char *);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Renderer::getLayer>;
 		mono_add_internal_call("Lumix.Renderer::getLayer", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(&Renderer::getLayerName)>::call<()&Renderer::getLayerName>;
+		typedef const char * (Renderer::*MethodType)(int) const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Renderer::getLayerName>;
 		mono_add_internal_call("Lumix.Renderer::getLayerName", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&RenderScene::addDebugTriangle)>::call<&RenderScene::addDebugTriangle>;
+		typedef  (RenderScene::*MethodType)(const Lumix::Vec3 &, const Lumix::Vec3 &, const Lumix::Vec3 &, unsigned int, float);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&RenderScene::addDebugTriangle>;
 		mono_add_internal_call("Lumix.RenderScene::addDebugTriangle", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&RenderScene::addDebugPoint)>::call<&RenderScene::addDebugPoint>;
+		typedef  (RenderScene::*MethodType)(const Lumix::Vec3 &, unsigned int, float);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&RenderScene::addDebugPoint>;
 		mono_add_internal_call("Lumix.RenderScene::addDebugPoint", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&RenderScene::addDebugCone)>::call<&RenderScene::addDebugCone>;
+		typedef  (RenderScene::*MethodType)(const Lumix::Vec3 &, const Lumix::Vec3 &, const Lumix::Vec3 &, const Lumix::Vec3 &, unsigned int, float);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&RenderScene::addDebugCone>;
 		mono_add_internal_call("Lumix.RenderScene::addDebugCone", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&RenderScene::addDebugLine)>::call<&RenderScene::addDebugLine>;
+		typedef  (RenderScene::*MethodType)(const Lumix::Vec3 &, const Lumix::Vec3 &, unsigned int, float);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&RenderScene::addDebugLine>;
 		mono_add_internal_call("Lumix.RenderScene::addDebugLine", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&RenderScene::addDebugCross)>::call<&RenderScene::addDebugCross>;
+		typedef  (RenderScene::*MethodType)(const Lumix::Vec3 &, float, unsigned int, float);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&RenderScene::addDebugCross>;
 		mono_add_internal_call("Lumix.RenderScene::addDebugCross", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<void(RenderScene::*)(const Lumix::Vec3 &, const Lumix::Vec3 &, const Lumix::Vec3 &, const Lumix::Vec3 &, unsigned int, float)>::call<(void(RenderScene::*)(const Lumix::Vec3 &, const Lumix::Vec3 &, const Lumix::Vec3 &, const Lumix::Vec3 &, unsigned int, float))&RenderScene::addDebugCube>;
+		typedef  (RenderScene::*MethodType)(const Lumix::Vec3 &, const Lumix::Vec3 &, const Lumix::Vec3 &, const Lumix::Vec3 &, unsigned int, float);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&RenderScene::addDebugCube>;
 		mono_add_internal_call("Lumix.RenderScene::addDebugCube(IntPtr, Vec3, Vec3, Vec3, Vec3, System.IntPtr, float)", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<void(RenderScene::*)(const Lumix::Vec3 &, const Lumix::Vec3 &, unsigned int, float)>::call<(void(RenderScene::*)(const Lumix::Vec3 &, const Lumix::Vec3 &, unsigned int, float))&RenderScene::addDebugCube>;
+		typedef  (RenderScene::*MethodType)(const Lumix::Vec3 &, const Lumix::Vec3 &, unsigned int, float);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&RenderScene::addDebugCube>;
 		mono_add_internal_call("Lumix.RenderScene::addDebugCube(IntPtr, Vec3, Vec3, System.IntPtr, float)", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&RenderScene::addDebugCubeSolid)>::call<&RenderScene::addDebugCubeSolid>;
+		typedef  (RenderScene::*MethodType)(const Lumix::Vec3 &, const Lumix::Vec3 &, unsigned int, float);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&RenderScene::addDebugCubeSolid>;
 		mono_add_internal_call("Lumix.RenderScene::addDebugCubeSolid", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&RenderScene::addDebugCircle)>::call<&RenderScene::addDebugCircle>;
+		typedef  (RenderScene::*MethodType)(const Lumix::Vec3 &, const Lumix::Vec3 &, float, unsigned int, float);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&RenderScene::addDebugCircle>;
 		mono_add_internal_call("Lumix.RenderScene::addDebugCircle", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&RenderScene::addDebugSphere)>::call<&RenderScene::addDebugSphere>;
+		typedef  (RenderScene::*MethodType)(const Lumix::Vec3 &, float, unsigned int, float);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&RenderScene::addDebugSphere>;
 		mono_add_internal_call("Lumix.RenderScene::addDebugSphere", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<void(RenderScene::*)(const Lumix::Vec3 &, const Lumix::Vec3 &, const Lumix::Vec3 &, float, float, float, float, unsigned int, float)>::call<(void(RenderScene::*)(const Lumix::Vec3 &, const Lumix::Vec3 &, const Lumix::Vec3 &, float, float, float, float, unsigned int, float))&RenderScene::addDebugFrustum>;
+		typedef  (RenderScene::*MethodType)(const Lumix::Vec3 &, const Lumix::Vec3 &, const Lumix::Vec3 &, float, float, float, float, unsigned int, float);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&RenderScene::addDebugFrustum>;
 		mono_add_internal_call("Lumix.RenderScene::addDebugFrustum(IntPtr, Vec3, Vec3, Vec3, float, float, float, float, System.IntPtr, float)", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<void(RenderScene::*)(const Lumix::Frustum &, unsigned int, float)>::call<(void(RenderScene::*)(const Lumix::Frustum &, unsigned int, float))&RenderScene::addDebugFrustum>;
+		typedef  (RenderScene::*MethodType)(const Lumix::Frustum &, unsigned int, float);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&RenderScene::addDebugFrustum>;
 		mono_add_internal_call("Lumix.RenderScene::addDebugFrustum(IntPtr, System.IntPtr, System.IntPtr, float)", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<void(RenderScene::*)(const Lumix::Vec3 &, float, float, unsigned int, float)>::call<(void(RenderScene::*)(const Lumix::Vec3 &, float, float, unsigned int, float))&RenderScene::addDebugCapsule>;
+		typedef  (RenderScene::*MethodType)(const Lumix::Vec3 &, float, float, unsigned int, float);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&RenderScene::addDebugCapsule>;
 		mono_add_internal_call("Lumix.RenderScene::addDebugCapsule(IntPtr, Vec3, float, float, System.IntPtr, float)", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<void(RenderScene::*)(const Lumix::Matrix &, float, float, unsigned int, float)>::call<(void(RenderScene::*)(const Lumix::Matrix &, float, float, unsigned int, float))&RenderScene::addDebugCapsule>;
+		typedef  (RenderScene::*MethodType)(const Lumix::Matrix &, float, float, unsigned int, float);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&RenderScene::addDebugCapsule>;
 		mono_add_internal_call("Lumix.RenderScene::addDebugCapsule(IntPtr, System.IntPtr, float, float, System.IntPtr, float)", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&RenderScene::addDebugCylinder)>::call<&RenderScene::addDebugCylinder>;
+		typedef  (RenderScene::*MethodType)(const Lumix::Vec3 &, const Lumix::Vec3 &, float, unsigned int, float);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&RenderScene::addDebugCylinder>;
 		mono_add_internal_call("Lumix.RenderScene::addDebugCylinder", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&AnimationScene::getEventStream)>::call<&AnimationScene::getEventStream>;
+		typedef const Lumix::OutputBlob & (AnimationScene::*MethodType)() const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::getEventStream>;
 		mono_add_internal_call("Lumix.AnimationScene::getEventStream", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&AnimationScene::getAnimableAnimation)>::call<&AnimationScene::getAnimableAnimation>;
+		typedef class Animation * (AnimationScene::*MethodType)(Lumix::ComponentHandle);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::getAnimableAnimation>;
 		mono_add_internal_call("Lumix.AnimationScene::getAnimableAnimation", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&AnimationScene::getAnimation)>::call<&AnimationScene::getAnimation>;
+		typedef Lumix::Path (AnimationScene::*MethodType)(Lumix::ComponentHandle);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::getAnimation>;
 		mono_add_internal_call("Lumix.AnimationScene::getAnimation", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&AnimationScene::setAnimation)>::call<&AnimationScene::setAnimation>;
+		typedef  (AnimationScene::*MethodType)(Lumix::ComponentHandle, const Lumix::Path &);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::setAnimation>;
 		mono_add_internal_call("Lumix.AnimationScene::setAnimation", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&AnimationScene::getAnimableTime)>::call<&AnimationScene::getAnimableTime>;
+		typedef float (AnimationScene::*MethodType)(Lumix::ComponentHandle);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::getAnimableTime>;
 		mono_add_internal_call("Lumix.AnimationScene::getAnimableTime", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&AnimationScene::setAnimableTime)>::call<&AnimationScene::setAnimableTime>;
+		typedef  (AnimationScene::*MethodType)(Lumix::ComponentHandle, float);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::setAnimableTime>;
 		mono_add_internal_call("Lumix.AnimationScene::setAnimableTime", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&AnimationScene::updateAnimable)>::call<&AnimationScene::updateAnimable>;
+		typedef  (AnimationScene::*MethodType)(Lumix::ComponentHandle, float);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::updateAnimable>;
 		mono_add_internal_call("Lumix.AnimationScene::updateAnimable", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&AnimationScene::updateController)>::call<&AnimationScene::updateController>;
+		typedef  (AnimationScene::*MethodType)(Lumix::ComponentHandle, float);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::updateController>;
 		mono_add_internal_call("Lumix.AnimationScene::updateController", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&AnimationScene::getControllerEntity)>::call<&AnimationScene::getControllerEntity>;
+		typedef Lumix::Entity (AnimationScene::*MethodType)(Lumix::ComponentHandle);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::getControllerEntity>;
 		mono_add_internal_call("Lumix.AnimationScene::getControllerEntity", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&AnimationScene::getAnimableTimeScale)>::call<&AnimationScene::getAnimableTimeScale>;
+		typedef float (AnimationScene::*MethodType)(Lumix::ComponentHandle);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::getAnimableTimeScale>;
 		mono_add_internal_call("Lumix.AnimationScene::getAnimableTimeScale", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&AnimationScene::setAnimableTimeScale)>::call<&AnimationScene::setAnimableTimeScale>;
+		typedef  (AnimationScene::*MethodType)(Lumix::ComponentHandle, float);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::setAnimableTimeScale>;
 		mono_add_internal_call("Lumix.AnimationScene::setAnimableTimeScale", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&AnimationScene::getAnimableStartTime)>::call<&AnimationScene::getAnimableStartTime>;
+		typedef float (AnimationScene::*MethodType)(Lumix::ComponentHandle);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::getAnimableStartTime>;
 		mono_add_internal_call("Lumix.AnimationScene::getAnimableStartTime", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&AnimationScene::setAnimableStartTime)>::call<&AnimationScene::setAnimableStartTime>;
+		typedef  (AnimationScene::*MethodType)(Lumix::ComponentHandle, float);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::setAnimableStartTime>;
 		mono_add_internal_call("Lumix.AnimationScene::setAnimableStartTime", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&AnimationScene::getControllerInput)>::call<&AnimationScene::getControllerInput>;
+		typedef u8 * (AnimationScene::*MethodType)(Lumix::ComponentHandle);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::getControllerInput>;
 		mono_add_internal_call("Lumix.AnimationScene::getControllerInput", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<void(AnimationScene::*)(Lumix::ComponentHandle, int, int)>::call<(void(AnimationScene::*)(Lumix::ComponentHandle, int, int))&AnimationScene::setControllerInput>;
+		typedef  (AnimationScene::*MethodType)(Lumix::ComponentHandle, int, int);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::setControllerInput>;
 		mono_add_internal_call("Lumix.AnimationScene::setControllerInput(IntPtr, int, int, int)", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<void(AnimationScene::*)(Lumix::ComponentHandle, int, float)>::call<(void(AnimationScene::*)(Lumix::ComponentHandle, int, float))&AnimationScene::setControllerInput>;
+		typedef  (AnimationScene::*MethodType)(Lumix::ComponentHandle, int, float);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::setControllerInput>;
 		mono_add_internal_call("Lumix.AnimationScene::setControllerInput(IntPtr, int, int, float)", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<void(AnimationScene::*)(Lumix::ComponentHandle, int, bool)>::call<(void(AnimationScene::*)(Lumix::ComponentHandle, int, bool))&AnimationScene::setControllerInput>;
+		typedef  (AnimationScene::*MethodType)(Lumix::ComponentHandle, int, bool);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::setControllerInput>;
 		mono_add_internal_call("Lumix.AnimationScene::setControllerInput(IntPtr, int, int, bool)", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&AnimationScene::getControllerRootMotion)>::call<&AnimationScene::getControllerRootMotion>;
+		typedef struct RigidTransform (AnimationScene::*MethodType)(Lumix::ComponentHandle);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::getControllerRootMotion>;
 		mono_add_internal_call("Lumix.AnimationScene::getControllerRootMotion", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&AnimationScene::setControllerSource)>::call<&AnimationScene::setControllerSource>;
+		typedef  (AnimationScene::*MethodType)(Lumix::ComponentHandle, const Lumix::Path &);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::setControllerSource>;
 		mono_add_internal_call("Lumix.AnimationScene::setControllerSource", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&AnimationScene::getControllerSource)>::call<&AnimationScene::getControllerSource>;
+		typedef class Path (AnimationScene::*MethodType)(Lumix::ComponentHandle);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::getControllerSource>;
 		mono_add_internal_call("Lumix.AnimationScene::getControllerSource", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&AnimationScene::getControllerRoot)>::call<&AnimationScene::getControllerRoot>;
+		typedef Anim::ComponentInstance * (AnimationScene::*MethodType)(Lumix::ComponentHandle);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::getControllerRoot>;
 		mono_add_internal_call("Lumix.AnimationScene::getControllerRoot", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&AnimationScene::getControllerInputIndex)>::call<&AnimationScene::getControllerInputIndex>;
+		typedef int (AnimationScene::*MethodType)(Lumix::ComponentHandle, const char *) const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::getControllerInputIndex>;
 		mono_add_internal_call("Lumix.AnimationScene::getControllerInputIndex", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&AnimationScene::getSharedControllerParent)>::call<&AnimationScene::getSharedControllerParent>;
+		typedef Lumix::Entity (AnimationScene::*MethodType)(Lumix::ComponentHandle);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::getSharedControllerParent>;
 		mono_add_internal_call("Lumix.AnimationScene::getSharedControllerParent", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&AnimationScene::setSharedControllerParent)>::call<&AnimationScene::setSharedControllerParent>;
+		typedef  (AnimationScene::*MethodType)(Lumix::ComponentHandle, Lumix::Entity);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::setSharedControllerParent>;
 		mono_add_internal_call("Lumix.AnimationScene::setSharedControllerParent", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&AnimationScene::applyControllerSet)>::call<&AnimationScene::applyControllerSet>;
+		typedef  (AnimationScene::*MethodType)(Lumix::ComponentHandle, const char *);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::applyControllerSet>;
 		mono_add_internal_call("Lumix.AnimationScene::applyControllerSet", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&AnimationScene::setControllerDefaultSet)>::call<&AnimationScene::setControllerDefaultSet>;
+		typedef  (AnimationScene::*MethodType)(Lumix::ComponentHandle, int);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::setControllerDefaultSet>;
 		mono_add_internal_call("Lumix.AnimationScene::setControllerDefaultSet", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&AnimationScene::getControllerDefaultSet)>::call<&AnimationScene::getControllerDefaultSet>;
+		typedef int (AnimationScene::*MethodType)(Lumix::ComponentHandle);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::getControllerDefaultSet>;
 		mono_add_internal_call("Lumix.AnimationScene::getControllerDefaultSet", f);
 	}
 	{
-		auto f = &CSharpMethodProxy<decltype(()&AnimationScene::getControllerResource)>::call<&AnimationScene::getControllerResource>;
+		typedef Anim::ControllerResource * (AnimationScene::*MethodType)(Lumix::ComponentHandle);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::getControllerResource>;
 		mono_add_internal_call("Lumix.AnimationScene::getControllerResource", f);
 	}
