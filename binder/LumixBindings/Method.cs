@@ -315,14 +315,17 @@ namespace LumixBindings
 
             if (IsReturnSomething)
             {
-                if (ReturnTypemap.NativeCPP == "const char *")
-                    ret += ReturnTypemap.NativeCPP;
+                var value = ReturnTypemap.CanonicalSTR.Split(' ');
+                if(value[0] == "const")
+                {
+                    ret += value[0] + " " + value[1];
+                }
                 else
                 {
                     ret += ReturnTypemap.CanonicalSTR.Split(' ')[0].Trim();//ReturnTypemap.NativeCPP;
-                    if (ReturnTypemap.IsPointer)
-                        ret += "*";
                 }
+                if (ReturnTypemap.IsPointer)
+                    ret += "*";
             }
             else
             {
