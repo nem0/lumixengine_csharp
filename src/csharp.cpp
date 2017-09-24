@@ -19,6 +19,7 @@
 #include "navigation/navigation_scene.h"
 #include "physics/physics_scene.h"
 #include "renderer/render_scene.h"
+#include "renderer/renderer.h"
 
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
@@ -148,6 +149,7 @@ template<typename T> struct CSharpTypeConvertor
 	using Type = T;
 
 	static Type convert(Type val) { return val; }
+	static Type convertRet(Type val) { return val; }
 };
 
 
@@ -163,6 +165,7 @@ template<> struct CSharpTypeConvertor<const char*>
 	using Type = MonoString*;
 	
 	static const char* convert(MonoString* val) { return mono_string_to_utf8(val); }
+	static MonoString* convertRet(const char* val) { return mono_string_new(mono_domain_get(), val); }
 };
 
 
@@ -256,7 +259,7 @@ struct CSharpMethodProxy<R (T::*)(Args...) const>
 	template<F fnc, typename Ret = R>
 	static typename enable_if<!is_same<Ret, void>::value, ConvertedR>::type call(T* inst, typename CSharpTypeConvertor<Args>::Type... args)
 	{
-		return CSharpTypeConvertor<R>::convert((inst->*fnc)(CSharpTypeConvertor<Args>::convert(args)...));
+		return CSharpTypeConvertor<R>::convertRet((inst->*fnc)(CSharpTypeConvertor<Args>::convert(args)...));
 	}
 };
 
@@ -276,7 +279,7 @@ struct CSharpMethodProxy<R(T::*)(Args...)>
 	template<F fnc, typename Ret = R>
 	static typename enable_if<!is_same<Ret, void>::value, ConvertedR>::type call(T* inst, typename CSharpTypeConvertor<Args>::Type... args)
 	{
-		return CSharpTypeConvertor<R>::convert((inst->*fnc)(CSharpTypeConvertor<Args>::convert(args)...));
+		return CSharpTypeConvertor<R>::convertRet((inst->*fnc)(CSharpTypeConvertor<Args>::convert(args)...));
 	}
 };
 
@@ -1472,7 +1475,6 @@ CSHARP_FUNCTION(NavigationScene, navigate, nostatic, NavmeshAgent, component);
 CSHARP_FUNCTION(NavigationScene, getAgentSpeed, nostatic, NavmeshAgent, component);
 
 //engine
-CSHARP_FUNCTION(Universe, getAllocator, static, Engine, class);
 CSHARP_FUNCTION(Universe, emplaceEntity, static, Engine, class);
 CSHARP_FUNCTION(Universe, createEntity, static, Engine, class);
 CSHARP_FUNCTION(Universe, destroyEntity, static, Engine, class);
@@ -1482,7 +1484,6 @@ CSHARP_FUNCTION(Universe, hasComponent, static, Engine, class);
 CSHARP_FUNCTION(Universe, getComponent, static, Engine, class);
 CSHARP_FUNCTION(Universe, getFirstComponent, static, Engine, class);
 CSHARP_FUNCTION(Universe, getNextComponent, static, Engine, class);
-CSHARP_FUNCTION(Universe, registerComponentType, static, Engine, class);
 CSHARP_FUNCTION(Universe, getFirstEntity, static, Engine, class);
 CSHARP_FUNCTION(Universe, getNextEntity, static, Engine, class);
 CSHARP_FUNCTION(Universe, getEntityName, static, Engine, class);
@@ -1509,27 +1510,17 @@ CSHARP_FUNCTION(Universe, getTransform, static, Engine, class);
 CSHARP_FUNCTION(Universe, setRotation, static, Engine, class);
 CSHARP_FUNCTION(Universe, setPosition, static, Engine, class);
 CSHARP_FUNCTION(Universe, setScale, static, Engine, class);
-CSHARP_FUNCTION(Universe, instantiatePrefab, static, Engine, class);
 CSHARP_FUNCTION(Universe, getScale, static, Engine, class);
 CSHARP_FUNCTION(Universe, getPosition, static, Engine, class);
 CSHARP_FUNCTION(Universe, getRotation, static, Engine, class);
 CSHARP_FUNCTION(Universe, getName, static, Engine, class);
 CSHARP_FUNCTION(Universe, setName, static, Engine, class);
-CSHARP_FUNCTION(Universe, entityTransformed, static, Engine, class);
-CSHARP_FUNCTION(Universe, entityCreated, static, Engine, class);
-CSHARP_FUNCTION(Universe, entityDestroyed, static, Engine, class);
-CSHARP_FUNCTION(Universe, componentDestroyed, static, Engine, class);
-CSHARP_FUNCTION(Universe, componentAdded, static, Engine, class);
 CSHARP_FUNCTION(Universe, serializeComponent, static, Engine, class);
 CSHARP_FUNCTION(Universe, deserializeComponent, static, Engine, class);
 CSHARP_FUNCTION(Universe, serialize, static, Engine, class);
 CSHARP_FUNCTION(Universe, deserialize, static, Engine, class);
 CSHARP_FUNCTION(Universe, getScene, static, Engine, class);
-CSHARP_FUNCTION(Universe, getScenes, static, Engine, class);
 CSHARP_FUNCTION(Universe, addScene, static, Engine, class);
-CSHARP_FUNCTION(Universe, transformEntity, static, Engine, class);
-CSHARP_FUNCTION(Universe, updateGlobalTransform, static, Engine, class);
-CSHARP_FUNCTION(Universe, EntityData, static, Engine, class);
 
 //audio
 CSHARP_FUNCTION(AudioScene, setEcho, nostatic, AudioScene, component);
@@ -1567,7 +1558,6 @@ CSHARP_FUNCTION(RenderScene, addDebugCapsule, nostatic, RenderScene, component);
 CSHARP_FUNCTION(RenderScene, addDebugCylinder, nostatic, RenderScene, component);
 
 
-CSHARP_FUNCTION(AnimationScene, getEventStream, nostatic, AnimationScene, component);
 CSHARP_FUNCTION(AnimationScene, getAnimableAnimation, nostatic, AnimationScene, component);
 CSHARP_FUNCTION(AnimationScene, getAnimation, nostatic, AnimationScene, component);
 CSHARP_FUNCTION(AnimationScene, setAnimation, nostatic, AnimationScene, component);
