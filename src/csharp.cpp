@@ -151,6 +151,13 @@ template<typename T> struct CSharpTypeConvertor
 };
 
 
+template<> struct CSharpTypeConvertor<void>
+{
+	using Type = void;
+};
+
+
+
 template<> struct CSharpTypeConvertor<const char*>
 {
 	using Type = MonoString*;
