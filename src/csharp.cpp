@@ -5,6 +5,7 @@
 #include "engine/blob.h"
 #include "engine/crc32.h"
 #include "engine/engine.h"
+#include "engine/geometry.h"
 #include "engine/hash_map.h"
 #include "engine/iallocator.h"
 #include "engine/iplugin.h"
