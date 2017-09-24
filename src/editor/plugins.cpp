@@ -370,112 +370,6 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 	}
 
 
-	void propertiesGUI(ComponentUID cmp, int script_idx)
-	{
-		WorldEditor& editor = *m_app.getWorldEditor();
-		IAllocator& allocator = editor.getAllocator();
-		auto* scene = static_cast<CSharpScriptScene*>(cmp.scene);
-		u32 gc_handle = scene->getGCHandle(cmp.handle, script_idx);
-		if (gc_handle == INVALID_GC_HANDLE) return;
-
-		MonoObject* obj = mono_gchandle_get_target(gc_handle);
-		MonoClass* mono_class = mono_object_get_class(obj);
-
-		void* iter = nullptr;
-		while (MonoClassField* field = mono_class_get_fields(mono_class, &iter))
-		{
-			bool is_public = (mono_field_get_flags(field) & 0x6) != 0;
-			if (!is_public) continue;
-
-			int type = mono_type_get_type(mono_field_get_type(field));
-
-			const char* field_name = mono_field_get_name(field);
-			switch (type)
-			{
-				case MONO_TYPE_BOOLEAN:
-				{
-					bool value;
-					mono_field_get_value(obj, field, &value);
-					if (ImGui::Checkbox(field_name, &value))
-					{
-						char tmp[2] = "0";
-						if (value) tmp[0] = '1';
-						auto* set_source_cmd = LUMIX_NEW(allocator, PropertyGridCSharpPlugin::SetPropertyCommand)(
-							editor, cmp.handle, script_idx, field_name, tmp, allocator);
-						editor.executeCommand(set_source_cmd);
-					}
-					break;
-				}
-				case MONO_TYPE_I4:
-				{
-					int value;
-					mono_field_get_value(obj, field, &value);
-					if (ImGui::InputInt(field_name, &value))
-					{
-						char tmp[50];
-						toCString(value, tmp, lengthOf(tmp), 10);
-						auto* set_source_cmd = LUMIX_NEW(allocator, PropertyGridCSharpPlugin::SetPropertyCommand)(
-							editor, cmp.handle, script_idx, field_name, tmp, allocator);
-						editor.executeCommand(set_source_cmd);
-					}
-					break;
-				}
-				case MONO_TYPE_R4:
-				{
-					float value;
-					mono_field_get_value(obj, field, &value);
-					if (ImGui::InputFloat(field_name, &value))
-					{
-						char tmp[50];
-						toCString(value, tmp, lengthOf(tmp), 10);
-						auto* set_source_cmd = LUMIX_NEW(allocator, PropertyGridCSharpPlugin::SetPropertyCommand)(
-							editor, cmp.handle, script_idx, field_name, tmp, allocator);
-						editor.executeCommand(set_source_cmd);
-					}
-					break;
-				}
-				case MONO_TYPE_STRING:
-				{
-					MonoString* str_val;
-					mono_field_get_value(obj, field, &str_val);
-					char tmp[1024];
-					copyString(tmp, mono_string_to_utf8(str_val));
-					if (ImGui::InputText(field_name, tmp, sizeof(tmp)))
-					{
-						auto* set_prop_cmd = LUMIX_NEW(allocator, PropertyGridCSharpPlugin::SetPropertyCommand)(
-							editor, cmp.handle, script_idx, field_name, tmp, allocator);
-						editor.executeCommand(set_prop_cmd);
-					}
-					break;
-				}
-				case MONO_TYPE_CLASS:
-				{
-					MonoType* mono_type = mono_field_get_type(field);
-					MonoClass* mono_class = mono_type_get_class(mono_type);
-					if (equalStrings(mono_class_get_name(mono_class), "Entity"))
-					{
-						MonoObject* field_obj = mono_field_get_value_object(mono_domain_get(), field, obj);
-						Entity entity = INVALID_ENTITY;
-						MonoClassField* entity_id_field = mono_class_get_field_from_name(mono_class, "_entity_id");
-						if (field_obj)
-						{
-							mono_field_get_value(field_obj, entity_id_field, &entity.index);
-						}
-						if (m_app.getPropertyGrid()->entityInput(field_name, field_name, entity))
-						{
-							u32 entity_gc_handle = scene->getEntityGCHandle(entity);
-							MonoObject* entity_obj = mono_gchandle_get_target(entity_gc_handle);
-							mono_field_set_value(obj, field, entity_obj);
-						}
-					}
-					break;
-				}
-				default: ASSERT(false);
-			}
-		}
-	}
-
-
 	void onGUI(PropertyGrid& grid, ComponentUID cmp) override
 	{
 		if (cmp.type != CSHARP_SCRIPT_TYPE) return;
@@ -534,7 +428,6 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 					break;
 				}
 				ImGui::PopID();
-				propertiesGUI(cmp, j);
 			}
 		}
 	}
