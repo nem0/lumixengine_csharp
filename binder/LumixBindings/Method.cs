@@ -315,9 +315,14 @@ namespace LumixBindings
 
             if (IsReturnSomething)
             {
-                ret += ReturnTypemap.CanonicalSTR.Split(' ')[0].Trim();//ReturnTypemap.NativeCPP;
-                if (ReturnTypemap.IsPointer)
-                    ret += "*";
+                if (ReturnTypemap.NativeCPP == "const char *")
+                    ret += ReturnTypemap.NativeCPP;
+                else
+                {
+                    ret += ReturnTypemap.CanonicalSTR.Split(' ')[0].Trim();//ReturnTypemap.NativeCPP;
+                    if (ReturnTypemap.IsPointer)
+                        ret += "*";
+                }
             }
             else
             {

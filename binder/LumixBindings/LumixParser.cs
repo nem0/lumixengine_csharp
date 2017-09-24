@@ -168,10 +168,6 @@ namespace LumixBindings
                         
                         for (int k = 0; k < meth.Length; k++)
                         {
-                            if(func.Name == "play")
-                            {
-
-                            }
                             tmpWriter.WriteLine("\t{");
                             string methodType = meth[k].ToFunctionTypedef(func.NativeClass.Replace("Impl", ""));
                             //contstruct template call
@@ -200,10 +196,6 @@ namespace LumixBindings
                     {
                         foreach (var component in func.Components)
                         {
-                            if (func.Name == "play")
-                            {
-
-                            }
                             var meth = nsc_.GetMethodFromClass(func.NativeClass, func.Name);
                        
                             bool needCast = meth.Length > 1;
