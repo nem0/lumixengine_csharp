@@ -36,12 +36,12 @@ namespace LumixBindings
         {
             get
             {
-               // if (!IsVoid)
+                // if (!IsVoid)
                 {
                     var type = clang.getCursorType(Cursor);
-                    return new TypeMap(type,clang.getCanonicalType(clang.getCursorType(Cursor)));
+                    return new TypeMap(type, clang.getCanonicalType(clang.getCursorType(Cursor)));
                 }
-              //  return new TypeMap(null, null);
+                //  return new TypeMap(null, null);
             }
         }
         public bool IsTemplate
@@ -64,9 +64,9 @@ namespace LumixBindings
         {
             get
             {
-                
+
                 var comment = clang.Cursor_getRawCommentText(Cursor).ToString();
-                if(comment == null)
+                if (comment == null)
                 {
                     CXSourceLocation location = clang.getCursorLocation(Cursor);
                     CXFile file;
@@ -80,7 +80,7 @@ namespace LumixBindings
                     clang.tokenize(TU, range, out tokePtr, out numToken);
                     int TokenSize = System.Runtime.InteropServices.Marshal.SizeOf(typeof(CXToken));
                     IntPtr current = tokePtr;
-                    for(int k =0; k < numToken;k++)
+                    for (int k = 0; k < numToken; k++)
                     {
                         CXToken token = (CXToken)System.Runtime.InteropServices.Marshal.PtrToStructure(current, typeof(CXToken));
                         CXTokenKind kind = clang.getTokenKind(token);
@@ -89,16 +89,16 @@ namespace LumixBindings
                             comment = clang.getTokenSpelling(TU, token).ToString();
                             break;
                         }
-                        current = new System.IntPtr(tokePtr.ToInt64() + ((k+1)*TokenSize));
+                        current = new System.IntPtr(tokePtr.ToInt64() + ((k + 1) * TokenSize));
                     }
-                    if(comment == null)
-                    return "\t\t/// <summary>\n" +
-                     "\t\t///\n" +
-                     "\t\t/// </summary>\n";
+                    if (comment == null)
+                        return "\t\t/// <summary>\n" +
+                         "\t\t///\n" +
+                         "\t\t/// </summary>\n";
                 }
                 string[] lines = comment.Split('\n');
                 comment = "\t\t/// <summary>\n";
-                foreach(var line in lines)
+                foreach (var line in lines)
                 {
                     comment += "\t\t///" + line.Replace("/", "");
                     comment += "\n";
@@ -133,10 +133,10 @@ namespace LumixBindings
         {
             get { return clang.CXXMethod_isPureVirtual(Cursor) != 0; }
         }
-        public Method(CXCursor cursor,CXTranslationUnit unit) : base(unit)
+        public Method(CXCursor cursor, CXTranslationUnit unit) : base(unit)
         {
             Cursor = cursor;
-            if(Name == "SetNextTimeStep")
+            if (Name == "SetNextTimeStep")
             {
 
             }
@@ -206,7 +206,7 @@ namespace LumixBindings
             {
                 return "{4}" +
                         "\t\tpublic {0} {1}({2})\n" +
-                        "\t\t\t:base({3})\n"+
+                        "\t\t\t:base({3})\n" +
                        "\t\t{{\n" +
                        "\t\t}}";
 
@@ -216,7 +216,7 @@ namespace LumixBindings
         CXCursor lastParam;
         public override CXChildVisitResult Visit(CXCursor cursor, CXCursor parent, IntPtr client_data)
         {
-            if(Name == "setControllerInput")
+            if (Name == "setControllerInput")
             {
 
             }
@@ -232,24 +232,24 @@ namespace LumixBindings
                 lastDLLImport = true;
                 return CXChildVisitResult.CXChildVisit_Recurse;
             }
-            else if(cursor.kind == CXCursorKind.CXCursor_TypeRef && lastDLLImport)
+            else if (cursor.kind == CXCursorKind.CXCursor_TypeRef && lastDLLImport)
             {
                 returnCursor_ = cursor;
                 lastDLLImport = false;
                 return CXChildVisitResult.CXChildVisit_Recurse;
             }
-            else if(cursor.kind == CXCursorKind.CXCursor_ParmDecl)
+            else if (cursor.kind == CXCursorKind.CXCursor_ParmDecl)
             {
                 lastParam = cursor;
                 lastDLLImport = false;
-                if(t.IsBasicType() || canonicalStr == "const char *")
+                if (t.IsBasicType() || canonicalStr == "const char *")
                 {
                     Argument arg = new Argument(lastParam, cursor, TU);
                     Add(arg);
                 }
                 return CXChildVisitResult.CXChildVisit_Recurse;
             }
-            else if(cursor.kind == CXCursorKind.CXCursor_TypeRef && lastParam.kind == CXCursorKind.CXCursor_ParmDecl)
+            else if (cursor.kind == CXCursorKind.CXCursor_TypeRef && lastParam.kind == CXCursorKind.CXCursor_ParmDecl)
             {
                 Argument arg = new Argument(lastParam, cursor, TU);
                 Add(arg);
@@ -272,10 +272,10 @@ namespace LumixBindings
 
         public string CastToFunctionPointer(string _klass)
         {
-            
+
             //void (AnimationScene::*)(ComponentHandle, int, int)
             string ret = "";
-            if(IsReturnSomething)
+            if (IsReturnSomething)
             {
                 ret += ReturnTypemap.NativeCPP;
             }
@@ -284,7 +284,7 @@ namespace LumixBindings
                 ret += "void";
             }
             ret += "(" + _klass + "::*)(";
-            for(int k =0; k < Values.Length;k++)
+            for (int k = 0; k < Values.Length; k++)
             {
                 ret += Values[k].TypeMap.CanonicalSTR;
                 if (k + 1 < Values.Length)
@@ -298,7 +298,7 @@ namespace LumixBindings
         public string CastToManagedArgs()
         {
             //void (AnimationScene::*)(ComponentHandle, int, int)
-            string ret = "(IntPtr" +(Values.Length > 0 ? ", ":"");
+            string ret = "(IntPtr" + (Values.Length > 0 ? ", " : "");
             for (int k = 0; k < Values.Length; k++)
             {
                 ret += Values[k].TypeMap.ToCsharp();
@@ -312,17 +312,16 @@ namespace LumixBindings
         public string ToFunctionTypedef(string _klass)
         {
             string ret = "typedef ";
-            if(IsReturnSomething)
+
+            if (IsReturnSomething)
             {
-                if (IsReturnSomething)
-                {
-                    ret += ReturnTypemap.NativeCPP;
-                }
-                else
-                {
-                    ret += "void";
-                }
+                ret += ReturnTypemap.NativeCPP;
             }
+            else
+            {
+                ret += "void";
+            }
+
             ret += " (" + _klass + "::*MethodType)(";
             for (int k = 0; k < Values.Length; k++)
             {
@@ -335,7 +334,7 @@ namespace LumixBindings
                 ret += " const;";
             else
                 ret += ";";
-                    
+
             return ret;
         }
     }
