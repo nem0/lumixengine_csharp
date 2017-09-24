@@ -260,5 +260,42 @@ namespace LumixBindings
         {
             return Name;
         }
+
+        public string CastToFunctionPointer(string _klass)
+        {
+            //void (AnimationScene::*)(ComponentHandle, int, int)
+            string ret = "";
+            if(IsReturnSomething)
+            {
+                ret += ReturnTypemap.NativeCPP;
+            }
+            else
+            {
+                ret += "void";
+            }
+            ret += "(" + _klass + "::*)(";
+            for(int k =0; k < Values.Length;k++)
+            {
+                ret += Values[k].TypeMap.CanonicalSTR;
+                if (k + 1 < Values.Length)
+                    ret += ", ";
+            }
+            ret += ")";
+            return ret;
+        }
+
+        public string CastToManagedArgs()
+        {
+            //void (AnimationScene::*)(ComponentHandle, int, int)
+            string ret = "(IntPtr" + (Values.Length > 0 ? ", " : "");
+            for (int k = 0; k < Values.Length; k++)
+            {
+                ret += Values[k].TypeMap.ToCsharp();
+                if (k + 1 < Values.Length)
+                    ret += ", ";
+            }
+            ret += ")";
+            return ret;
+        }
     }
 }
