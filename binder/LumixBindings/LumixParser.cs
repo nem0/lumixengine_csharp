@@ -168,7 +168,7 @@ namespace LumixBindings
                         
                         for (int k = 0; k < meth.Length; k++)
                         {
-                            if(func.Name == "setControllerInput")
+                            if(func.Name == "play")
                             {
 
                             }
@@ -200,7 +200,7 @@ namespace LumixBindings
                     {
                         foreach (var component in func.Components)
                         {
-                            if (func.Name == "setControllerInput")
+                            if (func.Name == "play")
                             {
 
                             }
