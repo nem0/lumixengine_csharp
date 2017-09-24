@@ -308,13 +308,13 @@ namespace LumixBindings
                         if (!func.IsInClass(klass.Key))
                             continue;
 
-                        if (func.HasSceneGetter)
-                        {
-                            tmpWriter.WriteLine("\t\tpublic " + func.NativeClass.Replace("Impl", "") + " Scene");
-                            tmpWriter.WriteLine("\t\t{");
-                            tmpWriter.WriteLine("\t\t\tget { return new " + func.NativeClass.Replace("Impl", "") + "( scene_ ); }");
-                            tmpWriter.WriteLine("\t\t}\n");
-                        }
+                        //if (func.HasSceneGetter)
+                        //{
+                        //    tmpWriter.WriteLine("\t\tpublic " + func.NativeClass.Replace("Impl", "") + " Scene");
+                        //    tmpWriter.WriteLine("\t\t{");
+                        //    tmpWriter.WriteLine("\t\t\tget { return new " + func.NativeClass.Replace("Impl", "") + "( scene_ ); }");
+                        //    tmpWriter.WriteLine("\t\t}\n");
+                        //}
 
                         WriteCsharpFunction(tmpWriter, func, false);
                     }
@@ -329,8 +329,8 @@ namespace LumixBindings
                 //write down classes
                 foreach (var kvp in staticClasses)
                 {
-                    project.AddClass(kvp.Key);
-                    using (var tmpWriter = new StreamWriter(Path.Combine(Bindings.CSRootPath, kvp.Key + ".cs")))
+                    project.AddClass(kvp.Value[0].ManagedClass);
+                    using (var tmpWriter = new StreamWriter(Path.Combine(Bindings.CSRootPath, kvp.Value[0].ManagedClass + ".cs")))
                     {
                         //write down the using directives
                         tmpWriter.WriteLine("using System;");
@@ -405,26 +405,31 @@ namespace LumixBindings
 
             if (_func.IsInvalid)
                 return;
+
             var meth = nsc_.GetMethodFromClass(_func.NativeClass.Replace("Impl", ""), _func.Name);
+
             if (meth != null)
             {
-                //mono decl
-                _writer.WriteLine("\t\t[MethodImplAttribute(MethodImplOptions.InternalCall)]");
-                string args = "";
-                if (!_isStatic)
+                for (int k = 0; k < meth.Length; k++)
                 {
-                    args = "IntPtr instance";
-                    if (meth.Values.Length > 0)
-                        args += ", ";
+                    //mono decl
+                    _writer.WriteLine("\t\t[MethodImplAttribute(MethodImplOptions.InternalCall)]");
+                    string args = "";
+                    if (!_isStatic)
+                    {
+                        args = "IntPtr instance";
+                        if (meth[k].Values.Length > 0)
+                            args += ", ";
+                    }
+                    int idx = 0;
+                    foreach (var argument in meth[k].Values)
+                    {
+                        args += argument.TypeMap.ToCsharp() + " " + argument.Name;
+                        if (++idx < meth[k].Values.Length)
+                            args += ", ";
+                    }
+                    _writer.Write(string.Format("\t\textern static {0} {1}({2});\n", (meth[k].IsReturnSomething ? meth[k].ReturnTypemap.ToCsharp() : "void"), _func.Name, args));
                 }
-                int idx = 0;
-                foreach (var argument in meth.Values)
-                {
-                    args += argument.TypeMap.ToCsharp() + " " + argument.Name;
-                    if (++idx < meth.Values.Length)
-                        args += ", ";
-                }
-                _writer.Write(string.Format("\t\textern static {0} {1}({2});\n", (meth.IsReturnSomething ? meth.ReturnTypemap.ToCsharp() : "void"), _func.Name, args));
             }
             else
             {
@@ -440,55 +445,60 @@ namespace LumixBindings
 
             if (meth != null)
             {
-                //func def
-                _writer.Write("\t\tpublic " + (_isStatic ? "static " : "") + (meth.IsReturnSomething ? meth.ReturnTypemap.ToCsharp() : "void"));
-                _writer.Write(" " + meth.Name.Capitalize());
+                for (int i = 0; i < meth.Length; i++)
+                {
+                    //func def
+                    _writer.Write("\t\tpublic " + (_isStatic ? "static " : "") + (meth[i].IsReturnSomething ? meth[i].ReturnTypemap.ToCsharp() : "void"));
+                    _writer.Write(" " + meth[i].Name.Capitalize());
 
-                //arguments
-                _writer.Write("(");
-                for (int k = 0; k < meth.Values.Length; k++)
-                {
-                    var arg = meth.Values[k];
-                    _writer.Write(arg.TypeMap.ToCsharp() + " ");
-                    _writer.Write(arg.Name);
-                    if (k+1 < meth.Values.Length)
-                        _writer.Write(", ");
-                }
-                _writer.Write(")\n");
+                    //arguments
+                    _writer.Write("(");
+                    for (int k = 0; k < meth[i].Values.Length; k++)
+                    {
+                        var arg = meth[i].Values[k];
+                        if (arg.TypeMap.NativeCPP == "Lumix::ComponentHandle")
+                            continue;
+                        _writer.Write(arg.TypeMap.ToCsharp() + " ");
+                        _writer.Write(arg.Name);
+                        if (k + 1 < meth[i].Values.Length)
+                            _writer.Write(", ");
+                    }
+                    _writer.Write(")\n");
 
-                //func body start
-                _writer.WriteLine("\t\t{");
-                if (meth.IsReturnSomething)
-                {
-                    _writer.Write("\t\t\treturn ");
-                }
-                else
-                {
-                    _writer.Write("\t\t\t");
-                }
-                string args = "";
-                if (!_isStatic)
-                {
-                    args = _func.IsComponent ? "scene_" : "instance_";
-                    if (meth.Values.Length > 0)
-                        args += ", ";
-                }
-                int idx = 0;
-                foreach (var argument in meth.Values)
-                {
-                    if (argument.NativeType == "struct Lumix::ComponentHandle")
-                        args += "componentId_";
+                    //func body start
+                    _writer.WriteLine("\t\t{");
+                    if (meth[i].IsReturnSomething)
+                    {
+                        _writer.Write("\t\t\treturn ");
+                    }
                     else
-                        args += argument.Name;
+                    {
+                        _writer.Write("\t\t\t");
+                    }
+                    string args = "";
+                    if (!_isStatic)
+                    {
+                        args = _func.IsComponent ? "scene_" : "instance_";
+                        if (meth[i].Values.Length > 0)
+                            args += ", ";
+                    }
+                    int idx = 0;
+                    foreach (var argument in meth[i].Values)
+                    {
+                        if (argument.TypeMap.NativeCPP == "Lumix::ComponentHandle")
+                            args += "componentId_";
+                        else
+                            args += argument.Name;
 
-                    if (++idx < meth.Values.Length)
-                        args += ", ";
+                        if (++idx < meth[i].Values.Length)
+                            args += ", ";
 
+                    }
+                    //call native func
+                    _writer.Write(string.Format("{0}({1});\n", _func.Name, args));
+                    //func body end
+                    _writer.WriteLine("\t\t}\n");
                 }
-                //call native func
-                _writer.Write(string.Format("{0}({1});\n", _func.Name, args));
-                //func body end
-                _writer.WriteLine("\t\t}\n");
             }
         }
     }

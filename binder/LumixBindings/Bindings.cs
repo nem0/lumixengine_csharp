@@ -16,7 +16,11 @@ namespace LumixBindings
         public static readonly bool IgnoreOperator = true;
         public static List<string> StaticClasses = new List<string>()
         {
-            "Engine", "App", "GUISystem", "StudioApp","ImportAssetDialog"
+            "Engine", "App", "GUISystem", "StudioApp","ImportAssetDialog", "Universe"
+        };
+        public static List<KeyValuePair<string,string>> ClassRenames = new List<KeyValuePair<string, string>>()
+        {
+            new KeyValuePair<string, string>("Universe","Engine"),
         };
         public static List<string> IgnoredClasses = new List<string>()
         {

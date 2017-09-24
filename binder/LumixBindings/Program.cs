@@ -102,7 +102,7 @@ namespace LumixBindings
             List<string> done = new List<string>();
             using (StreamWriter sw = new StreamWriter("macros"))
             {
-                foreach(var ns in nsc.Values)
+                foreach(var ns in nsc.Values) 
                 {
                     foreach(var klass in ns.Values)
                     {
@@ -113,7 +113,10 @@ namespace LumixBindings
                             {
                                 if (!uniqueClasses.Contains(klass))
                                     uniqueClasses.Add(klass);
-                                sw.WriteLine("CSHARP_FUNCTION(" + klass.Name.Replace("Impl", "") + "," + meth.Name + ",static)");
+                                bool isStatic = Bindings.StaticClasses.Contains(klass.Name);
+                                var rename = Bindings.ClassRenames.Find(x => x.Key == klass.Name);
+                                string managedClass = (rename.Key == null ? klass.Name.Replace("Impl","") : rename.Value);
+                                sw.WriteLine("CSHARP_FUNCTION(" + klass.Name.Replace("Impl", "") + "," + meth.Name + ","+(isStatic ? "static" : "nostatic")+"," + managedClass + ","+(isStatic ? "class":"component")+");");
                                 done.Add(id);
                             }
                         }

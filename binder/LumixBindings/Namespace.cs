@@ -60,7 +60,7 @@ namespace LumixBindings
                 var type = clang.getCursorType(cursor);
                 Console.WriteLine("namespace " + Enum.GetName(typeof(CXCursorKind), cursor.kind) + " : " + clang.getCursorSpelling(cursor));
             }
-            if (cursor.kind == CXCursorKind.CXCursor_ClassDecl)
+            if (cursor.kind == CXCursorKind.CXCursor_ClassDecl || cursor.kind == CXCursorKind.CXCursor_StructDecl)
             {
                 Class cl = new Class(cursor, TU, this);
                 if(cl.Name == "Animation")

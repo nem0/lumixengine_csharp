@@ -33,7 +33,7 @@ namespace LumixBindings
         }
         public abstract CXChildVisitResult Visit(CXCursor cursor, CXCursor parent, IntPtr client_data);
 
-        public void Add(T obj)
+        public virtual void Add(T obj)
         {
           //  if (!knownObjects_.ContainsKey(obj.Name))
                 knownObjects_.Add(obj);

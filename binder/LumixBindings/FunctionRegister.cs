@@ -29,9 +29,9 @@ namespace LumixBindings
         {
             get
             {
-                if (!IsClass)
-                    return "INVALID";
-                else
+                //if (!IsClass)
+                //    return "INVALID";
+                //else
                     return data_[3];
             }
         }

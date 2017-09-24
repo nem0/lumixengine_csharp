@@ -207,6 +207,10 @@ namespace LumixBindings
         CXCursor lastParam;
         public override CXChildVisitResult Visit(CXCursor cursor, CXCursor parent, IntPtr client_data)
         {
+            if(Name == "setControllerInput")
+            {
+
+            }
             string spelling = cursor.ToSharpString();
             var parentS = parent.ToSharpString();
             var t = clang.getCursorType(cursor);
@@ -229,10 +233,10 @@ namespace LumixBindings
             {
                 lastParam = cursor;
                 lastDLLImport = false;
-                if(t.IsBasicType() ||canonicalStr == "const char *")
+                if(t.IsBasicType() || canonicalStr == "const char *")
                 {
-                   // Argument arg = new Argument(lastParam, cursor, TU);
-                   // Add(arg);
+                    Argument arg = new Argument(lastParam, cursor, TU);
+                    Add(arg);
                 }
                 return CXChildVisitResult.CXChildVisit_Recurse;
             }
@@ -245,6 +249,12 @@ namespace LumixBindings
             //Console.Write(Name + ": " + Enum.GetName(typeof(CXCursorKind), cursor.kind) + " ");
             //Console.WriteLine(clang.getCursorSpelling(cursor).ToString());
             return CXChildVisitResult.CXChildVisit_Continue;
+        }
+        public override void Add(Argument obj)
+        {
+            var item = knownObjects_.Find(x => x.Name == obj.Name);
+            if (item == null)
+                base.Add(obj);
         }
         public override string ToString()
         {

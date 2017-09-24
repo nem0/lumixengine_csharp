@@ -226,7 +226,7 @@ namespace LumixBindings
                     {
                         return "INVALID";
                     }
-                    return native ? meth.ReturnValue : "int";
+                    return native ? meth[0].ReturnValue : "int";
                 case "ResourcePropertyDescriptor":
                     return native ? "Path" : "string";
                 

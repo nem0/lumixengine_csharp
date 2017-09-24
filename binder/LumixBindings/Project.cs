@@ -23,7 +23,8 @@ namespace LumixBindings
 
         public void AddClass(string _class)
         {
-            classes_.Add(_class);
+            if (!classes_.Contains(_class))
+                classes_.Add(_class);
         }
 
         public void Export(string _to)

@@ -7,7 +7,7 @@ namespace Lumix
 {
 	public class Component
 	{
-		private static byte[] s_imgui_text_buffer = new byte[4096];
+        private static byte[] s_imgui_text_buffer = new byte[4096];
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		protected extern static int create(IntPtr universe, int entity, string cmp_type);
@@ -21,7 +21,17 @@ namespace Lumix
 		public Entity entity_;
 		public Entity entity { get { return entity_; } }
 
-		public virtual void onInspector(IntPtr editor)
+        /// <summary>
+        /// gets any component which is attache to the underlying entity
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>T or null if not exists</returns>
+        public T GetComponent<T>() where T : Component
+        {
+            return entity.GetComponent<T>();
+        }
+
+        public virtual void onInspector(IntPtr editor)
 		{
 			var type = this.GetType();
 			foreach (var f in type.GetFields())
