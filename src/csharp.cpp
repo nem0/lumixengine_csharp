@@ -1,7 +1,7 @@
 #include "csharp.h"
 #include "audio/audio_scene.h"
 #include "animation/animation.h"
-#include "animation/animation_system.h"
+#include "animation/animation_scene.h"
 #include "engine/blob.h"
 #include "engine/crc32.h"
 #include "engine/engine.h"
@@ -16,7 +16,7 @@
 #include "engine/universe/component.h"
 #include "engine/universe/universe.h"
 #include "imgui/imgui.h"
-#include "navigation/navigation_system.h"
+#include "navigation/navigation_scene.h"
 #include "physics/physics_scene.h"
 #include "renderer/render_scene.h"
 
