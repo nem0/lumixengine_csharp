@@ -8,7 +8,7 @@ namespace Lumix
 { 
 
  
-public class Entity
+public partial class Entity
 {
 	public int _entity_id;
 	public IntPtr _universe;
