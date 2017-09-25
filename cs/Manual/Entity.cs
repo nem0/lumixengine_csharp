@@ -97,6 +97,8 @@ public partial class Entity
 		get { return getRotation(_universe, _entity_id); }
 		set { setRotation(_universe, _entity_id, value); }
 	}
+	
+	public Universe Universe { get { return new Universe(_universe); }
 }
 
 
