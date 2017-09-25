@@ -57,7 +57,7 @@ namespace Lumix.Examples
             animController_.SetControllerInput(speedInputIdx_, agentSpeed);
 
             //try to move to where player is every few seconds
-            nextFollow = = nextFollow - _deltaTime;
+            nextFollow = nextFollow - _deltaTime;
             if (nextFollow > 0) return;
 
             nextFollow = FollowTick;
