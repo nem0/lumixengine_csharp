@@ -207,7 +207,11 @@ namespace Lumix
 
 		public Entity Parent
 		{
-			get { return new Entity(instance_, getParent(instance_, entity_Id_)); }
+			get { 
+			 int x = getParent(instance_, entity_Id_);
+			 if(x < 0) return null;
+			  return new Entity(instance_, x);
+			}
 			set { setParent(instance_, entity_Id_, value); }
 		}
 
@@ -242,7 +246,9 @@ namespace Lumix
 
 		public Entity CreateEntity(Vec3 position, Quat rotation)
 		{
-			return new Entity(instance_, createEntity(instance_, position, rotation));
+			int x = createEntity(instance_, position, rotation);
+			 if(x < 0) return null;
+			return new Entity(instance_, x);
 		}
 
 		public void DestroyEntity()
@@ -282,12 +288,16 @@ namespace Lumix
 
 		public Entity GetFirstEntity()
 		{
-			return new Entity(instance_, getFirstEntity(instance_));
+			int x = getFirstEntity(instance_);
+			 if(x < 0) return null;
+			return new Entity(instance_, x);
 		}
 
 		public Entity GetNextEntity()
 		{
-			return new Entity(instance_, getNextEntity(instance_, entity_Id_));
+			int x = getNextEntity(instance_, entity_Id_);
+			 if(x < 0) return null;
+			return new Entity(instance_, x);
 		}
 
 		public bool HasEntity()
@@ -302,12 +312,16 @@ namespace Lumix
 
 		public Entity GetFirstChild()
 		{
-			return new Entity(instance_, getFirstChild(instance_, entity_Id_));
+			int x = getFirstChild(instance_, entity_Id_);
+			 if(x < 0) return null;
+			return new Entity(instance_, x);
 		}
 
 		public Entity GetNextSibling()
 		{
-			return new Entity(instance_, getNextSibling(instance_, entity_Id_));
+			int x = getNextSibling(instance_, entity_Id_);
+			 if(x < 0) return null;
+			return new Entity(instance_, x);
 		}
 
 		public float GetLocalScale()

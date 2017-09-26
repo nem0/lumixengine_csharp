@@ -465,7 +465,13 @@ namespace LumixBindings
                     _writer.WriteLine("\t\tpublic " + retType + " " + getter.Replace("get", "").SharpyFy());
                     _writer.WriteLine("\t\t{");
                     if (func.ReturnTypemap.NativeCPP == "Lumix::Entity")
-                        _writer.WriteLine(string.Format("\t\t\tget {{ return new Entity(instance_, " + getter + "(instance_, {0})); }}", prop.Key.ManagedClass.ToLower() + "_Id_"));
+                    {
+                        _writer.WriteLine("\t\t\tget { ");
+                        _writer.WriteLine(string.Format("\t\t\t int x = " + getter + "(instance_, {0});", prop.Key.ManagedClass.ToLower() + "_Id_"));
+                        _writer.WriteLine("\t\t\t if(x < 0) return null;");
+                        _writer.WriteLine("\t\t\t  return new Entity(instance_, x);");
+                        _writer.WriteLine("\t\t\t}");
+                    }
                     else
                         _writer.WriteLine(string.Format("\t\t\tget {{ return " + getter + "(instance_, {0}); }}", prop.Key.ManagedClass.ToLower() + "_Id_"));
                     _writer.WriteLine(string.Format("\t\t\tset {{ " + setter + "(instance_, {0}, value); }}", prop.Key.ManagedClass.ToLower() + "_Id_"));
@@ -569,11 +575,14 @@ namespace LumixBindings
                     
                     if (meth[i].IsReturnSomething)
                     {
-                        _writer.Write("\t\t\treturn ");
-                        if(meth[i].ReturnTypemap.NativeCPP == "Lumix::Entity")
+                        if (meth[i].ReturnTypemap.NativeCPP == "Lumix::Entity")
                         {
-                            _writer.Write("new Entity(instance_, ");
+                            _writer.Write("\t\t\tint x = ");
                             isEntReturn = true;
+                        }
+                        else
+                        {
+                            _writer.Write("\t\t\treturn ");
                         }
                     }
                     else
@@ -602,8 +611,17 @@ namespace LumixBindings
                             args += ", ";
 
                     }
+                 
                     //call native func
-                    _writer.Write(string.Format("{0}({1}{2});\n", _func.Name, args, (isEntReturn ? ")" : "")));
+                    _writer.Write(string.Format("{0}({1});\n", _func.Name, args));
+                    if (meth[i].IsReturnSomething)
+                    {
+                        if (meth[i].ReturnTypemap.NativeCPP == "Lumix::Entity")
+                        {
+                            _writer.WriteLine("\t\t\t if(x < 0) return null;");
+                            _writer.WriteLine("\t\t\treturn new Entity(instance_, x);");
+                        }
+                    }
                     //func body end
                     _writer.WriteLine("\t\t}\n");
                 }

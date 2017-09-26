@@ -17,7 +17,9 @@ namespace Lumix
 
 		public Entity GetEntityByName(string name)
 		{
-			return new Entity(instance_, getEntityByName(instance_, name));
+			int x = getEntityByName(instance_, name);
+			 if(x < 0) return null;
+			return new Entity(instance_, x);
 		}
 
 	}
