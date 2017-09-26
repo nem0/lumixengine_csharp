@@ -39,7 +39,7 @@ namespace Lumix
 				if (!f.IsPublic) continue;
 				
 				var val = f.GetValue(this);
-				Type val_type = val.GetType();
+				Type val_type = f.FieldType;
 				
 				if (val_type == typeof(float))
 				{
@@ -78,7 +78,10 @@ namespace Lumix
 				}
 				else
 				{
-					ImGui.Text(f.Name + " = " + val.ToString());
+					if (val == null) 
+						ImGui.Text(f.Name + " = null");
+					else
+						ImGui.Text(f.Name + " = " + val.ToString());
 				}
 			}
 		}
