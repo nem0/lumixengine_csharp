@@ -521,7 +521,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	{
 		mono_add_internal_call("Lumix.Engine::logError", csharp_logError);
 		mono_add_internal_call("Lumix.Component::create", csharp_Component_create);
-		mono_add_internal_call("Lumix.Entity::getScene", csharp_Entity_getScene);
+		mono_add_internal_call("Lumix.Component::getScene", csharp_Entity_getScene);
 		mono_add_internal_call("Lumix.Entity::getComponent", csharp_Entity_getComponent);
 		mono_add_internal_call("Lumix.Entity::destroy", csharp_Entity_destroy);
 		mono_add_internal_call("Lumix.Entity::setPosition", csharp_Entity_setPosition);
