@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class DistanceJoint : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static float getDistanceJointDamping(IntPtr scene, int cmp);
 
@@ -42,21 +39,6 @@ namespace Lumix
 
 		public static string GetCmpType{ get { return "distance_joint"; } }
 
-
-		public DistanceJoint(Entity _entity, int _componenId)
-		{
-			entity_ = _entity;
-			componentId_ = _componenId;
-			scene_ = getScene(entity_.instance_, "distance_joint");
-		}
-
-		public DistanceJoint(Entity _entity)
-		{
-			entity_ = _entity;
-			componentId_ = create(entity_.instance_, entity_.entity_Id_, "distance_joint");
-			if (componentId_ < 0) throw new Exception("Failed to create component");
-			scene_ = getScene(entity_.instance_, "distance_joint");
-		}
 
 		/// <summary>
 		/// Gets or sets the Damping

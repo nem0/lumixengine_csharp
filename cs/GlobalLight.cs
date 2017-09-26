@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class GlobalLight : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static Vec3 getGlobalLightColor(IntPtr scene, int cmp);
 
@@ -60,21 +57,6 @@ namespace Lumix
 
 		public static string GetCmpType{ get { return "global_light"; } }
 
-
-		public GlobalLight(Entity _entity, int _componenId)
-		{
-			entity_ = _entity;
-			componentId_ = _componenId;
-			scene_ = getScene(entity_.instance_, "global_light");
-		}
-
-		public GlobalLight(Entity _entity)
-		{
-			entity_ = _entity;
-			componentId_ = create(entity_.instance_, entity_.entity_Id_, "global_light");
-			if (componentId_ < 0) throw new Exception("Failed to create component");
-			scene_ = getScene(entity_.instance_, "global_light");
-		}
 
 		/// <summary>
 		/// Gets or sets the Color

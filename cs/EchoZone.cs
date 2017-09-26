@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class EchoZone : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static float getEchoZoneRadius(IntPtr scene, int cmp);
 
@@ -24,21 +21,6 @@ namespace Lumix
 
 		public static string GetCmpType{ get { return "echo_zone"; } }
 
-
-		public EchoZone(Entity _entity, int _componenId)
-		{
-			entity_ = _entity;
-			componentId_ = _componenId;
-			scene_ = getScene(entity_.instance_, "echo_zone");
-		}
-
-		public EchoZone(Entity _entity)
-		{
-			entity_ = _entity;
-			componentId_ = create(entity_.instance_, entity_.entity_Id_, "echo_zone");
-			if (componentId_ < 0) throw new Exception("Failed to create component");
-			scene_ = getScene(entity_.instance_, "echo_zone");
-		}
 
 		/// <summary>
 		/// Gets or sets the Radius

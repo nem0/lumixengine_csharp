@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class BoneAttachment : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static Entity getBoneAttachmentParent(IntPtr scene, int cmp);
 
@@ -24,21 +21,6 @@ namespace Lumix
 
 		public static string GetCmpType{ get { return "bone_attachment"; } }
 
-
-		public BoneAttachment(Entity _entity, int _componenId)
-		{
-			entity_ = _entity;
-			componentId_ = _componenId;
-			scene_ = getScene(entity_.instance_, "bone_attachment");
-		}
-
-		public BoneAttachment(Entity _entity)
-		{
-			entity_ = _entity;
-			componentId_ = create(entity_.instance_, entity_.entity_Id_, "bone_attachment");
-			if (componentId_ < 0) throw new Exception("Failed to create component");
-			scene_ = getScene(entity_.instance_, "bone_attachment");
-		}
 
 		/// <summary>
 		/// Gets or sets the Parent

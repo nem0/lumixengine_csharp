@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class CapsuleRigidActor : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static float getCapsuleRadius(IntPtr scene, int cmp);
 
@@ -36,21 +33,6 @@ namespace Lumix
 
 		public static string GetCmpType{ get { return "capsule_rigid_actor"; } }
 
-
-		public CapsuleRigidActor(Entity _entity, int _componenId)
-		{
-			entity_ = _entity;
-			componentId_ = _componenId;
-			scene_ = getScene(entity_.instance_, "capsule_rigid_actor");
-		}
-
-		public CapsuleRigidActor(Entity _entity)
-		{
-			entity_ = _entity;
-			componentId_ = create(entity_.instance_, entity_.entity_Id_, "capsule_rigid_actor");
-			if (componentId_ < 0) throw new Exception("Failed to create component");
-			scene_ = getScene(entity_.instance_, "capsule_rigid_actor");
-		}
 
 		/// <summary>
 		/// Gets or sets the Radius

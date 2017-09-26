@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class NavmeshAgent : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static float getAgentRadius(IntPtr scene, int cmp);
 
@@ -48,21 +45,6 @@ namespace Lumix
 
 		public static string GetCmpType{ get { return "navmesh_agent"; } }
 
-
-		public NavmeshAgent(Entity _entity, int _componenId)
-		{
-			entity_ = _entity;
-			componentId_ = _componenId;
-			scene_ = getScene(entity_.instance_, "navmesh_agent");
-		}
-
-		public NavmeshAgent(Entity _entity)
-		{
-			entity_ = _entity;
-			componentId_ = create(entity_.instance_, entity_.entity_Id_, "navmesh_agent");
-			if (componentId_ < 0) throw new Exception("Failed to create component");
-			scene_ = getScene(entity_.instance_, "navmesh_agent");
-		}
 
 		/// <summary>
 		/// Gets or sets the Radius

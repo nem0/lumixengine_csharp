@@ -7,17 +7,18 @@ namespace Lumix
 {
 	public class Component
 	{
+		public Component() {}
+		
         private static byte[] s_imgui_text_buffer = new byte[4096];
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		protected extern static int create(IntPtr universe, int entity, string cmp_type);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		protected extern static IntPtr getScene(IntPtr universe, string cmp_type);
-
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		protected extern static void setCSharpProperty(IntPtr editor, IntPtr universe, int entity, Component cmp, string property, string value);
 
+		public int componentId_;
+		public IntPtr scene_;
 		public Entity entity_;
 		public Entity entity { get { return entity_; } }
 
@@ -26,7 +27,7 @@ namespace Lumix
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns>T or null if not exists</returns>
-        public T GetComponent<T>() where T : Component
+        public T GetComponent<T>() where T : Component, new()
         {
             return entity.GetComponent<T>();
         }
