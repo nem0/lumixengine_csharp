@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Lumix;
 
-namespace Lumix.Examples
+namespace Lumix
 {
    
     /// <summary>
@@ -35,7 +35,7 @@ namespace Lumix.Examples
         /// <summary>
         /// Init gets called by lumix right after construnction of this component
         /// </summary>
-        void Init()
+        void StartGame()
         {
             animController_ = GetComponent<AnimController>();
             agent_ = GetComponent<NavmeshAgent>();
@@ -51,6 +51,7 @@ namespace Lumix.Examples
         /// <param name="_deltaTime">The delta time.</param>
         void Update(float _deltaTime)
         {
+			Target =entity.Universe.GetEntityByName("target");
             ///get agent speed from navigation and set it as input to animation controller
             /// so it can play the right animation
             var agentSpeed = agent_.GetAgentSpeed();
