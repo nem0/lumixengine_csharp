@@ -46,21 +46,6 @@ namespace Lumix
 		public static string GetCmpType{ get { return "hinge_joint"; } }
 
 
-		public HingeJoint(Entity _entity, int _componenId)
-		{
-			entity_ = _entity;
-			componentId_ = _componenId;
-			scene_ = getScene(entity_.instance_, "hinge_joint");
-		}
-
-		public HingeJoint(Entity _entity)
-		{
-			entity_ = _entity;
-			componentId_ = create(entity_.instance_, entity_.entity_Id_, "hinge_joint");
-			if (componentId_ < 0) throw new Exception("Failed to create component");
-			scene_ = getScene(entity_.instance_, "hinge_joint");
-		}
-
 		/// <summary>
 		/// Gets or sets the ConnectedBody
 		/// </summary>

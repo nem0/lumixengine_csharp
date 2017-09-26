@@ -70,7 +70,7 @@ ComponentHandle csharp_Entity_getComponent(Universe* universe, Entity entity, Mo
 }
 
 
-IScene* csharp_Component_getScene(Universe* universe, MonoString* type_str)
+IScene* csharp_Entity_getScene(Universe* universe, MonoString* type_str)
 {
 	const char* type = mono_string_to_utf8(type_str);
 	ComponentType cmp_type = PropertyRegister::getComponentType(type);
@@ -521,7 +521,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	{
 		mono_add_internal_call("Lumix.Engine::logError", csharp_logError);
 		mono_add_internal_call("Lumix.Component::create", csharp_Component_create);
-		mono_add_internal_call("Lumix.Component::getScene", csharp_Component_getScene);
+		mono_add_internal_call("Lumix.Entity::getScene", csharp_Entity_getScene);
 		mono_add_internal_call("Lumix.Entity::getComponent", csharp_Entity_getComponent);
 		mono_add_internal_call("Lumix.Entity::destroy", csharp_Entity_destroy);
 		mono_add_internal_call("Lumix.Entity::setPosition", csharp_Entity_setPosition);

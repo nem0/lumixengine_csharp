@@ -310,20 +310,20 @@ namespace LumixBindings
                     //static helper function
                     tmpWriter.WriteLine("\t\tpublic static string GetCmpType{ get { return \"" + klass.Key.Replace("ModelInstance", "renderable").ToSeperateLower() + "\"; } }\n\n");
                     //default ctor1
-                    tmpWriter.WriteLine("\t\tpublic " + klass.Key + "(Entity _entity, int _componenId)");
-                    tmpWriter.WriteLine("\t\t{");
-                    tmpWriter.WriteLine("\t\t\tentity_ = _entity;");
-                    tmpWriter.WriteLine("\t\t\tcomponentId_ = _componenId;");
-                    tmpWriter.WriteLine("\t\t\tscene_ = getScene(entity_.instance_, \"" + klass.Key.Replace("ModelInstance", "renderable").ToSeperateLower() + "\");");
-                    tmpWriter.WriteLine("\t\t}\n");
+                    //tmpWriter.WriteLine("\t\tpublic " + klass.Key + "(Entity _entity, int _componenId)");
+                    //tmpWriter.WriteLine("\t\t{");
+                    //tmpWriter.WriteLine("\t\t\tentity_ = _entity;");
+                    //tmpWriter.WriteLine("\t\t\tcomponentId_ = _componenId;");
+                    //tmpWriter.WriteLine("\t\t\tscene_ = getScene(entity_.instance_, \"" + klass.Key.Replace("ModelInstance", "renderable").ToSeperateLower() + "\");");
+                    //tmpWriter.WriteLine("\t\t}\n");
                     //default ctor2
-                    tmpWriter.WriteLine("\t\tpublic " + klass.Key + "(Entity _entity)");
-                    tmpWriter.WriteLine("\t\t{");
-                    tmpWriter.WriteLine("\t\t\tentity_ = _entity;");
-                    tmpWriter.WriteLine("\t\t\tcomponentId_ = create(entity_.instance_, entity_.entity_Id_, \"" + klass.Key.Replace("ModelInstance", "renderable").ToSeperateLower() + "\");");
-                    tmpWriter.WriteLine("\t\t\tif (componentId_ < 0) throw new Exception(\"Failed to create component\");");
-                    tmpWriter.WriteLine("\t\t\tscene_ = getScene(entity_.instance_, \"" + klass.Key.Replace("ModelInstance", "renderable").ToSeperateLower() + "\");");
-                    tmpWriter.WriteLine("\t\t}\n");
+                    //tmpWriter.WriteLine("\t\tpublic " + klass.Key + "(Entity _entity)");
+                    //tmpWriter.WriteLine("\t\t{");
+                    //tmpWriter.WriteLine("\t\t\tentity_ = _entity;");
+                    //tmpWriter.WriteLine("\t\t\tcomponentId_ = create(entity_.instance_, entity_.entity_Id_, \"" + klass.Key.Replace("ModelInstance", "renderable").ToSeperateLower() + "\");");
+                    //tmpWriter.WriteLine("\t\t\tif (componentId_ < 0) throw new Exception(\"Failed to create component\");");
+                    //tmpWriter.WriteLine("\t\t\tscene_ = getScene(entity_.instance_, \"" + klass.Key.Replace("ModelInstance", "renderable").ToSeperateLower() + "\");");
+                    //tmpWriter.WriteLine("\t\t}\n");
 
                     //write down all known properties
                     foreach (var func in klass.Value)

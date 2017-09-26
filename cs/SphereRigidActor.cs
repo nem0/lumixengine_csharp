@@ -28,21 +28,6 @@ namespace Lumix
 		public static string GetCmpType{ get { return "sphere_rigid_actor"; } }
 
 
-		public SphereRigidActor(Entity _entity, int _componenId)
-		{
-			entity_ = _entity;
-			componentId_ = _componenId;
-			scene_ = getScene(entity_.instance_, "sphere_rigid_actor");
-		}
-
-		public SphereRigidActor(Entity _entity)
-		{
-			entity_ = _entity;
-			componentId_ = create(entity_.instance_, entity_.entity_Id_, "sphere_rigid_actor");
-			if (componentId_ < 0) throw new Exception("Failed to create component");
-			scene_ = getScene(entity_.instance_, "sphere_rigid_actor");
-		}
-
 		/// <summary>
 		/// Gets or sets the Radius
 		/// </summary>

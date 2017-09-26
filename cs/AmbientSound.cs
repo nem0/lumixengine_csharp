@@ -22,21 +22,6 @@ namespace Lumix
 		public static string GetCmpType{ get { return "ambient_sound"; } }
 
 
-		public AmbientSound(Entity _entity, int _componenId)
-		{
-			entity_ = _entity;
-			componentId_ = _componenId;
-			scene_ = getScene(entity_.instance_, "ambient_sound");
-		}
-
-		public AmbientSound(Entity _entity)
-		{
-			entity_ = _entity;
-			componentId_ = create(entity_.instance_, entity_.entity_Id_, "ambient_sound");
-			if (componentId_ < 0) throw new Exception("Failed to create component");
-			scene_ = getScene(entity_.instance_, "ambient_sound");
-		}
-
 		/// <summary>
 		/// Gets or sets the Sound
 		/// </summary>

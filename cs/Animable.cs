@@ -28,21 +28,6 @@ namespace Lumix
 		public static string GetCmpType{ get { return "animable"; } }
 
 
-		public Animable(Entity _entity, int _componenId)
-		{
-			entity_ = _entity;
-			componentId_ = _componenId;
-			scene_ = getScene(entity_.instance_, "animable");
-		}
-
-		public Animable(Entity _entity)
-		{
-			entity_ = _entity;
-			componentId_ = create(entity_.instance_, entity_.entity_Id_, "animable");
-			if (componentId_ < 0) throw new Exception("Failed to create component");
-			scene_ = getScene(entity_.instance_, "animable");
-		}
-
 		/// <summary>
 		/// Gets or sets the Animation
 		/// </summary>
