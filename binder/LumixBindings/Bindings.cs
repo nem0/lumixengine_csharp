@@ -10,6 +10,7 @@ namespace LumixBindings
         public static readonly string Version = "0.0.2";
         public static readonly string RootPath = @"../../../../../../LumixEngine/Src";
         public static readonly string CppSharpPath = @"../../../../../src/csharp.cpp";
+        public static readonly string EditorCsPath = @"../../../../../../lumixengine_data/cs";
         public static readonly string ApiPath =      @"../../../../../src/api.h";
         public static readonly string CSRootPath = @"../../../../../cs/";
         public static readonly bool DebugToken = false;

@@ -89,6 +89,19 @@ namespace LumixBindings
             template.AppendLine(" </Project>");
 
             File.WriteAllText(Path.Combine(_to, name_ + ".csproj"), template.ToString());
+
+            var path = Path.GetFullPath(Bindings.EditorCsPath);
+            var files = Directory.GetFiles(path, "*.cs");
+            foreach (var file in files)
+                File.Delete(file);
+
+            var newFiles = Directory.GetFiles(Bindings.CSRootPath, "*.cs", SearchOption.AllDirectories);
+            foreach (var file in newFiles)
+            {
+                if (file.ToLower().Contains("temporarygen"))
+                    continue;
+                File.Copy(file, Path.Combine(path, Path.GetFileName(file)));
+            }
         }
     }
 }
