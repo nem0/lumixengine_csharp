@@ -41,7 +41,7 @@ namespace Lumix
             instance_ = _universe;
             entity_Id_ = _id;
         }
-         public T GetComponent<T>() where T : Component, new()
+         public T GetComponent<T>() where T : Component
         {
             for (int i = 0, c = components.Count; i < c; ++i)
             {
@@ -57,10 +57,10 @@ namespace Lumix
                 int cmp_id = getComponent(instance_, entity_Id_, cmp_type);
                 if (cmp_id < 0) return null;
 
-                var cmp = new T();
-				cmp.componentId_ = cmp_id;
-				cmp.scene_ = getScene(instance_, cmp_type);
-				cmp.entity_ = this;
+                var cmp = (T)System.Activator.CreateInstance(typeof(T), new object[] { this, cmp_id, getScene(instance_, cmp_type) }); ///new T();
+				//cmp.componentId_ = cmp_id;
+				//cmp.scene_ = getScene(instance_, cmp_type);
+				//cmp.entity_ = this;
 
                 components.Add(cmp);
                 return cmp;

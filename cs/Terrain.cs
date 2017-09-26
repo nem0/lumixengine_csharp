@@ -55,6 +55,9 @@ namespace Lumix
 			set { setTerrainYScale(scene_, componentId_, value); }
 		}
 
+		public Terrain(Entity _entity, int _cmpId)
+			: base(_entity, _cmpId, getScene(_entity.instance_, GetCmpType)) { }
+
 	}//end class
 
 }//end namespace

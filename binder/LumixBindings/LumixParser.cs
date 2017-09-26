@@ -347,6 +347,10 @@ namespace LumixBindings
 
                     }
 
+                    //default component ctor
+                    tmpWriter.WriteLine("\t\tpublic {0}(Entity _entity, int _cmpId)", klass.Key);
+                    tmpWriter.WriteLine("\t\t\t: base(_entity, _cmpId, getScene(_entity.instance_, GetCmpType)) { }\n");
+
                     //write down all known funtions for that component
                     foreach (var func in knownFunctions)
                     {

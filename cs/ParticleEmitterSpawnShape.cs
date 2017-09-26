@@ -25,6 +25,9 @@ namespace Lumix
 			set { setParticleEmitterShapeRadius(scene_, componentId_, value); }
 		}
 
+		public ParticleEmitterSpawnShape(Entity _entity, int _cmpId)
+			: base(_entity, _cmpId, getScene(_entity.instance_, GetCmpType)) { }
+
 	}//end class
 
 }//end namespace

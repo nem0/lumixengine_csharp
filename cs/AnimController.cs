@@ -37,6 +37,9 @@ namespace Lumix
 			set { setControllerSource(scene_, componentId_, value); }
 		}
 
+		public AnimController(Entity _entity, int _cmpId)
+			: base(_entity, _cmpId, getScene(_entity.instance_, GetCmpType)) { }
+
 		public int GetControllerInputIndex(string name)
 		{
 			return getControllerInputIndex(scene_, componentId_, name);

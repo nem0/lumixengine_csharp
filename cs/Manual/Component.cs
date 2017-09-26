@@ -22,14 +22,23 @@ namespace Lumix
         public Entity entity_;
 		public Entity entity { get { return entity_; } }
 
-		public Component() {}
-		
+        public Component()
+        {
+            
+        }
+
+        public Component(Entity _entity, int _componentId, IntPtr _scene)
+        {
+            entity_ = _entity;
+            componentId_ = _componentId;
+            scene_ = _scene;
+        }
         /// <summary>
         /// gets any component which is attache to the underlying entity
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns>T or null if not exists</returns>
-        public T GetComponent<T>() where T : Component, new()
+        public T GetComponent<T>() where T : Component
         {
             return entity.GetComponent<T>();
         }
@@ -93,8 +102,10 @@ namespace Lumix
 		}
 	}
 
-	public class NativeComponent : Component
-	{
+    public class NativeComponent : Component
+    {
+        public NativeComponent(Entity _entity, int _cmpId, IntPtr _scene)
+            : base(_entity, _cmpId, _scene) { }
 
-	}
+    }
 }

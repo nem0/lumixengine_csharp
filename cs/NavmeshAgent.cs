@@ -82,6 +82,9 @@ namespace Lumix
 			set { setIsGettingRootMotionFromAnim(scene_, componentId_, value); }
 		}
 
+		public NavmeshAgent(Entity _entity, int _cmpId)
+			: base(_entity, _cmpId, getScene(_entity.instance_, GetCmpType)) { }
+
 		public void CancelNavigation()
 		{
 			cancelNavigation(scene_, componentId_);

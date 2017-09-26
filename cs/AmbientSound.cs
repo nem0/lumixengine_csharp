@@ -40,6 +40,9 @@ namespace Lumix
 			set { setAmbientSound3D(scene_, componentId_, value); }
 		}
 
+		public AmbientSound(Entity _entity, int _cmpId)
+			: base(_entity, _cmpId, getScene(_entity.instance_, GetCmpType)) { }
+
 	}//end class
 
 }//end namespace

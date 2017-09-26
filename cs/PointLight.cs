@@ -115,6 +115,9 @@ namespace Lumix
 			set { setLightCastShadows(scene_, componentId_, value); }
 		}
 
+		public PointLight(Entity _entity, int _cmpId)
+			: base(_entity, _cmpId, getScene(_entity.instance_, GetCmpType)) { }
+
 	}//end class
 
 }//end namespace

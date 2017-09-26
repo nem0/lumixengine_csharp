@@ -10,6 +10,9 @@ namespace Lumix
 		public static string GetCmpType{ get { return "lua_script"; } }
 
 
+		public LuaScript(Entity _entity, int _cmpId)
+			: base(_entity, _cmpId, getScene(_entity.instance_, GetCmpType)) { }
+
 	}//end class
 
 }//end namespace

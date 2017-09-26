@@ -40,6 +40,9 @@ namespace Lumix
 			set { setDecalScale(scene_, componentId_, value); }
 		}
 
+		public Decal(Entity _entity, int _cmpId)
+			: base(_entity, _cmpId, getScene(_entity.instance_, GetCmpType)) { }
+
 	}//end class
 
 }//end namespace
