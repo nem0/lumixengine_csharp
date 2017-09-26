@@ -8,6 +8,7 @@
 #include "engine/geometry.h"
 #include "engine/hash_map.h"
 #include "engine/iallocator.h"
+#include "engine/input_system.h"
 #include "engine/iplugin.h"
 #include "engine/log.h"
 #include "engine/path.h"
@@ -959,19 +960,19 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 	u32 createCSharpEntity(Entity entity)
 	{
-		u32 handle = createObject("Lumix", "Entity");
+		u32 handle = createObject("Lumix", "Entity", &m_universe);
 		m_entities_gc_handles.insert(entity, handle);
 
 		MonoObject* obj = mono_gchandle_get_target(handle);
 		ASSERT(obj);
 		MonoClass* mono_class = mono_object_get_class(obj);
 		
-		MonoClassField* field = mono_class_get_field_from_name(mono_class, "_entity_id");
+		MonoClassField* field = mono_class_get_field_from_name(mono_class, "entity_Id_");
 		ASSERT(field);
 
 		mono_field_set_value(obj, field, &entity.index);
 
-		MonoClassField* universe_field = mono_class_get_field_from_name(mono_class, "_universe");
+		MonoClassField* universe_field = mono_class_get_field_from_name(mono_class, "instance_");
 		ASSERT(universe_field);
 
 		void* y = &m_universe;
@@ -1366,6 +1367,21 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 		mono_runtime_object_init(obj);
 		return mono_gchandle_new(obj, false);
+	}
+
+
+	u32 createObject(const char* name_space, const char* class_name, void* arg)
+	{
+		MonoClass* mono_class = mono_class_from_name(mono_assembly_get_image(m_system.m_assembly), name_space, class_name);
+		if (!mono_class) return INVALID_GC_HANDLE;
+
+		MonoObject* obj = mono_object_new(m_system.m_domain, mono_class);
+		if (!obj) return INVALID_GC_HANDLE;
+
+		u32 gc_handle = mono_gchandle_new(obj, false);
+
+		tryCallMethod(gc_handle, ".ctor", arg, false);
+		return gc_handle;
 	}
 
 
