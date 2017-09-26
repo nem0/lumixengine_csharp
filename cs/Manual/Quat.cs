@@ -9,10 +9,10 @@ namespace Lumix
 
 public struct Quat
 {
-    float x;
-    float y;
-	float z;
-    float w;
+    public float x;
+    public float y;
+	public float z;
+    public float w;
 	
 	public Quat(float _x, float _y, float _z, float _w)
 	{
