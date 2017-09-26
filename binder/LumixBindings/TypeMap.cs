@@ -310,7 +310,7 @@ namespace LumixBindings
             }
             return NativeCPP;
         }
-        public string ToCsharp(bool _nativeDecl = false)
+        public string ToCsharp(bool _nativeDecl = false, bool _api = false)
         {
             if (IsEnum)
             {
@@ -335,7 +335,7 @@ namespace LumixBindings
                 case "bool":
                     return "bool";
                 case "float":
-                    return "float";
+                    return _api ? "single" : "float";
                 case "int":
                 case "Lumix::ComponentType":
                 case "Lumix::ComponentHandle":
@@ -348,7 +348,7 @@ namespace LumixBindings
             }
             var type = NativeCPP.Replace("const", "").Replace("*", "").Replace("Lumix::", "").Replace("&","").Trim();
             if (!Bindings.Classes.Contains(type) && type != "void" && !IsBasicType)
-                type = "System.IntPtr";
+                type =  "System.IntPtr";
            
             switch(type)
             {

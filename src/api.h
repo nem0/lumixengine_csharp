@@ -727,17 +727,17 @@ mono_add_internal_call("Lumix.Terrain::setTerrainYScale", fRenderScene_setTerrai
 	{
 		typedef void (AnimationScene::*MethodType)(Lumix::ComponentHandle, int, int);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::setControllerInput>;
-		mono_add_internal_call("Lumix.AnimController::setControllerInput(IntPtr, int, int, int)", f);
+		mono_add_internal_call("Lumix.AnimController::setControllerInput(intptr,int,int,int)", f);
 	}
 	{
 		typedef void (AnimationScene::*MethodType)(Lumix::ComponentHandle, int, float);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::setControllerInput>;
-		mono_add_internal_call("Lumix.AnimController::setControllerInput(IntPtr, int, int, float)", f);
+		mono_add_internal_call("Lumix.AnimController::setControllerInput(intptr,int,int,single)", f);
 	}
 	{
 		typedef void (AnimationScene::*MethodType)(Lumix::ComponentHandle, int, bool);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::setControllerInput>;
-		mono_add_internal_call("Lumix.AnimController::setControllerInput(IntPtr, int, int, bool)", f);
+		mono_add_internal_call("Lumix.AnimController::setControllerInput(intptr,int,int,bool)", f);
 	}
 	{
 		typedef void (NavigationScene::*MethodType)(Lumix::ComponentHandle);
@@ -897,12 +897,12 @@ mono_add_internal_call("Lumix.Terrain::setTerrainYScale", fRenderScene_setTerrai
 	{
 		typedef void (Universe::*MethodType)(Lumix::Entity, const Lumix::Transform &);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::setTransform>;
-		mono_add_internal_call("Lumix.Entity::setTransform(IntPtr, Entity, System.IntPtr)", f);
+		mono_add_internal_call("Lumix.Entity::setTransform(intptr,Entity,System.IntPtr)", f);
 	}
 	{
 		typedef void (Universe::*MethodType)(Lumix::Entity, const Lumix::Vec3 &, const Lumix::Quat &, float);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::setTransform>;
-		mono_add_internal_call("Lumix.Entity::setTransform(IntPtr, Entity, Vec3, Quat, float)", f);
+		mono_add_internal_call("Lumix.Entity::setTransform(intptr,Entity,Vec3,Quat,single)", f);
 	}
 	{
 		typedef void (Universe::*MethodType)(Lumix::Entity, const Lumix::Transform &);
@@ -917,22 +917,22 @@ mono_add_internal_call("Lumix.Terrain::setTerrainYScale", fRenderScene_setTerrai
 	{
 		typedef void (Universe::*MethodType)(Lumix::Entity, float, float, float, float);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::setRotation>;
-		mono_add_internal_call("Lumix.Entity::setRotation(IntPtr, Entity, float, float, float, float)", f);
+		mono_add_internal_call("Lumix.Entity::setRotation(intptr,Entity,single,single,single,single)", f);
 	}
 	{
 		typedef void (Universe::*MethodType)(Lumix::Entity, const Lumix::Quat &);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::setRotation>;
-		mono_add_internal_call("Lumix.Entity::setRotation(IntPtr, Entity, Quat)", f);
+		mono_add_internal_call("Lumix.Entity::setRotation(intptr,Entity,Quat)", f);
 	}
 	{
 		typedef void (Universe::*MethodType)(Lumix::Entity, float, float, float);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::setPosition>;
-		mono_add_internal_call("Lumix.Entity::setPosition(IntPtr, Entity, float, float, float)", f);
+		mono_add_internal_call("Lumix.Entity::setPosition(intptr,Entity,single,single,single)", f);
 	}
 	{
 		typedef void (Universe::*MethodType)(Lumix::Entity, const Lumix::Vec3 &);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::setPosition>;
-		mono_add_internal_call("Lumix.Entity::setPosition(IntPtr, Entity, Vec3)", f);
+		mono_add_internal_call("Lumix.Entity::setPosition(intptr,Entity,Vec3)", f);
 	}
 	{
 		typedef void (Universe::*MethodType)(Lumix::Entity, float);
@@ -987,12 +987,12 @@ mono_add_internal_call("Lumix.Terrain::setTerrainYScale", fRenderScene_setTerrai
 	{
 		typedef Lumix::IScene* (Universe::*MethodType)(Lumix::ComponentType) const;
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::getScene>;
-		mono_add_internal_call("Lumix.Entity::getScene(IntPtr, int)", f);
+		mono_add_internal_call("Lumix.Entity::getScene(intptr,int)", f);
 	}
 	{
 		typedef Lumix::IScene* (Universe::*MethodType)(unsigned int) const;
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::getScene>;
-		mono_add_internal_call("Lumix.Entity::getScene(IntPtr, uint)", f);
+		mono_add_internal_call("Lumix.Entity::getScene(intptr,uint)", f);
 	}
 	{
 		typedef void (Universe::*MethodType)(Lumix::IScene *);
@@ -1137,12 +1137,12 @@ mono_add_internal_call("Lumix.Terrain::setTerrainYScale", fRenderScene_setTerrai
 	{
 		typedef void (RenderScene::*MethodType)(const Lumix::Vec3 &, const Lumix::Vec3 &, const Lumix::Vec3 &, const Lumix::Vec3 &, unsigned int, float);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&RenderScene::addDebugCube>;
-		mono_add_internal_call("Lumix.RenderScene::addDebugCube(IntPtr, Vec3, Vec3, Vec3, Vec3, uint, float)", f);
+		mono_add_internal_call("Lumix.RenderScene::addDebugCube(intptr,Vec3,Vec3,Vec3,Vec3,uint,single)", f);
 	}
 	{
 		typedef void (RenderScene::*MethodType)(const Lumix::Vec3 &, const Lumix::Vec3 &, unsigned int, float);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&RenderScene::addDebugCube>;
-		mono_add_internal_call("Lumix.RenderScene::addDebugCube(IntPtr, Vec3, Vec3, uint, float)", f);
+		mono_add_internal_call("Lumix.RenderScene::addDebugCube(intptr,Vec3,Vec3,uint,single)", f);
 	}
 	{
 		typedef void (RenderScene::*MethodType)(const Lumix::Vec3 &, const Lumix::Vec3 &, unsigned int, float);
@@ -1162,22 +1162,22 @@ mono_add_internal_call("Lumix.Terrain::setTerrainYScale", fRenderScene_setTerrai
 	{
 		typedef void (RenderScene::*MethodType)(const Lumix::Vec3 &, const Lumix::Vec3 &, const Lumix::Vec3 &, float, float, float, float, unsigned int, float);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&RenderScene::addDebugFrustum>;
-		mono_add_internal_call("Lumix.RenderScene::addDebugFrustum(IntPtr, Vec3, Vec3, Vec3, float, float, float, float, uint, float)", f);
+		mono_add_internal_call("Lumix.RenderScene::addDebugFrustum(intptr,Vec3,Vec3,Vec3,single,single,single,single,uint,single)", f);
 	}
 	{
 		typedef void (RenderScene::*MethodType)(const Lumix::Frustum &, unsigned int, float);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&RenderScene::addDebugFrustum>;
-		mono_add_internal_call("Lumix.RenderScene::addDebugFrustum(IntPtr, System.IntPtr, uint, float)", f);
+		mono_add_internal_call("Lumix.RenderScene::addDebugFrustum(intptr,System.IntPtr,uint,single)", f);
 	}
 	{
 		typedef void (RenderScene::*MethodType)(const Lumix::Vec3 &, float, float, unsigned int, float);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&RenderScene::addDebugCapsule>;
-		mono_add_internal_call("Lumix.RenderScene::addDebugCapsule(IntPtr, Vec3, float, float, uint, float)", f);
+		mono_add_internal_call("Lumix.RenderScene::addDebugCapsule(intptr,Vec3,single,single,uint,single)", f);
 	}
 	{
 		typedef void (RenderScene::*MethodType)(const Lumix::Matrix &, float, float, unsigned int, float);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&RenderScene::addDebugCapsule>;
-		mono_add_internal_call("Lumix.RenderScene::addDebugCapsule(IntPtr, System.IntPtr, float, float, uint, float)", f);
+		mono_add_internal_call("Lumix.RenderScene::addDebugCapsule(intptr,System.IntPtr,single,single,uint,single)", f);
 	}
 	{
 		typedef void (RenderScene::*MethodType)(const Lumix::Vec3 &, const Lumix::Vec3 &, float, unsigned int, float);
@@ -1252,17 +1252,17 @@ mono_add_internal_call("Lumix.Terrain::setTerrainYScale", fRenderScene_setTerrai
 	{
 		typedef void (AnimationScene::*MethodType)(Lumix::ComponentHandle, int, int);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::setControllerInput>;
-		mono_add_internal_call("Lumix.AnimationScene::setControllerInput(IntPtr, int, int, int)", f);
+		mono_add_internal_call("Lumix.AnimationScene::setControllerInput(intptr,int,int,int)", f);
 	}
 	{
 		typedef void (AnimationScene::*MethodType)(Lumix::ComponentHandle, int, float);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::setControllerInput>;
-		mono_add_internal_call("Lumix.AnimationScene::setControllerInput(IntPtr, int, int, float)", f);
+		mono_add_internal_call("Lumix.AnimationScene::setControllerInput(intptr,int,int,single)", f);
 	}
 	{
 		typedef void (AnimationScene::*MethodType)(Lumix::ComponentHandle, int, bool);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::setControllerInput>;
-		mono_add_internal_call("Lumix.AnimationScene::setControllerInput(IntPtr, int, int, bool)", f);
+		mono_add_internal_call("Lumix.AnimationScene::setControllerInput(intptr,int,int,bool)", f);
 	}
 	{
 		typedef Lumix::RigidTransform (AnimationScene::*MethodType)(Lumix::ComponentHandle);
