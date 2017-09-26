@@ -645,7 +645,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 			Array<Script>& scripts = cmp->scripts;
 			for (Script& script : scripts)
 			{
-				tryCallMethod(script.gc_handle, "startGame", false);
+				tryCallMethod(script.gc_handle, "StartGame", false);
 			}
 		}
 		m_is_game_running = true;
@@ -941,7 +941,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 		mono_field_set_value(obj, field, entity_obj);
 
-		if (mono_class_get_method_from_name(mono_class, "update", 1))
+		if (mono_class_get_method_from_name(mono_class, "Update", 1))
 		{
 			m_updates.push(script.gc_handle);
 			script.has_update = true;
