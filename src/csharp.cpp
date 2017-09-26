@@ -1214,7 +1214,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 		for (u32 gc_handle : m_updates)
 		{
-			tryCallMethodInternal(gc_handle, "update", time_delta);
+			tryCallMethodInternal(gc_handle, "Update", time_delta);
 		}
 	}
 	
