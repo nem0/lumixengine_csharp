@@ -27,6 +27,9 @@ namespace Lumix
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         private extern static int getComponent(IntPtr universe, int entity, string cmp_type);
 
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		protected extern static IntPtr getScene(IntPtr universe, string cmp_type);
+		
         public void Destroy()
         {
             destroy(instance_, entity_Id_);
@@ -38,7 +41,7 @@ namespace Lumix
             instance_ = _universe;
             entity_Id_ = _id;
         }
-         public T GetComponent<T>() where T : Component
+         public T GetComponent<T>() where T : Component, new()
         {
             for (int i = 0, c = components.Count; i < c; ++i)
             {
@@ -54,7 +57,11 @@ namespace Lumix
                 int cmp_id = getComponent(instance_, entity_Id_, cmp_type);
                 if (cmp_id < 0) return null;
 
-                var cmp = (T)Activator.CreateInstance(typeof(T), this, cmp_id);
+                var cmp = new T();
+				cmp.componentId_ = cmp_id;
+				cmp.scene_ = getScene(instance_, cmp_type);
+				cmp.entity_ = this;
+
                 components.Add(cmp);
                 return cmp;
             }

@@ -17,17 +17,19 @@ namespace Lumix
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		protected extern static void setCSharpProperty(IntPtr editor, IntPtr universe, int entity, Component cmp, string property, string value);
-        internal int componentId_;
-        internal IntPtr scene_;
+        public int componentId_;
+        public IntPtr scene_;
         public Entity entity_;
 		public Entity entity { get { return entity_; } }
 
+		public Component() {}
+		
         /// <summary>
         /// gets any component which is attache to the underlying entity
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns>T or null if not exists</returns>
-        public T GetComponent<T>() where T : Component
+        public T GetComponent<T>() where T : Component, new()
         {
             return entity.GetComponent<T>();
         }
