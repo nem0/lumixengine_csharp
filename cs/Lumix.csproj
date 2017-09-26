@@ -42,6 +42,7 @@
     <Reference Include="System.Xml"/>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Manual\Universe.cs" />
     <Compile Include="Manual\Imgui.cs" />
     <Compile Include="Manual\Component.cs" />
     <Compile Include="Manual\Vec.cs" />

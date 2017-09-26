@@ -80,10 +80,11 @@ namespace Lumix
             set { setRotation(instance_, entity_Id_, value); }
         }
 
-        //public IntPtr Universe
-        //{
-        //    get { return new Universe(_universe); }
-        //}
+        public Universe Universe
+        {
+            get { return new Universe(instance_); }
+        }
+
         public static implicit operator int (Entity value)
         {
             return value.entity_Id_;
