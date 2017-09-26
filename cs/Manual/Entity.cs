@@ -57,7 +57,7 @@ namespace Lumix
                 int cmp_id = getComponent(instance_, entity_Id_, cmp_type);
                 if (cmp_id < 0) return null;
 
-                var cmp = (T)System.Activator.CreateInstance(typeof(T), new object[] { this, cmp_id, getScene(instance_, cmp_type) }); ///new T();
+                var cmp = (T)System.Activator.CreateInstance(typeof(T), new object[] { this, cmp_id }); ///new T();
 				//cmp.componentId_ = cmp_id;
 				//cmp.scene_ = getScene(instance_, cmp_type);
 				//cmp.entity_ = this;
