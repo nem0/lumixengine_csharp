@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class AmbientSound : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static int getAmbientSoundClipIndex(IntPtr scene, int cmp);
 

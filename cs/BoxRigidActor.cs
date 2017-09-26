@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class BoxRigidActor : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static int getDynamicType(IntPtr scene, int cmp);
 

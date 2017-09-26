@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class Decal : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static string getDecalMaterialPath(IntPtr scene, int cmp);
 

@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class MeshRigidActor : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static string getShapeSource(IntPtr scene, int cmp);
 

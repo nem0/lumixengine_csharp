@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class SharedAnimController : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static Entity getSharedControllerParent(IntPtr scene, int cmp);
 

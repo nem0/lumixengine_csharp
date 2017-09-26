@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class ParticleEmitter : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static Vec2 getParticleEmitterInitialLife(IntPtr scene, int cmp);
 

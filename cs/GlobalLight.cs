@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class GlobalLight : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static Vec3 getGlobalLightColor(IntPtr scene, int cmp);
 

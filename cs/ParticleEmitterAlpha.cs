@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class ParticleEmitterAlpha : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 
 		public static string GetCmpType{ get { return "particle_emitter_alpha"; } }
 

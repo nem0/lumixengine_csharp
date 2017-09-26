@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class ModelInstance : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static string getModelInstancePath(IntPtr scene, int cmp);
 

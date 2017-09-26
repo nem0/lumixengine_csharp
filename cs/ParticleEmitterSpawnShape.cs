@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class ParticleEmitterSpawnShape : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static float getParticleEmitterShapeRadius(IntPtr scene, int cmp);
 

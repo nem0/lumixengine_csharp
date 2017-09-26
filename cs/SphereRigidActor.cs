@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class SphereRigidActor : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static float getSphereRadius(IntPtr scene, int cmp);
 

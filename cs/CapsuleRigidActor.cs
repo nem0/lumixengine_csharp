@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class CapsuleRigidActor : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static float getCapsuleRadius(IntPtr scene, int cmp);
 

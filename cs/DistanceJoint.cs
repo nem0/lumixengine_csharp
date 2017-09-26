@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class DistanceJoint : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static float getDistanceJointDamping(IntPtr scene, int cmp);
 

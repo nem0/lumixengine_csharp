@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class BoneAttachment : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static Entity getBoneAttachmentParent(IntPtr scene, int cmp);
 

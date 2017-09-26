@@ -11,7 +11,7 @@ namespace Lumix
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static Entity createEntity(IntPtr instance, Vec3 position, Quat rotation);
+		extern static int createEntity(IntPtr instance, Vec3 position, Quat rotation);
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -43,19 +43,15 @@ namespace Lumix
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static Entity getFirstEntity(IntPtr instance);
+		extern static int getFirstEntity(IntPtr instance);
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static Entity getNextEntity(IntPtr instance, int entity);
+		extern static int getNextEntity(IntPtr instance, int entity);
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static string getEntityName(IntPtr instance, int entity);
-
-
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static Entity getEntityByName(IntPtr instance, string name);
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -71,15 +67,15 @@ namespace Lumix
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static Entity getParent(IntPtr instance, int entity);
+		extern static int getParent(IntPtr instance, int entity);
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static Entity getFirstChild(IntPtr instance, int entity);
+		extern static int getFirstChild(IntPtr instance, int entity);
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static Entity getNextSibling(IntPtr instance, int entity);
+		extern static int getNextSibling(IntPtr instance, int entity);
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -211,7 +207,7 @@ namespace Lumix
 
 		public Entity Parent
 		{
-			get { return getParent(instance_, entity_Id_); }
+			get { return new Entity(instance_, getParent(instance_, entity_Id_)); }
 			set { setParent(instance_, entity_Id_, value); }
 		}
 
@@ -246,7 +242,7 @@ namespace Lumix
 
 		public Entity CreateEntity(Vec3 position, Quat rotation)
 		{
-			return createEntity(instance_, position, rotation);
+			return new Entity(instance_, createEntity(instance_, position, rotation));
 		}
 
 		public void DestroyEntity()
@@ -286,17 +282,12 @@ namespace Lumix
 
 		public Entity GetFirstEntity()
 		{
-			return getFirstEntity(instance_);
+			return new Entity(instance_, getFirstEntity(instance_));
 		}
 
 		public Entity GetNextEntity()
 		{
-			return getNextEntity(instance_, entity_Id_);
-		}
-
-		public Entity GetEntityByName(string name)
-		{
-			return getEntityByName(instance_, name);
+			return new Entity(instance_, getNextEntity(instance_, entity_Id_));
 		}
 
 		public bool HasEntity()
@@ -311,12 +302,12 @@ namespace Lumix
 
 		public Entity GetFirstChild()
 		{
-			return getFirstChild(instance_, entity_Id_);
+			return new Entity(instance_, getFirstChild(instance_, entity_Id_));
 		}
 
 		public Entity GetNextSibling()
 		{
-			return getNextSibling(instance_, entity_Id_);
+			return new Entity(instance_, getNextSibling(instance_, entity_Id_));
 		}
 
 		public float GetLocalScale()

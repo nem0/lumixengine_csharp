@@ -17,8 +17,9 @@ namespace Lumix
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		protected extern static void setCSharpProperty(IntPtr editor, IntPtr universe, int entity, Component cmp, string property, string value);
-
-		public Entity entity_;
+        internal int componentId_;
+        internal IntPtr scene_;
+        public Entity entity_;
 		public Entity entity { get { return entity_; } }
 
         /// <summary>
@@ -30,7 +31,10 @@ namespace Lumix
         {
             return entity.GetComponent<T>();
         }
+        public virtual void Create()
+        {
 
+        }
         public virtual void onInspector(IntPtr editor)
 		{
 			var type = this.GetType();

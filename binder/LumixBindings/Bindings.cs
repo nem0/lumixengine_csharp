@@ -275,11 +275,11 @@ namespace LumixBindings
             {
                 if (!func.IsPartial)
                     continue;
-                if (!ret.ContainsKey(func.NativeClass))
+                if (!ret.ContainsKey(func.ManagedClass))
                 {
-                    ret.Add(func.NativeClass, new List<FunctionRegister>());
+                    ret.Add(func.ManagedClass, new List<FunctionRegister>());
                 }
-                ret[func.NativeClass].Add(func);
+                ret[func.ManagedClass].Add(func);
             }
             return ret;
         }

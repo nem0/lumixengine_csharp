@@ -12,6 +12,7 @@ namespace Lumix
     {
         internal int entity_Id_;
         internal IntPtr instance_;
+
         private List<Component> components = new List<Component>();
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -32,8 +33,12 @@ namespace Lumix
             entity_Id_ = -1;
         }
 
-
-        public T GetComponent<T>() where T : Component
+        public Entity(IntPtr _universe, int _id)
+        {
+            instance_ = _universe;
+            entity_Id_ = _id;
+        }
+         public T GetComponent<T>() where T : Component
         {
             for (int i = 0, c = components.Count; i < c; ++i)
             {
@@ -89,6 +94,5 @@ namespace Lumix
         {
             return value.entity_Id_;
         }
-
     }
 }

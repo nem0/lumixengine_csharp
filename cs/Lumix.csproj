@@ -52,6 +52,7 @@
     <Compile Include="Input.cs" />
     <Compile Include="Renderer.cs" />
     <Compile Include="Entity.Automatic.cs" />
+    <Compile Include="Universe.Automatic.cs" />
     <Compile Include="Animable.cs" />
     <Compile Include="SharedAnimController.cs" />
     <Compile Include="AmbientSound.cs" />

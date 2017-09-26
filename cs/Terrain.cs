@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class Terrain : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static string getTerrainMaterialPath(IntPtr scene, int cmp);
 

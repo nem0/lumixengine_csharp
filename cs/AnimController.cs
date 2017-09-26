@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class AnimController : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static string getControllerSource(IntPtr scene, int cmp);
 

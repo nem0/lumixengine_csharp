@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class ParticleEmitterSubimage : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static int getParticleEmitterSubimageRows(IntPtr scene, int cmp);
 

@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class LuaScript : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 
 		public static string GetCmpType{ get { return "lua_script"; } }
 

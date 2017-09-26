@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class PointLight : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static Vec3 getPointLightColor(IntPtr scene, int cmp);
 

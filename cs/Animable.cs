@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class Animable : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static string getAnimation(IntPtr scene, int cmp);
 

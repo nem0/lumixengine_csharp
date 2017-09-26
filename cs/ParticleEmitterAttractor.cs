@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class ParticleEmitterAttractor : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static float getParticleEmitterAttractorForce(IntPtr scene, int cmp);
 

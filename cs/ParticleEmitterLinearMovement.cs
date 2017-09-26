@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class ParticleEmitterLinearMovement : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static Vec2 getParticleEmitterLinearMovementX(IntPtr scene, int cmp);
 

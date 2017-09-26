@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class EchoZone : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static float getEchoZoneRadius(IntPtr scene, int cmp);
 

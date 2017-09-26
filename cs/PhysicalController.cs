@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class PhysicalController : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static int getControllerLayer(IntPtr scene, int cmp);
 

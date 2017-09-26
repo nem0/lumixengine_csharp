@@ -279,8 +279,8 @@ namespace LumixBindings
                     tmpWriter.WriteLine("\tpublic class " + klass.Key + " : NativeComponent");
                     tmpWriter.WriteLine("\t{");
                     //local fields
-                    tmpWriter.WriteLine("\t\tint componentId_;");
-                    tmpWriter.WriteLine("\t\tIntPtr scene_;\n");
+                    //tmpWriter.WriteLine("\t\tint componentId_;");
+                    //tmpWriter.WriteLine("\t\tIntPtr scene_;\n");
                     //platform calls
                     foreach (var func in klass.Value)
                     {
@@ -460,7 +460,10 @@ namespace LumixBindings
                     //actual c# property
                     _writer.WriteLine("\t\tpublic " + retType + " " + getter.Replace("get", "").SharpyFy());
                     _writer.WriteLine("\t\t{");
-                    _writer.WriteLine(string.Format("\t\t\tget {{ return " + getter + "(instance_, {0}); }}", prop.Key.ManagedClass.ToLower() + "_Id_"));
+                    if (func.ReturnTypemap.NativeCPP == "Lumix::Entity")
+                        _writer.WriteLine(string.Format("\t\t\tget {{ return new Entity(instance_, " + getter + "(instance_, {0})); }}", prop.Key.ManagedClass.ToLower() + "_Id_"));
+                    else
+                        _writer.WriteLine(string.Format("\t\t\tget {{ return " + getter + "(instance_, {0}); }}", prop.Key.ManagedClass.ToLower() + "_Id_"));
                     _writer.WriteLine(string.Format("\t\t\tset {{ " + setter + "(instance_, {0}, value); }}", prop.Key.ManagedClass.ToLower() + "_Id_"));
 
                     _writer.WriteLine("\t\t}\n");
@@ -517,7 +520,7 @@ namespace LumixBindings
                         if (++idx < meth[k].Values.Length)
                             args += ", ";
                     }
-                    _writer.Write(string.Format("\t\textern static {0} {1}({2});\n", (meth[k].IsReturnSomething ? meth[k].ReturnTypemap.ToCsharp() : "void"), _func.Name, args));
+                    _writer.Write(string.Format("\t\textern static {0} {1}({2});\n", (meth[k].IsReturnSomething ? meth[k].ReturnTypemap.ToCsharp(true) : "void"), _func.Name, args));
                 }
             }
             else
@@ -558,14 +561,22 @@ namespace LumixBindings
 
                     //func body start
                     _writer.WriteLine("\t\t{");
+                    bool isEntReturn = false;
+                    
                     if (meth[i].IsReturnSomething)
                     {
                         _writer.Write("\t\t\treturn ");
+                        if(meth[i].ReturnTypemap.NativeCPP == "Lumix::Entity")
+                        {
+                            _writer.Write("new Entity(instance_, ");
+                            isEntReturn = true;
+                        }
                     }
                     else
                     {
                         _writer.Write("\t\t\t");
                     }
+                    
                     string args = "";
                     if (!_isStatic)
                     {
@@ -588,7 +599,7 @@ namespace LumixBindings
 
                     }
                     //call native func
-                    _writer.Write(string.Format("{0}({1});\n", _func.Name, args));
+                    _writer.Write(string.Format("{0}({1}{2});\n", _func.Name, args, (isEntReturn ? ")" : "")));
                     //func body end
                     _writer.WriteLine("\t\t}\n");
                 }

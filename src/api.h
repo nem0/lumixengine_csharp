@@ -815,11 +815,6 @@ mono_add_internal_call("Lumix.Terrain::setTerrainYScale", fRenderScene_setTerrai
 		mono_add_internal_call("Lumix.Entity::getEntityName", f);
 	}
 	{
-		typedef Lumix::Entity (Universe::*MethodType)(const char *);
-		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::getEntityByName>;
-		mono_add_internal_call("Lumix.Entity::getEntityByName", f);
-	}
-	{
 		typedef void (Universe::*MethodType)(Lumix::Entity, const char *);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::setEntityName>;
 		mono_add_internal_call("Lumix.Entity::setEntityName", f);
@@ -1003,6 +998,11 @@ mono_add_internal_call("Lumix.Terrain::setTerrainYScale", fRenderScene_setTerrai
 		typedef void (Universe::*MethodType)(Lumix::IScene *);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::addScene>;
 		mono_add_internal_call("Lumix.Entity::addScene", f);
+	}
+	{
+		typedef Lumix::Entity (Universe::*MethodType)(const char *);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::getEntityByName>;
+		mono_add_internal_call("Lumix.Universe::getEntityByName", f);
 	}
 	{
 		typedef void (AudioScene::*MethodType)(int, float, float, float, float);

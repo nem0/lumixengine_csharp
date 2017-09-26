@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class ParticleEmitterPlane : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static float getParticleEmitterPlaneBounce(IntPtr scene, int cmp);
 

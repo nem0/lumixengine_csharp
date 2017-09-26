@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class NavmeshAgent : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static float getAgentRadius(IntPtr scene, int cmp);
 

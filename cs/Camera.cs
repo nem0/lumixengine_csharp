@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class Camera : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static string getCameraSlot(IntPtr scene, int cmp);
 

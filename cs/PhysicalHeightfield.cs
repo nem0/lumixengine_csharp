@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class PhysicalHeightfield : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static string getHeightmapSource(IntPtr scene, int cmp);
 

@@ -915,7 +915,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 			{
 				char class_name[256];
 				getClassName(name_hash, class_name);
-				script.gc_handle = createObject("", class_name);
+				script.gc_handle = createObject("Lumix", class_name);
 				ASSERT(script.gc_handle != INVALID_GC_HANDLE);
 
 				setCSharpComponent(script, cmp);
@@ -1466,7 +1466,6 @@ void CSharpPluginImpl::loadAssembly()
 	m_on_assembly_load.invoke();
 }
 
-
 void CSharpPluginImpl::createScenes(Universe& universe)
 {
 	CSharpScriptSceneImpl* scene = LUMIX_NEW(m_engine.getAllocator(), CSharpScriptSceneImpl)(*this, universe);
@@ -1504,7 +1503,6 @@ CSHARP_FUNCTION(Universe, getNextComponent, nostatic, Entity, partial);
 CSHARP_FUNCTION(Universe, getFirstEntity, nostatic, Entity, partial);
 CSHARP_FUNCTION(Universe, getNextEntity, nostatic, Entity, partial);
 CSHARP_FUNCTION(Universe, getEntityName, nostatic, Entity, partial);
-CSHARP_FUNCTION(Universe, getEntityByName, nostatic, Entity, partial);
 CSHARP_FUNCTION(Universe, setEntityName, nostatic, Entity, partial);
 CSHARP_FUNCTION(Universe, hasEntity, nostatic, Entity, partial);
 CSHARP_FUNCTION(Universe, isDescendant, nostatic, Entity, partial);
@@ -1538,6 +1536,7 @@ CSHARP_FUNCTION(Universe, serialize, nostatic, Entity, partial);
 CSHARP_FUNCTION(Universe, deserialize, nostatic, Entity, partial);
 CSHARP_FUNCTION(Universe, getScene, nostatic, Entity, partial);
 CSHARP_FUNCTION(Universe, addScene, nostatic, Entity, partial);
+CSHARP_FUNCTION(Universe, getEntityByName, nostatic, Universe, partial);
 
 //audio
 CSHARP_FUNCTION(AudioScene, setEcho, nostatic, AudioScene, component);

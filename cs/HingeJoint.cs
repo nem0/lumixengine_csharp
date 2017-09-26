@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class HingeJoint : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static Entity getJointConnectedBody(IntPtr scene, int cmp);
 

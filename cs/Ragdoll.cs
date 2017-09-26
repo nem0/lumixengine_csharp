@@ -6,9 +6,6 @@ namespace Lumix
 {
 	public class Ragdoll : NativeComponent
 	{
-		int componentId_;
-		IntPtr scene_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static int getRagdollLayer(IntPtr scene, int cmp);
 
