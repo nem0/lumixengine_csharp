@@ -46,7 +46,7 @@ namespace Lumix
 					float f_val = (float)val;
 					if(ImGui.DragFloat(f.Name, ref f_val, 0.1f, float.MaxValue, float.MaxValue, "%f", 1))
 					{
-						setCSharpProperty(editor, entity._universe, entity._entity_id, this, f.Name, f_val.ToString());
+						setCSharpProperty(editor, entity.instance_, entity.entity_Id_, this, f.Name, f_val.ToString());
 					}
 				}
 				else if (val_type == typeof(bool))
@@ -54,7 +54,7 @@ namespace Lumix
 					bool b_val = (bool)val;
 					if(ImGui.Checkbox(f.Name, ref b_val))
 					{
-						setCSharpProperty(editor, entity._universe, entity._entity_id, this, f.Name, b_val.ToString());
+						setCSharpProperty(editor, entity.instance_, entity.entity_Id_, this, f.Name, b_val.ToString());
 					}
 				}
 				else if (val_type == typeof(int))
@@ -62,7 +62,7 @@ namespace Lumix
 					int i_val = (int)val;
 					if(ImGui.InputInt(f.Name, ref i_val, 1, 10, 0))
 					{
-						setCSharpProperty(editor, entity._universe, entity._entity_id, this, f.Name, i_val.ToString());
+						setCSharpProperty(editor, entity.instance_, entity.entity_Id_, this, f.Name, i_val.ToString());
 					}
 				}
 				else if (val_type == typeof(string))
@@ -73,7 +73,7 @@ namespace Lumix
 					if (ImGui.InputText(f.Name, s_imgui_text_buffer, 0, IntPtr.Zero, IntPtr.Zero))
 					{
 						string new_val = System.Text.Encoding.ASCII.GetString(s_imgui_text_buffer);
-						setCSharpProperty(editor, entity._universe, entity._entity_id, this, f.Name, new_val);
+						setCSharpProperty(editor, entity.instance_, entity.entity_Id_, this, f.Name, new_val);
 					}
 				}
 				else

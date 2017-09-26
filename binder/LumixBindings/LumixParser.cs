@@ -314,15 +314,15 @@ namespace LumixBindings
                     tmpWriter.WriteLine("\t\t{");
                     tmpWriter.WriteLine("\t\t\tentity_ = _entity;");
                     tmpWriter.WriteLine("\t\t\tcomponentId_ = _componenId;");
-                    tmpWriter.WriteLine("\t\t\tscene_ = getScene(entity_._universe, \"" + klass.Key.Replace("ModelInstance", "renderable").ToSeperateLower() + "\");");
+                    tmpWriter.WriteLine("\t\t\tscene_ = getScene(entity_.instance_, \"" + klass.Key.Replace("ModelInstance", "renderable").ToSeperateLower() + "\");");
                     tmpWriter.WriteLine("\t\t}\n");
                     //default ctor2
                     tmpWriter.WriteLine("\t\tpublic " + klass.Key + "(Entity _entity)");
                     tmpWriter.WriteLine("\t\t{");
                     tmpWriter.WriteLine("\t\t\tentity_ = _entity;");
-                    tmpWriter.WriteLine("\t\t\tcomponentId_ = create(entity_._universe, entity_._entity_id, \"" + klass.Key.Replace("ModelInstance", "renderable").ToSeperateLower() + "\");");
+                    tmpWriter.WriteLine("\t\t\tcomponentId_ = create(entity_.instance_, entity_.entity_Id_, \"" + klass.Key.Replace("ModelInstance", "renderable").ToSeperateLower() + "\");");
                     tmpWriter.WriteLine("\t\t\tif (componentId_ < 0) throw new Exception(\"Failed to create component\");");
-                    tmpWriter.WriteLine("\t\t\tscene_ = getScene(entity_._universe, \"" + klass.Key.Replace("ModelInstance", "renderable").ToSeperateLower() + "\");");
+                    tmpWriter.WriteLine("\t\t\tscene_ = getScene(entity_.instance_, \"" + klass.Key.Replace("ModelInstance", "renderable").ToSeperateLower() + "\");");
                     tmpWriter.WriteLine("\t\t}\n");
 
                     //write down all known properties
@@ -405,18 +405,37 @@ namespace LumixBindings
                         tmpWriter.WriteLine("}");
                     }
                 }
-               
+
+                var partial = knownFunctions.GetPartialClass();
+                //write down classes
+                foreach (var kvp in partial)
+                {
+                    
+                    project.AddClass(kvp.Value[0].ManagedClass+".Automatic");
+                    using (var tmpWriter = new StreamWriter(Path.Combine(Bindings.CSRootPath, kvp.Value[0].ManagedClass + ".Automatic.cs")))
+                    {
+                        //write down the using directives
+                        tmpWriter.WriteLine("using System;");
+                        tmpWriter.WriteLine("using System.Runtime.InteropServices;");
+                        tmpWriter.WriteLine("using System.Runtime.CompilerServices;\n");
+                        tmpWriter.WriteLine("namespace Lumix"); ;
+                        tmpWriter.WriteLine("{");
+                        WriteCsharpClass(tmpWriter, kvp.Value, kvp.Value[0].ManagedClass, false, true);
+                        tmpWriter.WriteLine("}");
+                    }
+                }
+
             }
 
             project.Export(Bindings.CSRootPath);
         }
 
-        void WriteCsharpClass(StreamWriter _writer,List<FunctionRegister> _methods, string _name, bool _isStatic)
+        void WriteCsharpClass(StreamWriter _writer,List<FunctionRegister> _methods, string _name, bool _isStatic, bool _isPartial = false)
         {
             //class def
-            _writer.WriteLine("\tpublic " + (_isStatic ? "static class " : "class ") + _name);
+            _writer.WriteLine("\tpublic " + (_isPartial ? "partial " : "") + (_isStatic ? "static class " : "class ") + _name);
             _writer.WriteLine("\t{");
-            if (!_isStatic)
+            if (!_isStatic && !_isPartial)
                 _writer.WriteLine("\t\tIntPtr instance_;\n");
             //write down all mono decls
             foreach (var func in _methods)
@@ -427,10 +446,36 @@ namespace LumixBindings
             {
                 WriteCsharpDefaultCtor(_writer, _name);
             }
+            //convert funcs in properties where possible
+            var props = new List<KeyValuePair<FunctionRegister, FunctionRegister>>(); 
+            if (_isPartial)//propertie extraction only for partials atm
+            {
+                props = _methods.GetProperties(nsc_);
+                foreach (var prop in props)
+                {
+                    var func = prop.Key.Method;
+                    string getter = func.Name.StartsWith("get") ? func.Name : prop.Value.Name;
+                    string setter = func.Name.StartsWith("set") ? func.Name : prop.Value.Name;
+                    string retType = func.Name.StartsWith("get") ? func.ReturnTypemap.ToCsharp() : prop.Value.Method.ReturnTypemap.ToCsharp();
+                    //actual c# property
+                    _writer.WriteLine("\t\tpublic " + retType + " " + getter.Replace("get", "").SharpyFy());
+                    _writer.WriteLine("\t\t{");
+                    _writer.WriteLine(string.Format("\t\t\tget {{ return " + getter + "(instance_, {0}); }}", prop.Key.ManagedClass.ToLower() + "_Id_"));
+                    _writer.WriteLine(string.Format("\t\t\tset {{ " + setter + "(instance_, {0}, value); }}", prop.Key.ManagedClass.ToLower() + "_Id_"));
+
+                    _writer.WriteLine("\t\t}\n");
+                }
+            }
             //write down all funtions
             foreach (var func in _methods)
             {
-                WriteCsharpFunction(_writer, func, _isStatic);
+                if (_isPartial)
+                {
+                    var val = props.Find(x => x.Key == func || x.Value == func);
+                    if (val.Key != null)
+                        continue;
+                }
+                WriteCsharpFunction(_writer, func, _isStatic, _isPartial, _name);
             }
 
             _writer.WriteLine("\t}");
@@ -450,7 +495,6 @@ namespace LumixBindings
 
             if (_func.IsInvalid)
                 return;
-
             var meth = nsc_.GetMethodFromClass(_func.NativeClass.Replace("Impl", ""), _func.Name);
 
             if (meth != null)
@@ -469,7 +513,7 @@ namespace LumixBindings
                     int idx = 0;
                     foreach (var argument in meth[k].Values)
                     {
-                        args += argument.TypeMap.ToCsharp() + " " + argument.Name;
+                        args += argument.TypeMap.ToCsharp(true) + " " + argument.Name;
                         if (++idx < meth[k].Values.Length)
                             args += ", ";
                     }
@@ -484,7 +528,7 @@ namespace LumixBindings
             _writer.WriteLine("\n");
         }
 
-        void WriteCsharpFunction(StreamWriter _writer, FunctionRegister _func, bool _isStatic)
+        void WriteCsharpFunction(StreamWriter _writer, FunctionRegister _func, bool _isStatic,bool _isPartial = false, string _klassName = "")
         {
             var meth = nsc_.GetMethodFromClass(_func.NativeClass.Replace("Impl", ""), _func.Name);
 
@@ -501,7 +545,9 @@ namespace LumixBindings
                     for (int k = 0; k < meth[i].Values.Length; k++)
                     {
                         var arg = meth[i].Values[k];
-                        if (arg.TypeMap.NativeCPP == "Lumix::ComponentHandle")
+                        if (arg.TypeMap.NativeCPP == "Lumix::ComponentHandle" && _func.IsComponent)
+                            continue;
+                        if (arg.TypeMap.NativeCPP == "Lumix::"+_klassName && _isPartial)
                             continue;
                         _writer.Write(arg.TypeMap.ToCsharp() + " ");
                         _writer.Write(arg.Name);
@@ -530,8 +576,10 @@ namespace LumixBindings
                     int idx = 0;
                     foreach (var argument in meth[i].Values)
                     {
-                        if (argument.TypeMap.NativeCPP == "Lumix::ComponentHandle")
+                        if (argument.TypeMap.NativeCPP == "Lumix::ComponentHandle" && _func.IsComponent)
                             args += "componentId_";
+                        else if (argument.TypeMap.NativeCPP == "Lumix::" + _klassName && _isPartial)
+                            args += _klassName.ToLower() + "_Id_";
                         else
                             args += argument.Name;
 

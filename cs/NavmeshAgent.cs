@@ -53,15 +53,15 @@ namespace Lumix
 		{
 			entity_ = _entity;
 			componentId_ = _componenId;
-			scene_ = getScene(entity_._universe, "navmesh_agent");
+			scene_ = getScene(entity_.instance_, "navmesh_agent");
 		}
 
 		public NavmeshAgent(Entity _entity)
 		{
 			entity_ = _entity;
-			componentId_ = create(entity_._universe, entity_._entity_id, "navmesh_agent");
+			componentId_ = create(entity_.instance_, entity_.entity_Id_, "navmesh_agent");
 			if (componentId_ < 0) throw new Exception("Failed to create component");
-			scene_ = getScene(entity_._universe, "navmesh_agent");
+			scene_ = getScene(entity_.instance_, "navmesh_agent");
 		}
 
 		/// <summary>

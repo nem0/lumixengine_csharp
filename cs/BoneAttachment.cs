@@ -29,15 +29,15 @@ namespace Lumix
 		{
 			entity_ = _entity;
 			componentId_ = _componenId;
-			scene_ = getScene(entity_._universe, "bone_attachment");
+			scene_ = getScene(entity_.instance_, "bone_attachment");
 		}
 
 		public BoneAttachment(Entity _entity)
 		{
 			entity_ = _entity;
-			componentId_ = create(entity_._universe, entity_._entity_id, "bone_attachment");
+			componentId_ = create(entity_.instance_, entity_.entity_Id_, "bone_attachment");
 			if (componentId_ < 0) throw new Exception("Failed to create component");
-			scene_ = getScene(entity_._universe, "bone_attachment");
+			scene_ = getScene(entity_.instance_, "bone_attachment");
 		}
 
 		/// <summary>

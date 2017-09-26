@@ -268,7 +268,21 @@ namespace LumixBindings
             }
             return ret;
         }
-
+        public static Dictionary<string, List<FunctionRegister>> GetPartialClass(this List<FunctionRegister> _this)
+        {
+            Dictionary<string, List<FunctionRegister>> ret = new Dictionary<string, List<FunctionRegister>>();
+            foreach (var func in _this)
+            {
+                if (!func.IsPartial)
+                    continue;
+                if (!ret.ContainsKey(func.NativeClass))
+                {
+                    ret.Add(func.NativeClass, new List<FunctionRegister>());
+                }
+                ret[func.NativeClass].Add(func);
+            }
+            return ret;
+        }
         public static Dictionary<string, List<FunctionRegister>> GetClasses(this List<FunctionRegister> _this, bool _staticOnly = true)
         {
             Dictionary<string, List<FunctionRegister>> ret = new Dictionary<string, List<FunctionRegister>>();
@@ -297,6 +311,40 @@ namespace LumixBindings
         public static string[] ToTrimmedArray(this string[] _this)
         {
             return _this.Select(x => x.Trim()).ToArray();
+        }
+
+        public static List<KeyValuePair<FunctionRegister, FunctionRegister>> GetProperties(this List<FunctionRegister> _this, NamespaceCollector _nsc)
+        {
+            List<KeyValuePair<FunctionRegister, FunctionRegister>> properties = new List<KeyValuePair<FunctionRegister, FunctionRegister>>();
+            Dictionary<string, FunctionRegister> funcs = new Dictionary<string, FunctionRegister>();
+            foreach(var f in _this)
+            {
+                var meth = _nsc.GetMethodFromClass(f.NativeClass, f.Name);
+                if (meth == null)
+                {
+                    continue;
+                }
+                if (meth.Length != 1)
+                    continue;
+               
+                bool getter = meth[0].Name.StartsWith("get");
+                bool setter = meth[0].Name.StartsWith("set");
+                if (!getter && !setter)
+                    continue;
+                var fname = meth[0].Name.Replace("get", "").Replace("set", "");
+                f.Method = meth[0];
+                if (funcs.ContainsKey(fname))
+                {
+                    
+                    properties.Add(new KeyValuePair<FunctionRegister, FunctionRegister>(funcs[fname], f));
+                }
+                else
+                {
+                    funcs.Add(fname, f);
+                }
+            }
+
+            return properties;
         }
     }
 }

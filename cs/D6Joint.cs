@@ -77,15 +77,15 @@ namespace Lumix
 		{
 			entity_ = _entity;
 			componentId_ = _componenId;
-			scene_ = getScene(entity_._universe, "d6_joint");
+			scene_ = getScene(entity_.instance_, "d6_joint");
 		}
 
 		public D6Joint(Entity _entity)
 		{
 			entity_ = _entity;
-			componentId_ = create(entity_._universe, entity_._entity_id, "d6_joint");
+			componentId_ = create(entity_.instance_, entity_.entity_Id_, "d6_joint");
 			if (componentId_ < 0) throw new Exception("Failed to create component");
-			scene_ = getScene(entity_._universe, "d6_joint");
+			scene_ = getScene(entity_.instance_, "d6_joint");
 		}
 
 		/// <summary>

@@ -80,6 +80,11 @@ namespace LumixBindings
             get { return data_[data_.Length - 1] == "class"; }
         }
 
+        public bool IsPartial
+        {
+            get { return data_[data_.Length - 1] == "partial"; }
+        }
+
         public string[] Components
         {
             get
@@ -107,7 +112,11 @@ namespace LumixBindings
                 return new string[] { "INVALID" };
             }
         }
-
+        public Method Method
+        {
+            get;
+            set;
+        }
         public FunctionRegister(string _content)
         {
             content_ = _content;

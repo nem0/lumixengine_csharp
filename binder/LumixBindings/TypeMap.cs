@@ -310,7 +310,7 @@ namespace LumixBindings
             }
             return NativeCPP;
         }
-        public string ToCsharp()
+        public string ToCsharp(bool _nativeDecl = false)
         {
             if (IsEnum)
             {
@@ -318,8 +318,33 @@ namespace LumixBindings
             }
             switch(NativeCPP)
             {
+                case "const Lumix::Vec2 &":
+                case "Lumix::Vec2":
+                    return "Vec2";
+                case "const Lumix::Vec3 &":
+                case "Lumix::Vec3":
+                    return "Vec3";
+                case "const Lumix::Vec4 &":
+                case "Lumix::Vec4":
+                    return "Vec4";
+                case "const Lumix::Quat &":
+                case "Lumix::Quat":
+                    return "Quat";
+                case "Lumix::Entity":
+                    return _nativeDecl ? "int" : "Entity";
+                case "bool":
+                    return "bool";
+                case "float":
+                    return "float";
+                case "int":
+                case "Lumix::ComponentType":
+                case "Lumix::ComponentHandle":
+                    return "int";
+                case "unsigned int":
+                    return "uint";
                 case "const char *":
                     return "string";
+              
             }
             var type = NativeCPP.Replace("const", "").Replace("*", "").Replace("Lumix::", "").Replace("&","").Trim();
             if (!Bindings.Classes.Contains(type) && type != "void" && !IsBasicType)
@@ -327,6 +352,8 @@ namespace LumixBindings
            
             switch(type)
             {
+                case "u32":
+                    return "uint";
                 case "Vec2":
                 case "Vec3":
                 case "Vec4":

@@ -47,15 +47,15 @@ namespace Lumix
 		{
 			entity_ = _entity;
 			componentId_ = _componenId;
-			scene_ = getScene(entity_._universe, "distance_joint");
+			scene_ = getScene(entity_.instance_, "distance_joint");
 		}
 
 		public DistanceJoint(Entity _entity)
 		{
 			entity_ = _entity;
-			componentId_ = create(entity_._universe, entity_._entity_id, "distance_joint");
+			componentId_ = create(entity_.instance_, entity_.entity_Id_, "distance_joint");
 			if (componentId_ < 0) throw new Exception("Failed to create component");
-			scene_ = getScene(entity_._universe, "distance_joint");
+			scene_ = getScene(entity_.instance_, "distance_joint");
 		}
 
 		/// <summary>

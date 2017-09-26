@@ -48,10 +48,9 @@
     <Compile Include="Manual\Quat.cs" />
     <Compile Include="Manual\Entity.cs" />
     <Compile Include="AnimController.cs" />
-    <Compile Include="Engine.cs" />
     <Compile Include="Input.cs" />
     <Compile Include="Renderer.cs" />
-    <Compile Include="Universe.cs" />
+    <Compile Include="Entity.Automatic.cs" />
     <Compile Include="Animable.cs" />
     <Compile Include="SharedAnimController.cs" />
     <Compile Include="AmbientSound.cs" />
