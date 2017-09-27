@@ -56,7 +56,7 @@ namespace Lumix
         {
 
         }
-        public virtual void onInspector(IntPtr editor)
+        public virtual void OnInspector(IntPtr editor)
 		{
 			var type = this.GetType();
 			foreach (var f in type.GetFields())

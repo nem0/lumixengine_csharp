@@ -459,7 +459,7 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 			{
 				ImGui::PushID(j);
 				u32 gc_handle = scene->getGCHandle(cmp.handle, j);
-				scene->tryCallMethod(gc_handle, "onInspector", this, true);
+				scene->tryCallMethod(gc_handle, "OnInspector", this, true);
 				if (ImGui::Button("Edit"))
 				{
 					StaticString<MAX_PATH_LENGTH> full_path(editor.getEngine().getDiskFileDevice()->getBasePath(), "cs/", script_name, ".cs");
