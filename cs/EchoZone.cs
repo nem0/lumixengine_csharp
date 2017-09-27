@@ -22,6 +22,10 @@ namespace Lumix
 		public static string GetCmpType{ get { return "echo_zone"; } }
 
 
+		public AudioScene Scene
+		{
+			 get { return new AudioScene(scene_); }
+		}
 		/// <summary>
 		/// Gets or sets the Radius
 		/// </summary>

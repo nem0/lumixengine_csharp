@@ -16,6 +16,10 @@ namespace Lumix
 		public static string GetCmpType{ get { return "physical_controller"; } }
 
 
+		public AnimationScene Scene
+		{
+			 get { return new AnimationScene(scene_); }
+		}
 		/// <summary>
 		/// Gets or sets the Layer
 		/// </summary>

@@ -67,6 +67,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Argument.cs" />
+    <Compile Include="ComponentTypeRegister.cs" />
     <Compile Include="EnumCollector.cs" />
     <Compile Include="EnumValue.cs" />
     <Compile Include="FileCreator.cs" />

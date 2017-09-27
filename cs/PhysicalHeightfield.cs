@@ -34,6 +34,10 @@ namespace Lumix
 		public static string GetCmpType{ get { return "physical_heightfield"; } }
 
 
+		public PhysicsScene Scene
+		{
+			 get { return new PhysicsScene(scene_); }
+		}
 		/// <summary>
 		/// Gets or sets the Heightmap
 		/// </summary>

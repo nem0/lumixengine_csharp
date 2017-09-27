@@ -46,6 +46,10 @@ namespace Lumix
 		public static string GetCmpType{ get { return "navmesh_agent"; } }
 
 
+		public NavigationScene Scene
+		{
+			 get { return new NavigationScene(scene_); }
+		}
 		/// <summary>
 		/// Gets or sets the Radius
 		/// </summary>

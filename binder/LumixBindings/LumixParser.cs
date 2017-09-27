@@ -18,6 +18,8 @@ namespace LumixBindings
             List<string> cpps_ = new List<string>();
             List<ProperterRegister> knownRegisters_ = new List<ProperterRegister>();
             List<FunctionRegister> knownFunctions = new List<FunctionRegister>();
+            List<KeyValuePair<string, string>> cmpTypeDecl = new List<KeyValuePair<string, string>>();
+            List <ComponentTypeRegister> knownCPTypes = new List<ComponentTypeRegister>();
             cpps_.AddRange(System.IO.Directory.GetFiles(Bindings.RootPath, "*.cpp", System.IO.SearchOption.AllDirectories));
 
             //iterate all found cpp files
@@ -65,7 +67,20 @@ namespace LumixBindings
                                 readProperty = true;
                             }
                         }
-
+                        ///static const ComponentType ANIMABLE_TYPE = PropertyRegister::getComponentType("animable");
+                        else if (t.ToLower().StartsWith("static const componenttype ") && t.EndsWith(";"))
+                        {
+                            var tmp = t.Split(' ').Select(x => x.Trim()).ToArray();
+                            var type = tmp[3];
+                            var scene = tmp[5].Replace("PropertyRegister::getComponentType(", "").Replace(");", "").Replace("\"", "");
+                            cmpTypeDecl.Add(new KeyValuePair<string, string>(type, scene));
+                        }
+                        else if(t.ToLower().Contains("registercomponenttype(") && t.EndsWith(";"))
+                        {
+                            if (t.ToLower().Contains("i.type"))
+                                continue;
+                            knownCPTypes.Add(new ComponentTypeRegister(t));
+                        }
                     }
                     sr.Close();
                 }
@@ -325,6 +340,30 @@ namespace LumixBindings
                     //tmpWriter.WriteLine("\t\t\tscene_ = getScene(entity_.instance_, \"" + klass.Key.Replace("ModelInstance", "renderable").ToSeperateLower() + "\");");
                     //tmpWriter.WriteLine("\t\t}\n");
 
+                    //write down custom scene type
+                    var ctType = klass.Key.ToSeperateLower();
+                    List<string> keys = new List<string>();
+                    foreach(var kk in cmpTypeDecl)
+                    {
+                        if(kk.Value == ctType)
+                        {
+                            keys.Add(kk.Key);
+                        }
+                    }
+                  
+                    var value = knownCPTypes.Find(x => keys.Contains(x.ComponentType));
+                    if (value != null)
+                    {
+                        tmpWriter.WriteLine("\t\tpublic " + value.Scene + " Scene");
+                        tmpWriter.WriteLine("\t\t{");
+                        tmpWriter.WriteLine("\t\t\t get { return new " + value.Scene + "(scene_); }");
+                        tmpWriter.WriteLine("\t\t}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Missing Scene type info about {0}.!", ctType);
+                    }
+                    //var kKey = knownCPTypes.Single(x => x.ComponentType == ctKey);
                     //write down all known properties
                     foreach (var func in klass.Value)
                     {

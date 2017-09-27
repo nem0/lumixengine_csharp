@@ -40,6 +40,10 @@ namespace Lumix
 		public static string GetCmpType{ get { return "distance_joint"; } }
 
 
+		public PhysicsScene Scene
+		{
+			 get { return new PhysicsScene(scene_); }
+		}
 		/// <summary>
 		/// Gets or sets the Damping
 		/// </summary>

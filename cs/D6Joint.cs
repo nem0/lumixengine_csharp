@@ -70,6 +70,10 @@ namespace Lumix
 		public static string GetCmpType{ get { return "d6_joint"; } }
 
 
+		public PhysicsScene Scene
+		{
+			 get { return new PhysicsScene(scene_); }
+		}
 		/// <summary>
 		/// Gets or sets the ConnectedBody
 		/// </summary>

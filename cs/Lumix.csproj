@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>0667610d-468e-4d6d-98e7-9f12ecf3dd2e</ProjectGuid>
+    <ProjectGuid>{0667610D-468E-4D6D-98E7-9F12ECF3DD2E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Lumix</RootNamespace>
@@ -32,16 +32,18 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System"/>
-    <Reference Include="System.Core"/>
-    <Reference Include="System.Xml.Linq"/>
-    <Reference Include="System.Data.DataSetExtensions"/>
-    <Reference Include="Microsoft.CSharp"/>
-    <Reference Include="System.Data"/>
-    <Reference Include="System.Net.Http"/>
-    <Reference Include="System.Xml"/>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Manual\EditorInfo.cs" />
+    <Compile Include="Manual\Mathf.cs" />
     <Compile Include="Manual\Universe.cs" />
     <Compile Include="Manual\Imgui.cs" />
     <Compile Include="Manual\Component.cs" />
@@ -51,6 +53,11 @@
     <Compile Include="AnimController.cs" />
     <Compile Include="Input.cs" />
     <Compile Include="Renderer.cs" />
+    <Compile Include="AudioScene.cs" />
+    <Compile Include="NavigationScene.cs" />
+    <Compile Include="PhysicsScene.cs" />
+    <Compile Include="RenderScene.cs" />
+    <Compile Include="AnimationScene.cs" />
     <Compile Include="Entity.Automatic.cs" />
     <Compile Include="Universe.Automatic.cs" />
     <Compile Include="Animable.cs" />
@@ -88,4 +95,4 @@
     <Compile Include="Terrain.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
- </Project>
+</Project>
