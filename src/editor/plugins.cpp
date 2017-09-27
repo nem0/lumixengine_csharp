@@ -113,6 +113,30 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 						value.write(val, stringLength(val) + 1);
 						break;
 					}
+					case MONO_TYPE_CLASS:
+					{
+						MonoType* mono_type = mono_field_get_type(field);
+						MonoClass* mono_class = mono_type_get_class(mono_type);
+						if (equalStrings(mono_class_get_name(mono_class), "Entity"))
+						{
+							MonoObject* field_obj = mono_field_get_value_object(mono_domain_get(), field, obj);
+							Entity entity = INVALID_ENTITY;
+							MonoClassField* entity_id_field = mono_class_get_field_from_name(mono_class, "entity_Id_");
+							if (field_obj)
+							{
+								mono_field_get_value(field_obj, entity_id_field, &entity.index);
+							}
+							old_value.write(entity.index);
+							int index;
+							fromCString(val, stringLength(val), &index);
+							value.write(index);
+						}
+						else
+						{
+							ASSERT(false);
+						}
+						break;
+					}
 					default: ASSERT(false); break;
 				}
 			}
@@ -172,6 +196,20 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 					{
 						MonoString* str = mono_string_new(mono_domain_get(), (const char*)value.getData());
 						mono_field_set_value(obj, field, str);
+						break;
+					}
+					case MONO_TYPE_CLASS:
+					{
+						MonoType* mono_type = mono_field_get_type(field);
+						MonoClass* mono_class = mono_type_get_class(mono_type);
+						if (equalStrings(mono_class_get_name(mono_class), "Entity"))
+						{
+							Entity entity;
+							entity.index = InputBlob(value).read<int>();;
+							u32 gc_handle = scene->getEntityGCHandle(entity);
+							MonoObject* entity_obj = mono_gchandle_get_target(gc_handle);
+							mono_field_set_value(obj, field, entity_obj);
+						}
 						break;
 					}
 					default: ASSERT(false); break;
@@ -337,6 +375,16 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 	};
 
 
+	static Entity csharp_entityInput(PropertyGridCSharpPlugin* that, Universe* universe, MonoString* label_mono, Entity entity)
+	{
+		StudioApp& app = that->m_app;
+		PropertyGrid& prop_grid = *app.getPropertyGrid();
+		const char* label = mono_string_to_utf8(label_mono);
+		prop_grid.entityInput(label, label, entity);
+		return entity;
+	}
+
+
 	static void csharp_Component_setProperty(PropertyGridCSharpPlugin* that, Universe* universe, Entity entity, MonoObject* cmp_obj, MonoString* prop, MonoString* value)
 	{
 		CSharpScriptScene* scene = (CSharpScriptScene*)universe->getScene(CSHARP_SCRIPT_TYPE);
@@ -367,6 +415,7 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 		: m_app(app)
 	{
 		mono_add_internal_call("Lumix.Component::setCSharpProperty", &csharp_Component_setProperty);
+		mono_add_internal_call("Lumix.Component::entityInput", &csharp_entityInput);
 	}
 
 

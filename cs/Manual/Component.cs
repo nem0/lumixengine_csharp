@@ -5,6 +5,13 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
+	public class Engine
+	{
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		public extern static void logError(string msg);
+
+	}
+	
 	public class Component
 	{
         private static byte[] s_imgui_text_buffer = new byte[4096];
@@ -14,6 +21,9 @@ namespace Lumix
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		protected extern static IntPtr getScene(IntPtr universe, string cmp_type);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		protected extern static int entityInput(IntPtr editor, IntPtr universe, string label, int entity);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		protected extern static void setCSharpProperty(IntPtr editor, IntPtr universe, int entity, Component cmp, string property, string value);
@@ -52,6 +62,8 @@ namespace Lumix
 			foreach (var f in type.GetFields())
 			{
 				if (!f.IsPublic) continue;
+				if(f.Name == "entity_") continue;
+				if(f.Name == "scene_") continue;
 				
 				var val = f.GetValue(this);
 				Type val_type = f.FieldType;
@@ -91,8 +103,18 @@ namespace Lumix
 						setCSharpProperty(editor, entity.instance_, entity.entity_Id_, this, f.Name, new_val);
 					}
 				}
+				else if(f.FieldType == typeof(Entity))
+				{
+					int entity_id = val == null ? -1 : ((Entity)val).entity_Id_;
+					int new_entity_id = entityInput(editor, entity.instance_, f.Name, entity_id);
+					if(new_entity_id != entity_id)
+					{
+						setCSharpProperty(editor, entity.instance_, entity.entity_Id_, this, f.Name, new_entity_id.ToString());
+					}
+				}
 				else
 				{
+						
 					if (val == null) 
 						ImGui.Text(f.Name + " = null");
 					else
