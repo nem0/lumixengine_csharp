@@ -326,6 +326,8 @@ namespace LumixBindings
                 }
                 if (ReturnTypemap.IsPointer)
                     ret += "*";
+                if (ReturnTypemap.IsReference)
+                    ret += "&";
             }
             else
             {
