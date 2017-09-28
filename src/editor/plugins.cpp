@@ -378,7 +378,7 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 	static Entity csharp_entityInput(PropertyGridCSharpPlugin* that, Universe* universe, MonoString* label_mono, Entity entity)
 	{
 		StudioApp& app = that->m_app;
-		PropertyGrid& prop_grid = *app.getPropertyGrid();
+		PropertyGrid& prop_grid = app.getPropertyGrid();
 		const char* label = mono_string_to_utf8(label_mono);
 		prop_grid.entityInput(label, label, entity);
 		return entity;
@@ -391,7 +391,7 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 		ComponentHandle cmp = scene->getComponent(entity, CSHARP_SCRIPT_TYPE);
 		char* prop_str = mono_string_to_utf8(prop);
 		char* value_str = mono_string_to_utf8(value);
-		WorldEditor& editor = *that->m_app.getWorldEditor();
+		WorldEditor& editor = that->m_app.getWorldEditor();
 		IAllocator& allocator = editor.getAllocator();
 		int script_count = scene->getScriptCount(cmp);
 		for (int i = 0; i < script_count; ++i)
@@ -425,7 +425,7 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 
 		auto* scene = static_cast<CSharpScriptScene*>(cmp.scene);
 		auto& plugin = static_cast<CSharpPlugin&>(scene->getPlugin());
-		WorldEditor& editor = *m_app.getWorldEditor();
+		WorldEditor& editor = m_app.getWorldEditor();
 		IAllocator& allocator = editor.getAllocator();
 
 		if (ImGui::Button("Add script")) ImGui::OpenPopup("add_csharp_script_popup");
@@ -497,9 +497,8 @@ struct AddCSharpComponentPlugin LUMIX_FINAL : public StudioApp::IAddComponentPlu
 	{
 		ImGui::SetNextWindowSize(ImVec2(300, 300));
 		if (!ImGui::BeginMenu(getLabel())) return;
-		auto* asset_browser = app.getAssetBrowser();
 		
-		WorldEditor& editor = *app.getWorldEditor();
+		WorldEditor& editor = app.getWorldEditor();
 		CSharpScriptScene* script_scene = (CSharpScriptScene*)editor.getUniverse()->getScene(CSHARP_SCRIPT_TYPE);
 		CSharpPlugin& plugin = (CSharpPlugin&)script_scene->getPlugin();
 		for (int i = 0, count = plugin.getNamesCount(); i < count; ++i)
@@ -562,7 +561,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 		m_filter[0] = '\0';
 		m_new_script_name[0] = '\0';
 		
-		IAllocator& allocator = app.getWorldEditor()->getAllocator();
+		IAllocator& allocator = app.getWorldEditor().getAllocator();
 		m_watcher = FileSystemWatcher::create("cs", allocator);
 		m_watcher->getCallback().bind<StudioCSharpPlugin, &StudioCSharpPlugin::onFileChanged>(this);
 
@@ -606,7 +605,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 
 	void makeUpToDate()
 	{
-		IAllocator& allocator = m_app.getWorldEditor()->getAllocator();
+		IAllocator& allocator = m_app.getWorldEditor().getAllocator();
 		if (!PlatformInterface::fileExists("cs\\main.dll"))
 		{
 			compile();
@@ -681,7 +680,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 			g_log_error.log("C#") << path << "already exists";
 			return;
 		}
-		if (!file.open(path, FS::Mode::CREATE_AND_WRITE, m_app.getWorldEditor()->getAllocator()))
+		if (!file.open(path, FS::Mode::CREATE_AND_WRITE, m_app.getWorldEditor().getAllocator()))
 		{
 			g_log_error.log("C#") << "Failed to create file " << path;
 			return;
@@ -752,7 +751,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 
 	CSharpScriptScene* getScene() const
 	{
-		WorldEditor& editor = *m_app.getWorldEditor();
+		WorldEditor& editor = m_app.getWorldEditor();
 		return (CSharpScriptScene*)editor.getUniverse()->getScene(crc32("csharp_script"));
 	}
 
@@ -765,7 +764,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 		CSharpScriptScene* scene = getScene();
 		CSharpPlugin& plugin = (CSharpPlugin&)scene->getPlugin();
 		plugin.unloadAssembly();
-		IAllocator& allocator = m_app.getWorldEditor()->getAllocator();
+		IAllocator& allocator = m_app.getWorldEditor().getAllocator();
 		m_compile_process = PlatformInterface::createProcess("c:\\windows\\system32\\cmd.exe", "/c \"\"C:\\Program Files\\Mono\\bin\\mcs.bat\" -out:\"cs\\main.dll\" -target:library -unsafe -recurse:\"cs\\*.cs\"", allocator);
 	}
 
@@ -804,7 +803,7 @@ IEditorCommand* createRemoveScriptCommand(WorldEditor& editor)
 
 LUMIX_STUDIO_ENTRY(lumixengine_csharp)
 {
-	WorldEditor& editor = *app.getWorldEditor();
+	WorldEditor& editor = app.getWorldEditor();
 	IAllocator& allocator = editor.getAllocator();
 	StudioCSharpPlugin* plugin = LUMIX_NEW(allocator, StudioCSharpPlugin)(app);
 	app.addPlugin(*plugin);
@@ -817,7 +816,7 @@ LUMIX_STUDIO_ENTRY(lumixengine_csharp)
 	editor.registerEditorCommandCreator("set_csharp_script_property", createSetPropertyCommand);
 
 	auto* pg_plugin = LUMIX_NEW(editor.getAllocator(), PropertyGridCSharpPlugin)(app);
-	app.getPropertyGrid()->addPlugin(*pg_plugin);
+	app.getPropertyGrid().addPlugin(*pg_plugin);
 }
 
 
