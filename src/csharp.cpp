@@ -13,7 +13,10 @@
 #include "engine/log.h"
 #include "engine/path.h"
 #include "engine/path_utils.h"
+#include "engine/prefab.h"
 #include "engine/property_register.h"
+#include "engine/resource_manager.h"
+#include "engine/resource_manager_base.h"
 #include "engine/serializer.h"
 #include "engine/universe/component.h"
 #include "engine/universe/universe.h"
@@ -22,7 +25,6 @@
 #include "physics/physics_scene.h"
 #include "renderer/render_scene.h"
 #include "renderer/renderer.h"
-
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
 #include <mono/metadata/debug-helpers.h>
@@ -1571,7 +1573,6 @@ CSHARP_FUNCTION(Engine, getResourceManager, nostatic, Engine, partial);
 //ResourceManager
 CSHARP_FUNCTION(ResourceManager, get, nostatic, ResourceManager, class);
 //ResourceManagerBase
-CSHARP_FUNCTION(ResourceManagerBase, get, nostatic, ResourceManagerBase, class);
 CSHARP_FUNCTION(ResourceManagerBase, enableUnload, nostatic, ResourceManagerBase, class);
 CSHARP_FUNCTION(ResourceManagerBase, load, nostatic, ResourceManagerBase, class);
 CSHARP_FUNCTION(ResourceManagerBase, removeUnreferenced, nostatic, ResourceManagerBase, class);
