@@ -173,6 +173,16 @@ template<> struct CSharpTypeConvertor<const char*>
 };
 
 
+template<> struct CSharpTypeConvertor<const Path&>
+{
+	using Type = MonoString*;
+
+	static Path convert(MonoString* val) { return Path(mono_string_to_utf8(val)); }
+	static MonoString* convertRet(const Path& val) { return mono_string_new(mono_domain_get(), val.c_str()); }
+};
+
+
+
 template <> struct CSharpTypeConvertor<const ImVec2&>
 {
 	struct Vec2POD { float x; float y; };
