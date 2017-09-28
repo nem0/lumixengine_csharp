@@ -9,10 +9,6 @@ namespace Lumix
 		IntPtr instance_;
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static System.IntPtr get(IntPtr instance, string path);
-
-
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static void enableUnload(IntPtr instance, bool enable);
 
 
@@ -41,11 +37,6 @@ namespace Lumix
 		internal ResourceManagerBase(IntPtr _instance)
 		{
 			instance_ = _instance;
-		}
-
-		public Resource Get(string path)
-		{
-			return new Resource(get(instance_, path));
 		}
 
 		public void EnableUnload(bool enable)

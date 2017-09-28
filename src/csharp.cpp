@@ -192,14 +192,6 @@ template <> struct CSharpTypeConvertor<ImVec2>
 };
 
 
-template<typename T> struct CSharpTypeConvertor<const T&>
-{
-	using Type = T;
-
-	static T convert(T& val) { return val; }
-	static T convert(const T& val) { return val; }
-};
-
 
 template<typename F> struct CSharpFunctionProxy;
 template<typename F> struct CSharpMethodProxy;
