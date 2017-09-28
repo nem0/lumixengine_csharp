@@ -1527,6 +1527,7 @@ CSHARP_FUNCTION(Universe, getScene, nostatic, Entity, partial);
 
 //universe
 CSHARP_FUNCTION(Universe, getEntityByName, nostatic, Universe, partial);
+CSHARP_FUNCTION(Universe, instantiatePrefab, nostatic, Universe, partial);
 
 //audio
 CSHARP_FUNCTION(AudioScene, setEcho, nostatic, AudioScene, class);
@@ -1564,6 +1565,28 @@ CSHARP_FUNCTION(RenderScene, addDebugCapsule, nostatic, RenderScene, class);
 CSHARP_FUNCTION(RenderScene, addDebugCylinder, nostatic, RenderScene, class);
 
 CSHARP_FUNCTION(AnimationScene, getControllerEntity, nostatic, AnimController, component);
+
+//engine
+CSHARP_FUNCTION(Engine, getResourceManager, nostatic, Engine, partial);
+//ResourceManager
+CSHARP_FUNCTION(ResourceManager, get, nostatic, ResourceManager, class);
+//ResourceManagerBase
+CSHARP_FUNCTION(ResourceManagerBase, get, nostatic, ResourceManagerBase, class);
+CSHARP_FUNCTION(ResourceManagerBase, enableUnload, nostatic, ResourceManagerBase, class);
+CSHARP_FUNCTION(ResourceManagerBase, load, nostatic, ResourceManagerBase, class);
+CSHARP_FUNCTION(ResourceManagerBase, removeUnreferenced, nostatic, ResourceManagerBase, class);
+CSHARP_FUNCTION(ResourceManagerBase, unload, nostatic, ResourceManagerBase, class);
+CSHARP_FUNCTION(ResourceManagerBase, reload, nostatic, ResourceManagerBase, class);
+
+//resource
+CSHARP_FUNCTION(Resource, getState, nostatic, Resource, class);
+CSHARP_FUNCTION(Resource, isEmpty, nostatic, Resource, class);
+CSHARP_FUNCTION(Resource, isReady, nostatic, Resource, class);
+CSHARP_FUNCTION(Resource, isFailure, nostatic, Resource, class);
+CSHARP_FUNCTION(Resource, getRefCount, nostatic, Resource, class);
+CSHARP_FUNCTION(Resource, size, nostatic, Resource, class);
+CSHARP_FUNCTION(Resource, getPath, nostatic, Resource, class);
+CSHARP_FUNCTION(Resource, getResourceManager, nostatic, Resource, class);
 /*
 CSHARP_FUNCTION(AnimationScene, getAnimableAnimation, nostatic, AnimationScene, component);
 CSHARP_FUNCTION(AnimationScene, getAnimation, nostatic, AnimationScene, component);
