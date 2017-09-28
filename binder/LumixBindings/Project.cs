@@ -74,6 +74,7 @@ namespace LumixBindings
             template.AppendLine("    <Reference Include=\"System.Xml\"/>");
             template.AppendLine("  </ItemGroup>");
             template.AppendLine("  <ItemGroup>");
+            template.AppendLine(string.Format("    <Compile Include=\"Manual\\{0}.cs\" />", "Mathf"));
             template.AppendLine(string.Format("    <Compile Include=\"Manual\\{0}.cs\" />", "Universe"));
             template.AppendLine(string.Format("    <Compile Include=\"Manual\\{0}.cs\" />", "Imgui"));
             template.AppendLine(string.Format("    <Compile Include=\"Manual\\{0}.cs\" />", "Component"));

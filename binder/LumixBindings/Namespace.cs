@@ -87,6 +87,10 @@ namespace LumixBindings
                 string value = clang.getCursorSpelling(cursor).ToString();
                 clang.visitChildren(cursor, ev.Visit, new CXClientData(IntPtr.Zero));
                 enums_.Add(ev);
+                if (!Bindings.Enums.Contains(ev.FullyQualyfiedType))
+                {
+                    Bindings.Enums.Add(ev.FullyQualyfiedType);
+                }
             }
             return CXChildVisitResult.CXChildVisit_Recurse;
         }

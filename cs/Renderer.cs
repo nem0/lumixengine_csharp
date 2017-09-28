@@ -7,7 +7,7 @@ namespace Lumix
 	public static class Renderer
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void makeScreenshot(System.IntPtr filename);
+		extern static void makeScreenshot(string filename);
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -26,7 +26,7 @@ namespace Lumix
 		extern static string getLayerName(int idx);
 
 
-		public static void MakeScreenshot(System.IntPtr filename)
+		public static void MakeScreenshot(string filename)
 		{
 			makeScreenshot(filename);
 		}

@@ -28,10 +28,6 @@ namespace Lumix
 		public static string GetCmpType{ get { return "animable"; } }
 
 
-		public AnimationScene Scene
-		{
-			 get { return new AnimationScene(scene_); }
-		}
 		/// <summary>
 		/// Gets or sets the Animation
 		/// </summary>

@@ -13,15 +13,22 @@ namespace LumixBindings
         {
             nsc_ = _nsc;
         }
+        public struct CPType
+        {
+            public string Type;
+            public string Scene;
+            public string File;
+        }
         public void Parse()
         {
             List<string> cpps_ = new List<string>();
             List<ProperterRegister> knownRegisters_ = new List<ProperterRegister>();
             List<FunctionRegister> knownFunctions = new List<FunctionRegister>();
-            List<KeyValuePair<string, string>> cmpTypeDecl = new List<KeyValuePair<string, string>>();
+            // List<KeyValuePair<string, string> > cmpTypeDecl = new List<KeyValuePair<string, string>>();
+            List<CPType> cmpTypeDecl = new List<CPType>();
             List <ComponentTypeRegister> knownCPTypes = new List<ComponentTypeRegister>();
             cpps_.AddRange(System.IO.Directory.GetFiles(Bindings.RootPath, "*.cpp", System.IO.SearchOption.AllDirectories));
-
+          
             //iterate all found cpp files
             foreach (var file in cpps_)
             {
@@ -73,13 +80,14 @@ namespace LumixBindings
                             var tmp = t.Split(' ').Select(x => x.Trim()).ToArray();
                             var type = tmp[3];
                             var scene = tmp[5].Replace("PropertyRegister::getComponentType(", "").Replace(");", "").Replace("\"", "");
-                            cmpTypeDecl.Add(new KeyValuePair<string, string>(type, scene));
+                            // cmpTypeDecl.Add(new KeyValuePair<string, string>(type, scene));
+                            cmpTypeDecl.Add(new CPType() { File = file, Scene = scene, Type = type });
                         }
                         else if(t.ToLower().Contains("registercomponenttype(") && t.EndsWith(";"))
                         {
                             if (t.ToLower().Contains("i.type"))
                                 continue;
-                            knownCPTypes.Add(new ComponentTypeRegister(t));
+                            knownCPTypes.Add(new ComponentTypeRegister(t, file));
                         }
                     }
                     sr.Close();
@@ -130,17 +138,19 @@ namespace LumixBindings
             {
                 var test = kfucn.Components;
             }
-            //dump to disk, for debuging!
-            using (StreamWriter sw = new StreamWriter("functions.h"))
-            {
-                foreach (var func in knownFunctions)
+           
 
-                {
-                    if (!func.ToString().Contains("INVALID"))
-                        sw.WriteLine(func.ToString());
-                }
-                sw.Flush();
-            }
+            //dump to disk, for debuging!
+            //using (StreamWriter sw = new StreamWriter("functions.h"))
+            //{
+            //    foreach (var func in knownFunctions)
+
+            //    {
+            //        if (!func.ToString().Contains("INVALID"))
+            //            sw.WriteLine(func.ToString());
+            //    }
+            //    sw.Flush();
+            //}
 
 
             using (StreamWriter tmpWriter = new StreamWriter(Bindings.ApiPath))
@@ -275,10 +285,15 @@ namespace LumixBindings
             }
 
 
-            var klasses = knownRegisters_.SortByClass();
+          
             var project = new Project("Lumix");
-            //write down components
+            var normalClasses = knownFunctions.GetClasses(false);
+            Bindings.WrappedClasses.AddRange(normalClasses.Keys);
+            var staticClasses = knownFunctions.GetClasses();
+            var partialClasses = knownFunctions.GetPartialClass();
 
+            //write down components
+            var klasses = knownRegisters_.SortByClass();
             foreach (var klass in klasses)
             {
                 project.AddClass(klass.Key);
@@ -339,25 +354,48 @@ namespace LumixBindings
                     //tmpWriter.WriteLine("\t\t\tif (componentId_ < 0) throw new Exception(\"Failed to create component\");");
                     //tmpWriter.WriteLine("\t\t\tscene_ = getScene(entity_.instance_, \"" + klass.Key.Replace("ModelInstance", "renderable").ToSeperateLower() + "\");");
                     //tmpWriter.WriteLine("\t\t}\n");
-
+                   
                     //write down custom scene type
                     var ctType = klass.Key.ToSeperateLower();
-                    List<string> keys = new List<string>();
+
+                    List<CPType> keys = new List<CPType>();
                     foreach(var kk in cmpTypeDecl)
                     {
-                        if(kk.Value == ctType)
+                        if(kk.Scene == ctType)
                         {
-                            keys.Add(kk.Key);
+                            keys.Add(kk);
                         }
                     }
-                  
-                    var value = knownCPTypes.Find(x => keys.Contains(x.ComponentType));
+                    ComponentTypeRegister ctr = null;
+                    //do
+                    //{
+                    //    foreach(var item in knownCPTypes)
+                    //} while (ctr == null); new CPType();
+                    ComponentTypeRegister value = null;
+                    foreach (var key in keys)
+                    {
+                        foreach(var type in knownCPTypes)
+                        {
+                            if(key.File == type.File)
+                            {
+                                if (key.Type == type.ComponentType)
+                                {
+                                    value = type;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    
                     if (value != null)
                     {
-                        tmpWriter.WriteLine("\t\tpublic " + value.Scene + " Scene");
-                        tmpWriter.WriteLine("\t\t{");
-                        tmpWriter.WriteLine("\t\t\t get { return new " + value.Scene + "(scene_); }");
-                        tmpWriter.WriteLine("\t\t}");
+                        if (normalClasses.ContainsKey(value.Scene))
+                        {
+                            tmpWriter.WriteLine("\t\tpublic " + value.Scene + " Scene");
+                            tmpWriter.WriteLine("\t\t{");
+                            tmpWriter.WriteLine("\t\t\t get { return new " + value.Scene + "(scene_); }");
+                            tmpWriter.WriteLine("\t\t}");
+                        }
                     }
                     else
                     {
@@ -413,8 +451,8 @@ namespace LumixBindings
                     tmpWriter.Close();
                 }
 
-                var staticClasses = knownFunctions.GetClasses();
-                //write down classes
+                
+                //write down static classes
                 foreach (var kvp in staticClasses)
                 {
                     project.AddClass(kvp.Value[0].ManagedClass);
@@ -431,8 +469,8 @@ namespace LumixBindings
                     }
                 }
 
-                var normalClasses = knownFunctions.GetClasses(false);
-                //write down classes
+               
+                //write down normal classes
                 foreach (var kvp in normalClasses)
                 {
                     project.AddClass(kvp.Key);
@@ -449,9 +487,9 @@ namespace LumixBindings
                     }
                 }
 
-                var partial = knownFunctions.GetPartialClass();
-                //write down classes
-                foreach (var kvp in partial)
+            
+                //write down partial classes
+                foreach (var kvp in partialClasses)
                 {
                     
                     project.AddClass(kvp.Value[0].ManagedClass+".Automatic");
@@ -485,6 +523,13 @@ namespace LumixBindings
             {
                 WriteCsharpMonoDecl(_writer, func, _isStatic);
             }
+
+            if(_name.ToLower().EndsWith("scene"))
+
+            {
+                FunctionRegister tmp = new FunctionRegister(string.Format("CSHARP_FUNCTION({0}, getUniverse, nostatic, {1}, class);","IScene", _name));
+                WriteCsharpMonoDecl(_writer, tmp, _isStatic);
+            }
             if(!_isStatic)
             {
                 WriteCsharpDefaultCtor(_writer, _name);
@@ -508,7 +553,7 @@ namespace LumixBindings
                         _writer.WriteLine("\t\t\tget { ");
                         _writer.WriteLine(string.Format("\t\t\t int x = " + getter + "(instance_, {0});", prop.Key.ManagedClass.ToLower() + "_Id_"));
                         _writer.WriteLine("\t\t\t if(x < 0) return null;");
-                        _writer.WriteLine("\t\t\t  return new Entity(instance_, x);");
+                        _writer.WriteLine("\t\t\t  return new Entity({0}instance_, x);", _name == "Entity" ? "" : "entity_.");
                         _writer.WriteLine("\t\t\t}");
                     }
                     else
@@ -529,7 +574,13 @@ namespace LumixBindings
                 }
                 WriteCsharpFunction(_writer, func, _isStatic, _isPartial, _name);
             }
-
+            if(!_isStatic)
+            {
+                _writer.WriteLine("\t\tpublic static implicit operator System.IntPtr(" + _name + " _value)");
+                _writer.WriteLine("\t\t{");
+                _writer.WriteLine("\t\t\t return _value.instance_;");
+                _writer.WriteLine("\t\t}");
+            }
             _writer.WriteLine("\t}");
             _writer.WriteLine("");
         }
@@ -583,7 +634,10 @@ namespace LumixBindings
         void WriteCsharpFunction(StreamWriter _writer, FunctionRegister _func, bool _isStatic,bool _isPartial = false, string _klassName = "")
         {
             var meth = nsc_.GetMethodFromClass(_func.NativeClass.Replace("Impl", ""), _func.Name);
+            if(_func.Name == "getState")
+            {
 
+            }
             if (meth != null)
             {
                 for (int i = 0; i < meth.Length; i++)
@@ -599,7 +653,7 @@ namespace LumixBindings
                         var arg = meth[i].Values[k];
                         if (arg.TypeMap.NativeCPP == "Lumix::ComponentHandle" && _func.IsComponent)
                             continue;
-                        if (arg.TypeMap.NativeCPP == "Lumix::"+_klassName && _isPartial)
+                        if (arg.TypeMap.NativeCPP == "Lumix::" + _klassName && _isPartial)
                             continue;
                         _writer.Write(arg.TypeMap.ToCsharp() + " ");
                         _writer.Write(arg.Name);
@@ -611,7 +665,6 @@ namespace LumixBindings
                     //func body start
                     _writer.WriteLine("\t\t{");
                     bool isEntReturn = false;
-                    
                     if (meth[i].IsReturnSomething)
                     {
                         if (meth[i].ReturnTypemap.NativeCPP == "Lumix::Entity")
@@ -628,7 +681,7 @@ namespace LumixBindings
                     {
                         _writer.Write("\t\t\t");
                     }
-                    
+
                     string args = "";
                     if (!_isStatic)
                     {
@@ -650,17 +703,29 @@ namespace LumixBindings
                             args += ", ";
 
                     }
-                 
+                    bool close = false;
+                    if (Bindings.WrappedClasses.Contains(meth[i].ReturnTypemap.Type))
+                    {
+                        close = true;
+                        _writer.Write(string.Format("new {0}(", meth[i].ReturnTypemap.Type));
+                    }
                     //call native func
-                    _writer.Write(string.Format("{0}({1});\n", _func.Name, args));
+                    _writer.Write(string.Format("{0}({1}){2};\n", _func.Name, args, close ? ")" : ""));
                     if (meth[i].IsReturnSomething)
                     {
                         if (meth[i].ReturnTypemap.NativeCPP == "Lumix::Entity")
                         {
                             _writer.WriteLine("\t\t\t if(x < 0) return null;");
-                            _writer.WriteLine("\t\t\treturn new Entity(instance_, x);");
+                            if (!_klassName.ToLower().EndsWith("scene"))
+                            {
+                                _writer.WriteLine("\t\t\treturn new Entity({0}instance_, x);", ((_klassName == "Entity" || _klassName == "Universe") ? "" : "entity_."));
+                            }
+                            else if (_klassName.ToLower() != "universe")
+                                _writer.WriteLine("\t\t\treturn new Entity(getUniverse(instance_), x);");
                         }
+
                     }
+                   
                     //func body end
                     _writer.WriteLine("\t\t}\n");
                 }

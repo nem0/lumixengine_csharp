@@ -29,6 +29,11 @@ namespace LumixBindings
                 return rType.ToString();
             }
         }
+
+        public string Type
+        {
+            get { return NativeCPP.Replace("&", "").Replace("Lumix::", "").Replace("*","").Trim(); }
+        }
         public string NativeC
         {
             get
@@ -206,7 +211,7 @@ namespace LumixBindings
 
         public bool IsEnum
         {
-            get { return type_.kind == CXTypeKind.CXType_Enum; }
+            get { return type_.kind == CXTypeKind.CXType_Enum || Bindings.Enums.Contains(NativeCPP); }
         }
         public bool NeedCCast
         {
@@ -318,6 +323,8 @@ namespace LumixBindings
             }
             switch(NativeCPP)
             {
+                case "const Lumix::Path &":
+                    return _api ? "system.string" : "string";
                 case "const Lumix::Vec2 &":
                 case "Lumix::Vec2":
                     return "Vec2";
@@ -339,8 +346,11 @@ namespace LumixBindings
                 case "int":
                 case "Lumix::ComponentType":
                 case "Lumix::ComponentHandle":
+                case "size_t":
+                case "u32":
                     return "int";
                 case "unsigned int":
+                case "Lumix::ResourceType":
                     return "uint";
                 case "const char *":
                     return "string";
@@ -361,6 +371,10 @@ namespace LumixBindings
                 case "ComponentHandle":
                     return "int";
             }
+            //last resort
+            if (!_nativeDecl && Bindings.WrappedClasses.Contains(Type))
+                return Type;
+
             return type;
         }
     }

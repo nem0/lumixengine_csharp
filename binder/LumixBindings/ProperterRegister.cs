@@ -59,7 +59,10 @@ namespace LumixBindings
                 return "INVALID";
             }
         }
-
+        public bool IsNativeScene
+        {
+            get { return NativeClassName.ToLower().EndsWith("scene"); }
+        }
         /// <summary>
         /// Gets the name of the property.
         /// </summary>

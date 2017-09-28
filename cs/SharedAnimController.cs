@@ -16,10 +16,6 @@ namespace Lumix
 		public static string GetCmpType{ get { return "shared_anim_controller"; } }
 
 
-		public AnimationScene Scene
-		{
-			 get { return new AnimationScene(scene_); }
-		}
 		/// <summary>
 		/// Gets or sets the Parent
 		/// </summary>

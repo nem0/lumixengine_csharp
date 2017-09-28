@@ -5,8 +5,10 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class Engine
+	public partial class Engine
 	{
+        IntPtr instance_;
+
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		public extern static void logError(string msg);
 

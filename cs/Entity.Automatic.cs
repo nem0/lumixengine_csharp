@@ -7,42 +7,6 @@ namespace Lumix
 	public partial class Entity
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void emplaceEntity(IntPtr instance, int entity);
-
-
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static int createEntity(IntPtr instance, Vec3 position, Quat rotation);
-
-
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void destroyEntity(IntPtr instance, int entity);
-
-
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void addComponent(IntPtr instance, int entity, int component_type, System.IntPtr scene, int index);
-
-
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void destroyComponent(IntPtr instance, int entity, int component_type, System.IntPtr scene, int index);
-
-
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static bool hasComponent(IntPtr instance, int entity, int component_type);
-
-
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static System.IntPtr getComponent(IntPtr instance, int entity, int type);
-
-
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static System.IntPtr getFirstComponent(IntPtr instance, int entity);
-
-
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static System.IntPtr getNextComponent(IntPtr instance, System.IntPtr cmp);
-
-
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static int getFirstEntity(IntPtr instance);
 
 
@@ -56,10 +20,6 @@ namespace Lumix
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static void setEntityName(IntPtr instance, int entity, string name);
-
-
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static bool hasEntity(IntPtr instance, int entity);
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -169,29 +129,9 @@ namespace Lumix
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void serializeComponent(IntPtr instance, System.IntPtr serializer, int type, int cmp);
-
-
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void deserializeComponent(IntPtr instance, System.IntPtr serializer, int entity, int type, int scene_version);
-
-
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void serialize(IntPtr instance, System.IntPtr serializer);
-
-
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void deserialize(IntPtr instance, System.IntPtr serializer);
-
-
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static System.IntPtr getScene(IntPtr instance, int type);
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static System.IntPtr getScene(IntPtr instance, uint hash);
-
-
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void addScene(IntPtr instance, System.IntPtr scene);
 
 
 		internal Entity(IntPtr _instance)
@@ -239,53 +179,6 @@ namespace Lumix
 			set { setName(instance_, entity_Id_, value); }
 		}
 
-		public void EmplaceEntity()
-		{
-			emplaceEntity(instance_, entity_Id_);
-		}
-
-		public Entity CreateEntity(Vec3 position, Quat rotation)
-		{
-			int x = createEntity(instance_, position, rotation);
-			 if(x < 0) return null;
-			return new Entity(instance_, x);
-		}
-
-		public void DestroyEntity()
-		{
-			destroyEntity(instance_, entity_Id_);
-		}
-
-		public void AddComponent(int component_type, System.IntPtr scene, int index)
-		{
-			addComponent(instance_, entity_Id_, component_type, scene, index);
-		}
-
-		public void DestroyComponent(int component_type, System.IntPtr scene, int index)
-		{
-			destroyComponent(instance_, entity_Id_, component_type, scene, index);
-		}
-
-		public bool HasComponent(int component_type)
-		{
-			return hasComponent(instance_, entity_Id_, component_type);
-		}
-
-		public System.IntPtr GetComponent(int type)
-		{
-			return getComponent(instance_, entity_Id_, type);
-		}
-
-		public System.IntPtr GetFirstComponent()
-		{
-			return getFirstComponent(instance_, entity_Id_);
-		}
-
-		public System.IntPtr GetNextComponent(System.IntPtr cmp)
-		{
-			return getNextComponent(instance_, cmp);
-		}
-
 		public Entity GetFirstEntity()
 		{
 			int x = getFirstEntity(instance_);
@@ -298,11 +191,6 @@ namespace Lumix
 			int x = getNextEntity(instance_, entity_Id_);
 			 if(x < 0) return null;
 			return new Entity(instance_, x);
-		}
-
-		public bool HasEntity()
-		{
-			return hasEntity(instance_, entity_Id_);
 		}
 
 		public bool IsDescendant()
@@ -399,26 +287,6 @@ namespace Lumix
 			return getRotation(instance_, entity_Id_);
 		}
 
-		public void SerializeComponent(System.IntPtr serializer, int type, int cmp)
-		{
-			serializeComponent(instance_, serializer, type, cmp);
-		}
-
-		public void DeserializeComponent(System.IntPtr serializer, int type, int scene_version)
-		{
-			deserializeComponent(instance_, serializer, entity_Id_, type, scene_version);
-		}
-
-		public void Serialize(System.IntPtr serializer)
-		{
-			serialize(instance_, serializer);
-		}
-
-		public void Deserialize(System.IntPtr serializer)
-		{
-			deserialize(instance_, serializer);
-		}
-
 		public System.IntPtr GetScene(int type)
 		{
 			return getScene(instance_, type);
@@ -429,11 +297,10 @@ namespace Lumix
 			return getScene(instance_, hash);
 		}
 
-		public void AddScene(System.IntPtr scene)
+		public static implicit operator System.IntPtr(Entity _value)
 		{
-			addScene(instance_, scene);
+			 return _value.instance_;
 		}
-
 	}
 
 }

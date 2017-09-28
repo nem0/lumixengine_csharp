@@ -13,7 +13,12 @@ namespace LumixBindings
     {
         string[] data_;
         string content_;
+        string file_;
 
+        public string File
+        {
+            get { return file_; }
+        }
         public string ComponentType
         {
             get { return data_[0]; }
@@ -23,8 +28,9 @@ namespace LumixBindings
         {
             get { return data_[2]; }
         }
-        public ComponentTypeRegister(string _content)
+        public ComponentTypeRegister(string _content, string _file)
         {
+            file_ = _file;
             content_ = _content;
             var replace = content_.Substring(0, content_.IndexOf("(")+1);
             data_ = content_.Replace(replace,"").Replace(");", "").Split(',').Select(x => x.Trim()).ToArray();

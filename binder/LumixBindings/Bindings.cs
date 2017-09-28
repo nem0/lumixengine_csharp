@@ -15,6 +15,7 @@ namespace LumixBindings
         public static readonly string CSRootPath = @"../../../../../cs/";
         public static readonly bool DebugToken = false;
         public static readonly bool IgnoreOperator = true;
+
         public static List<string> StaticClasses = new List<string>()
         {
             "Engine", "App", "GUISystem", "StudioApp","ImportAssetDialog", "Universe"
@@ -46,6 +47,8 @@ namespace LumixBindings
 
         };
         public static List<Class> KnownClasses = new List<Class>();
+        public static List<string> WrappedClasses = new List<string>();
+        public static List<string> Enums = new List<string>();
         public static bool IsInSystemHeader(this CXCursor cursor)
         {
             return clang.Location_isInSystemHeader(clang.getCursorLocation(cursor)) != 0;

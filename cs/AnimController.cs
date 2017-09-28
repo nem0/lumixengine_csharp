@@ -24,14 +24,14 @@ namespace Lumix
 		extern static void setControllerInput(IntPtr instance, int cmp, int input_idx, bool value);
 
 
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		extern static int getControllerEntity(IntPtr instance, int cmp);
+
+
 
 		public static string GetCmpType{ get { return "anim_controller"; } }
 
 
-		public AnimationScene Scene
-		{
-			 get { return new AnimationScene(scene_); }
-		}
 		/// <summary>
 		/// Gets or sets the Source
 		/// </summary>
@@ -62,6 +62,13 @@ namespace Lumix
 		public void SetControllerInput(int input_idx, bool value)
 		{
 			setControllerInput(scene_, componentId_, input_idx, value);
+		}
+
+		public Entity GetControllerEntity()
+		{
+			int x = getControllerEntity(scene_, componentId_);
+			 if(x < 0) return null;
+			return new Entity(entity_.instance_, x);
 		}
 
 	}//end class
