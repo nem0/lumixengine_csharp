@@ -6,7 +6,7 @@ namespace Lumix
 {
 	public class Resource
 	{
-		IntPtr instance_;
+		internal IntPtr instance_;
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static int getState(IntPtr instance);

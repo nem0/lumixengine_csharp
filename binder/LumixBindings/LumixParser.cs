@@ -19,14 +19,17 @@ namespace LumixBindings
             public string Scene;
             public string File;
         }
+        List<string> cpps_ = new List<string>();
+        List<ProperterRegister> knownRegisters_ = new List<ProperterRegister>();
+        List<FunctionRegister> knownFunctions = new List<FunctionRegister>();
+        List<ResourceRegister> knownResourceTypes = new List<ResourceRegister>();
+        List<CPType> cmpTypeDecl = new List<CPType>();
+        List<ComponentTypeRegister> knownCPTypes = new List<ComponentTypeRegister>();
         public void Parse()
         {
-            List<string> cpps_ = new List<string>();
-            List<ProperterRegister> knownRegisters_ = new List<ProperterRegister>();
-            List<FunctionRegister> knownFunctions = new List<FunctionRegister>();
+          
             // List<KeyValuePair<string, string> > cmpTypeDecl = new List<KeyValuePair<string, string>>();
-            List<CPType> cmpTypeDecl = new List<CPType>();
-            List <ComponentTypeRegister> knownCPTypes = new List<ComponentTypeRegister>();
+        
             cpps_.AddRange(System.IO.Directory.GetFiles(Bindings.RootPath, "*.cpp", System.IO.SearchOption.AllDirectories));
           
             //iterate all found cpp files
@@ -129,7 +132,10 @@ namespace LumixBindings
                             rawFunction = "";
                             continue;
                         }
-
+                    }
+                    else if (t.ToLower().StartsWith("csharp_resource") && t.EndsWith(";"))
+                    {
+                        knownResourceTypes.Add(new ResourceRegister(t));
                     }
                 }
                 sr.Close();
@@ -514,25 +520,51 @@ namespace LumixBindings
         void WriteCsharpClass(StreamWriter _writer,List<FunctionRegister> _methods, string _name, bool _isStatic, bool _isPartial = false)
         {
             //class def
-            _writer.WriteLine("\tpublic " + (_isPartial ? "partial " : "") + (_isStatic ? "static class " : "class ") + _name);
-            _writer.WriteLine("\t{");
+            Class Class = null;
+
+            bool isResourceType = knownResourceTypes.Find(x => x.Class == _name) != null;
+            _writer.Write("\tpublic " + (_isPartial ? "partial " : "") + (_isStatic ? "static class " : "class ") + _name);
             if (!_isStatic && !_isPartial)
-                _writer.WriteLine("\t\tIntPtr instance_;\n");
+            {
+                Class = nsc_.GetClassByName(_name).FirstOrDefault();
+                if(Class.HasBaseClass)
+                {
+                    _writer.Write(" : " + Class.BaseClass);
+                }
+
+                if(isResourceType)
+                {
+                    _writer.Write((Class.HasBaseClass ? "," : "") + "IResourceType");
+                }
+                _writer.Write("\n");
+            }
+            _writer.WriteLine("\t{");
+
+            if (!_isStatic && !_isPartial && !Class.HasBaseClass)
+                _writer.WriteLine("\t\tinternal IntPtr instance_;\n");
             //write down all mono decls
             foreach (var func in _methods)
             {
                 WriteCsharpMonoDecl(_writer, func, _isStatic);
             }
 
-            if(_name.ToLower().EndsWith("scene"))
-
+            if (isResourceType)
             {
-                FunctionRegister tmp = new FunctionRegister(string.Format("CSHARP_FUNCTION({0}, getUniverse, nostatic, {1}, class);","IScene", _name));
-                WriteCsharpMonoDecl(_writer, tmp, _isStatic);
+                _writer.Write("\t\tpublic string ResourceType\n");
+                _writer.Write("\t\t{\n");
+                _writer.Write("\t\t\t get {{ return {0}; }}\n", knownResourceTypes.Select(x => x).Where(x => x.Class == _name).First().ResourceType);
+                _writer.Write("\t\t}\n\n");
+
             }
+            //if(_name.ToLower().EndsWith("scene"))
+
+            //{
+            //    FunctionRegister tmp = new FunctionRegister(string.Format("CSHARP_FUNCTION({0}, getUniverse, nostatic, {1}, class);","IScene", _name));
+            //    WriteCsharpMonoDecl(_writer, tmp, _isStatic);
+            //}
             if(!_isStatic)
             {
-                WriteCsharpDefaultCtor(_writer, _name);
+                WriteCsharpDefaultCtor(_writer, _name, (Class != null && Class.HasBaseClass ? Class.BaseClass : ""));
             }
             //convert funcs in properties where possible
             var props = new List<KeyValuePair<FunctionRegister, FunctionRegister>>(); 
@@ -574,7 +606,7 @@ namespace LumixBindings
                 }
                 WriteCsharpFunction(_writer, func, _isStatic, _isPartial, _name);
             }
-            if(!_isStatic)
+            if(!_isStatic && _name != "Engine")
             {
                 _writer.WriteLine("\t\tpublic static implicit operator System.IntPtr(" + _name + " _value)");
                 _writer.WriteLine("\t\t{");
@@ -585,12 +617,19 @@ namespace LumixBindings
             _writer.WriteLine("");
         }
 
-        void WriteCsharpDefaultCtor(StreamWriter _writer,string _name)
+        void WriteCsharpDefaultCtor(StreamWriter _writer,string _name, string _baseClass = "")
         {
             _writer.WriteLine("\t\tinternal " + _name + "(IntPtr _instance)");
-            _writer.WriteLine("\t\t{");
-            _writer.WriteLine("\t\t\tinstance_ = _instance;");
-            _writer.WriteLine("\t\t}\n");
+            if (!string.IsNullOrEmpty(_baseClass))
+            {
+                _writer.WriteLine("\t\t\t:base(_instance){ }\n");
+            }
+            else
+            {
+                _writer.WriteLine("\t\t{");
+                _writer.WriteLine("\t\t\tinstance_ = _instance;");
+                _writer.WriteLine("\t\t}\n");
+            }
         }
 
         void WriteCsharpMonoDecl(StreamWriter _writer, FunctionRegister _func, bool _isStatic)
@@ -634,7 +673,7 @@ namespace LumixBindings
         void WriteCsharpFunction(StreamWriter _writer, FunctionRegister _func, bool _isStatic,bool _isPartial = false, string _klassName = "")
         {
             var meth = nsc_.GetMethodFromClass(_func.NativeClass.Replace("Impl", ""), _func.Name);
-            if(_func.Name == "getState")
+            if(_func.Name == "instantiatePrefab")
             {
 
             }

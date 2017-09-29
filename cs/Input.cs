@@ -4,8 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public static class InputSystem
-	{
+	public static class InputSystem	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static bool isMouseDown(int button);
 

@@ -42,13 +42,18 @@
     <Reference Include="System.Xml"/>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Manual\Mathf.cs" />
-    <Compile Include="Manual\Universe.cs" />
-    <Compile Include="Manual\Imgui.cs" />
     <Compile Include="Manual\Component.cs" />
-    <Compile Include="Manual\Vec.cs" />
-    <Compile Include="Manual\Quat.cs" />
+    <Compile Include="Manual\EditorInfo.cs" />
+    <Compile Include="Manual\Engine.cs" />
     <Compile Include="Manual\Entity.cs" />
+    <Compile Include="Manual\Imgui.cs" />
+    <Compile Include="Manual\IResourceType.cs" />
+    <Compile Include="Manual\IScene.cs" />
+    <Compile Include="Manual\Mathf.cs" />
+    <Compile Include="Manual\Quat.cs" />
+    <Compile Include="Manual\Resources.cs" />
+    <Compile Include="Manual\Universe.cs" />
+    <Compile Include="Manual\Vec.cs" />
     <Compile Include="AnimController.cs" />
     <Compile Include="Input.cs" />
     <Compile Include="Renderer.cs" />
@@ -57,6 +62,7 @@
     <Compile Include="PhysicsScene.cs" />
     <Compile Include="RenderScene.cs" />
     <Compile Include="ResourceManager.cs" />
+    <Compile Include="PrefabResource.cs" />
     <Compile Include="ResourceManagerBase.cs" />
     <Compile Include="Resource.cs" />
     <Compile Include="Entity.Automatic.cs" />

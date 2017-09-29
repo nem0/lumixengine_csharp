@@ -32,7 +32,7 @@ namespace LumixBindings
 
         public string Type
         {
-            get { return NativeCPP.Replace("&", "").Replace("Lumix::", "").Replace("*","").Trim(); }
+            get { return NativeCPP.Replace("const","").Replace("&", "").Replace("Lumix::", "").Replace("*","").Trim(); }
         }
         public string NativeC
         {

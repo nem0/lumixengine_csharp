@@ -74,13 +74,9 @@ namespace LumixBindings
             template.AppendLine("    <Reference Include=\"System.Xml\"/>");
             template.AppendLine("  </ItemGroup>");
             template.AppendLine("  <ItemGroup>");
-            template.AppendLine(string.Format("    <Compile Include=\"Manual\\{0}.cs\" />", "Mathf"));
-            template.AppendLine(string.Format("    <Compile Include=\"Manual\\{0}.cs\" />", "Universe"));
-            template.AppendLine(string.Format("    <Compile Include=\"Manual\\{0}.cs\" />", "Imgui"));
-            template.AppendLine(string.Format("    <Compile Include=\"Manual\\{0}.cs\" />", "Component"));
-            template.AppendLine(string.Format("    <Compile Include=\"Manual\\{0}.cs\" />", "Vec"));
-            template.AppendLine(string.Format("    <Compile Include=\"Manual\\{0}.cs\" />", "Quat"));
-            template.AppendLine(string.Format("    <Compile Include=\"Manual\\{0}.cs\" />", "Entity"));
+            var manuals = Directory.GetFiles(Bindings.CSRootPath + "/Manual", "*.cs");
+            foreach (var include in manuals)
+                template.AppendLine(string.Format("    <Compile Include=\"Manual\\{0}.cs\" />", Path.GetFileNameWithoutExtension(include)));
             foreach (var klass in classes_)
             {
                 template.AppendLine(string.Format("    <Compile Include=\"{0}.cs\" />", klass));
@@ -101,7 +97,7 @@ namespace LumixBindings
             {
                 if (file.ToLower().Contains("temporarygen"))
                     continue;
-                File.Copy(file, Path.Combine(path, Path.GetFileName(file)));
+                File.Copy(file, Path.Combine(path, Path.GetFileName(file)), true);
             }
         }
     }

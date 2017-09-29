@@ -4,10 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class PhysicsScene
+	public class PhysicsScene : IScene
 	{
-		IntPtr instance_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static int raycast(IntPtr instance, Vec3 origin, Vec3 dir, int ignore_entity);
 
@@ -44,14 +42,8 @@ namespace Lumix
 		extern static void removeCollisionLayer(IntPtr instance);
 
 
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static System.IntPtr getUniverse(IntPtr instance);
-
-
 		internal PhysicsScene(IntPtr _instance)
-		{
-			instance_ = _instance;
-		}
+			:base(_instance){ }
 
 		public Entity Raycast(Vec3 origin, Vec3 dir, Entity ignore_entity)
 		{

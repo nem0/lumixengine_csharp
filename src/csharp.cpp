@@ -1594,6 +1594,8 @@ CSHARP_FUNCTION(AnimationScene, getControllerEntity, nostatic, AnimController, c
 CSHARP_FUNCTION(Engine, getResourceManager, nostatic, Engine, partial);
 //ResourceManager
 CSHARP_FUNCTION(ResourceManager, get, nostatic, ResourceManager, class);
+//prefab
+CSHARP_FUNCTION(PrefabResource, unload, nostatic, PrefabResource, class);
 //ResourceManagerBase
 CSHARP_FUNCTION(ResourceManagerBase, enableUnload, nostatic, ResourceManagerBase, class);
 CSHARP_FUNCTION(ResourceManagerBase, load, nostatic, ResourceManagerBase, class);

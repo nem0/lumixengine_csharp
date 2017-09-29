@@ -24,7 +24,8 @@ namespace Lumix
         public float SpawnTick = 5;
         public int MaxSpawns = 10;
         public Vec4 SpawnArea = new Vec4(0, 0, 2000, 2000);
-
+        [EditorInfo(Description = "Object which this component should spawn!")]
+        public PrefabResource SpawnPrefab;
         /// <summary>
         /// Gets a random location inside SpawnAraea
         /// </summary>
@@ -49,6 +50,11 @@ namespace Lumix
             despawnTable = new List<ET>();
 
             nextSpawn_ = SpawnTick;
+            if(SpawnPrefab == null)
+            {
+                //provide default for now
+                SpawnPrefab = Resources.Load<PrefabResource>("prefabs/tutorial/creature.fab");
+            }
         }
 
         void Update(float _deltaTime)
@@ -60,8 +66,12 @@ namespace Lumix
             if (spawnedTable_.Count == MaxSpawns)
                 return;//only spawn as much as we need
 
+            //get a random position for the newsy spawned creature
             var pos = RandomLocation;
-            //todo, instantiate entity
+            //instantiate the prefab as a new entity
+            var creature = Universe.InstantiatePrefab(SpawnPrefab, pos, Quat.Identity, 1.0f);
+            //remember it for later despawn
+            spawnedTable_.Add(creature);
         }
 
         void ProcessDespawn(float _deltaTime)

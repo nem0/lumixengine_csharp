@@ -5,15 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public partial class Engine
-	{
-        IntPtr instance_;
 
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		public extern static void logError(string msg);
-
-	}
-	
 	public class Component
 	{
         private static byte[] s_imgui_text_buffer = new byte[4096];
@@ -33,6 +25,11 @@ namespace Lumix
         public IntPtr scene_;
         public Entity entity_;
 		public Entity entity { get { return entity_; } }
+
+        public Universe Universe
+        {
+            get { return entity.Universe; }
+        }
 
         public Component()
         {

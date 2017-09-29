@@ -4,10 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class RenderScene
+	public class RenderScene : IScene
 	{
-		IntPtr instance_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static void addDebugTriangle(IntPtr instance, Vec3 p0, Vec3 p1, Vec3 p2, uint color, float life);
 
@@ -62,14 +60,8 @@ namespace Lumix
 		extern static void addDebugCylinder(IntPtr instance, Vec3 position, Vec3 up, float radius, uint color, float life);
 
 
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static System.IntPtr getUniverse(IntPtr instance);
-
-
 		internal RenderScene(IntPtr _instance)
-		{
-			instance_ = _instance;
-		}
+			:base(_instance){ }
 
 		public void AddDebugTriangle(Vec3 p0, Vec3 p1, Vec3 p2, uint color, float life)
 		{

@@ -150,6 +150,19 @@ namespace LumixBindings
             Add(nss);
         }
 
+        public Class[] GetClassByName(string _name)
+        {
+            List<Class> ret = new List<Class>();
+            foreach(var ns in nsclasses_)
+            {
+                foreach(var c in ns.Value)
+                {
+                    if (c.Name == _name && !ret.Contains(c))
+                        ret.Add(c);
+                }
+            }
+            return ret.ToArray();
+        }
         public Method[] GetMethodFromClass(string _klass, string _method,string _ns = "Lumix")
         {
             List<Method> found = new List<Method>();

@@ -83,7 +83,7 @@ namespace LumixBindings
                 string ret = "";
                 if (baseClasses_.Count > 0)
                 {
-                    ret = baseClasses_[0].Key;
+                    ret = baseClasses_[0].Key.Replace("struct","").Trim();
                 }
                 return ret;
             }
@@ -131,7 +131,7 @@ namespace LumixBindings
         {
             if (cursor.IsInSystemHeader())
                 return CXChildVisitResult.CXChildVisit_Continue;
-            if(Name == "OutputBlob" && Header.Contains("blob.h"))
+            if(Name == "PrefabResource" && Header.Contains("prefab.h"))
             {
                 var name = clang.getCursorSpelling(cursor);
             }
@@ -150,7 +150,7 @@ namespace LumixBindings
             else if (cursor.kind == CXCursorKind.CXCursor_CXXBaseSpecifier)
             {
                 string bsClass = clang.getCursorSpelling(cursor).ToString().Replace("Lumix::", "").Replace("class", "").Trim();
-                if (Bindings.Classes.Contains(bsClass))
+                if (Bindings.Classes.Contains(bsClass) || true)
                     baseClasses_.Add(new KeyValuePair<string,CXCursor>(bsClass,cursor));
             }
             else if (cursor.kind == CXCursorKind.CXCursor_EnumDecl)

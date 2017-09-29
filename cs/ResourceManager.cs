@@ -6,7 +6,7 @@ namespace Lumix
 {
 	public class ResourceManager
 	{
-		IntPtr instance_;
+		internal IntPtr instance_;
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static System.IntPtr get(IntPtr instance, uint type);

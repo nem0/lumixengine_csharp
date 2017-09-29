@@ -4,8 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public partial class Entity
-	{
+	public partial class Entity	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static int getFirstEntity(IntPtr instance);
 

@@ -4,8 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public static class Renderer
-	{
+	public static class Renderer	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static void makeScreenshot(string filename);
 

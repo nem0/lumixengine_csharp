@@ -4,22 +4,14 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class NavigationScene
+	public class NavigationScene : IScene
 	{
-		IntPtr instance_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static bool isNavmeshReady(IntPtr instance);
 
 
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static System.IntPtr getUniverse(IntPtr instance);
-
-
 		internal NavigationScene(IntPtr _instance)
-		{
-			instance_ = _instance;
-		}
+			:base(_instance){ }
 
 		public bool IsNavmeshReady()
 		{

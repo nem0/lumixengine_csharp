@@ -4,10 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class AudioScene
+	public class AudioScene : IScene
 	{
-		IntPtr instance_;
-
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static void setEcho(IntPtr instance, int sound_id, float wet_dry_mix, float feedback, float left_delay, float right_delay);
 
@@ -24,14 +22,8 @@ namespace Lumix
 		extern static void setVolume(IntPtr instance, int sound_id, float volume);
 
 
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static System.IntPtr getUniverse(IntPtr instance);
-
-
 		internal AudioScene(IntPtr _instance)
-		{
-			instance_ = _instance;
-		}
+			:base(_instance){ }
 
 		public void SetEcho(int sound_id, float wet_dry_mix, float feedback, float left_delay, float right_delay)
 		{

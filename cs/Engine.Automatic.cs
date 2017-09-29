@@ -4,8 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public partial class Engine
-	{
+	public partial class Engine	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static System.IntPtr getResourceManager(IntPtr instance);
 
@@ -20,10 +19,6 @@ namespace Lumix
 			return new ResourceManager(getResourceManager(instance_));
 		}
 
-		public static implicit operator System.IntPtr(Engine _value)
-		{
-			 return _value.instance_;
-		}
 	}
 
 }

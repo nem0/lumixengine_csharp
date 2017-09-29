@@ -6,7 +6,7 @@ namespace Lumix
 {
 	public class ResourceManagerBase
 	{
-		IntPtr instance_;
+		internal IntPtr instance_;
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static void enableUnload(IntPtr instance, bool enable);
