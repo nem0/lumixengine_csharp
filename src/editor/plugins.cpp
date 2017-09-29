@@ -457,8 +457,9 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 			header << "###" << j;
 			if (ImGui::CollapsingHeader(header))
 			{
-				ImGui::PushID(j);
 				u32 gc_handle = scene->getGCHandle(cmp.handle, j);
+				if (gc_handle == INVALID_GC_HANDLE) continue;
+				ImGui::PushID(j);
 				scene->tryCallMethod(gc_handle, "OnInspector", this, true);
 				if (ImGui::Button("Edit"))
 				{

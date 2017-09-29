@@ -921,9 +921,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 				char class_name[256];
 				getClassName(name_hash, class_name);
 				script.gc_handle = createObject("Lumix", class_name);
-				ASSERT(script.gc_handle != INVALID_GC_HANDLE);
-
-				setCSharpComponent(script, cmp);
+				if(script.gc_handle != INVALID_GC_HANDLE) setCSharpComponent(script, cmp);
 			}
 
 			script.script_name_hash = name_hash;
@@ -1041,10 +1039,15 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 				serializer.write(scr.script_name_hash);
 
 				MonoObject* obj = mono_gchandle_get_target(scr.gc_handle);
+				int count = 0;
+				if (!obj)
+				{
+					serializer.write(count);
+					continue;
+				}
 				MonoClass* mono_class = mono_object_get_class(obj);
 
 				void* iter = nullptr;
-				int count = 0;
 				while (MonoClassField* field = mono_class_get_fields(mono_class, &iter))
 				{
 					bool is_public = (mono_field_get_flags(field) & 0x6) != 0;
@@ -1143,6 +1146,11 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 				serializer.read(prop_count);
 
 				MonoObject* obj = mono_gchandle_get_target(scr.gc_handle);
+				if (!obj)
+				{
+					ASSERT(prop_count == 0);
+					continue;
+				}
 				MonoClass* mono_class = mono_object_get_class(obj);
 
 				for (int i = 0; i < prop_count; ++i)
