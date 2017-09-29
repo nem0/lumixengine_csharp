@@ -52,7 +52,7 @@
     <Compile Include="Manual\Mathf.cs" />
     <Compile Include="Manual\Quat.cs" />
     <Compile Include="Manual\Resources.cs" />
-    <Compile Include="Manual\universe.cs" />
+    <Compile Include="Manual\Universe.cs" />
     <Compile Include="Manual\Vec.cs" />
     <Compile Include="AnimController.cs" />
     <Compile Include="Input.cs" />

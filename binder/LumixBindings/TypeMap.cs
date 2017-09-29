@@ -324,7 +324,7 @@ namespace LumixBindings
             switch(NativeCPP)
             {
                 case "const Lumix::Path &":
-                    return _api ? "system.string" : "string";
+                    return _api ? "string" : "string";
                 case "const Lumix::Vec2 &":
                 case "Lumix::Vec2":
                     return "Vec2";
@@ -358,7 +358,7 @@ namespace LumixBindings
             }
             var type = NativeCPP.Replace("const", "").Replace("*", "").Replace("Lumix::", "").Replace("&","").Trim();
             if (!Bindings.Classes.Contains(type) && type != "void" && !IsBasicType)
-                type =  "System.IntPtr";
+                type =  _api ? "intptr" : "System.IntPtr";
            
             switch(type)
             {

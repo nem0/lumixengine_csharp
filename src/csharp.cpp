@@ -1096,6 +1096,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 							serializer.writeString(mono_string_to_utf8(str_val));
 							break;
 						}
+						case 17:
 						case MONO_TYPE_CLASS:
 						{
 							MonoType* type = mono_field_get_type(field);
@@ -1193,6 +1194,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 							mono_field_set_value(obj, field, str);
 							break;
 						}
+						case 17:
 						case MONO_TYPE_CLASS:
 						{
 							MonoType* type = mono_field_get_type(field);

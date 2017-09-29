@@ -169,6 +169,7 @@ namespace LumixBindings
                     {
                         if (func.IsInvalid)
                             continue;
+                        
                         tmpWriter.WriteLine("{");
                         tmpWriter.WriteLine(func.ToString());
                         tmpWriter.WriteLine("}");

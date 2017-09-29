@@ -852,7 +852,7 @@ mono_add_internal_call("Lumix.Terrain::setTerrainYScale", fRenderScene_setTerrai
 	{
 		typedef void (Universe::*MethodType)(Lumix::Entity, const Lumix::Transform &);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Universe::setTransform>;
-		mono_add_internal_call("Lumix.Entity::setTransform(intptr,Entity,System.IntPtr)", f);
+		mono_add_internal_call("Lumix.Entity::setTransform(intptr,Entity,intptr)", f);
 	}
 	{
 		typedef void (Universe::*MethodType)(Lumix::Entity, const Lumix::Vec3 &, const Lumix::Quat &, float);
@@ -1092,7 +1092,7 @@ mono_add_internal_call("Lumix.Terrain::setTerrainYScale", fRenderScene_setTerrai
 	{
 		typedef void (RenderScene::*MethodType)(const Lumix::Frustum &, unsigned int, float);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&RenderScene::addDebugFrustum>;
-		mono_add_internal_call("Lumix.RenderScene::addDebugFrustum(intptr,System.IntPtr,uint,single)", f);
+		mono_add_internal_call("Lumix.RenderScene::addDebugFrustum(intptr,intptr,uint,single)", f);
 	}
 	{
 		typedef void (RenderScene::*MethodType)(const Lumix::Vec3 &, float, float, unsigned int, float);
@@ -1102,7 +1102,7 @@ mono_add_internal_call("Lumix.Terrain::setTerrainYScale", fRenderScene_setTerrai
 	{
 		typedef void (RenderScene::*MethodType)(const Lumix::Matrix &, float, float, unsigned int, float);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&RenderScene::addDebugCapsule>;
-		mono_add_internal_call("Lumix.RenderScene::addDebugCapsule(intptr,System.IntPtr,single,single,uint,single)", f);
+		mono_add_internal_call("Lumix.RenderScene::addDebugCapsule(intptr,intptr,single,single,uint,single)", f);
 	}
 	{
 		typedef void (RenderScene::*MethodType)(const Lumix::Vec3 &, const Lumix::Vec3 &, float, unsigned int, float);
@@ -1137,12 +1137,12 @@ mono_add_internal_call("Lumix.Terrain::setTerrainYScale", fRenderScene_setTerrai
 	{
 		typedef Lumix::Resource* (ResourceManagerBase::*MethodType)(const Lumix::Path &);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&ResourceManagerBase::load>;
-		mono_add_internal_call("Lumix.ResourceManagerBase::load(intptr,system.string)", f);
+		mono_add_internal_call("Lumix.ResourceManagerBase::load(intptr,string)", f);
 	}
 	{
 		typedef void (ResourceManagerBase::*MethodType)(Lumix::Resource &);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&ResourceManagerBase::load>;
-		mono_add_internal_call("Lumix.ResourceManagerBase::load(intptr,System.IntPtr)", f);
+		mono_add_internal_call("Lumix.ResourceManagerBase::load(intptr,intptr)", f);
 	}
 	{
 		typedef void (ResourceManagerBase::*MethodType)();
@@ -1152,22 +1152,22 @@ mono_add_internal_call("Lumix.Terrain::setTerrainYScale", fRenderScene_setTerrai
 	{
 		typedef void (ResourceManagerBase::*MethodType)(const Lumix::Path &);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&ResourceManagerBase::unload>;
-		mono_add_internal_call("Lumix.ResourceManagerBase::unload(intptr,system.string)", f);
+		mono_add_internal_call("Lumix.ResourceManagerBase::unload(intptr,string)", f);
 	}
 	{
 		typedef void (ResourceManagerBase::*MethodType)(Lumix::Resource &);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&ResourceManagerBase::unload>;
-		mono_add_internal_call("Lumix.ResourceManagerBase::unload(intptr,System.IntPtr)", f);
+		mono_add_internal_call("Lumix.ResourceManagerBase::unload(intptr,intptr)", f);
 	}
 	{
 		typedef void (ResourceManagerBase::*MethodType)(const Lumix::Path &);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&ResourceManagerBase::reload>;
-		mono_add_internal_call("Lumix.ResourceManagerBase::reload(intptr,system.string)", f);
+		mono_add_internal_call("Lumix.ResourceManagerBase::reload(intptr,string)", f);
 	}
 	{
 		typedef void (ResourceManagerBase::*MethodType)(Lumix::Resource &);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&ResourceManagerBase::reload>;
-		mono_add_internal_call("Lumix.ResourceManagerBase::reload(intptr,System.IntPtr)", f);
+		mono_add_internal_call("Lumix.ResourceManagerBase::reload(intptr,intptr)", f);
 	}
 	{
 		typedef Lumix::Resource::State (Resource::*MethodType)() const;

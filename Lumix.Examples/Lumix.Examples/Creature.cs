@@ -35,7 +35,7 @@ namespace Lumix
         /// <summary>
         /// Init gets called by lumix right after construnction of this component
         /// </summary>
-        void StartGame()
+        void OnStartGame()
         {
             animController_ = GetComponent<AnimController>();
             agent_ = GetComponent<NavmeshAgent>();

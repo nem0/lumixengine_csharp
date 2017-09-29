@@ -55,22 +55,28 @@ namespace Lumix
 
         public static T Load<T>(string _path) where T : IResourceType
         {
-            var name = default(T).ResourceType;
+            //very nasty hack, but will do for now
+            var t = (T)Activator.CreateInstance(typeof(T), IntPtr.Zero);
+            var name = t.ResourceType;
             uint hash = Hash(_path);
             var resource = Engine.Instance.GetResourceManager().Get(hash).Load(_path);
-            return (T)Activator.CreateInstance(typeof(T), resource);
+            if (resource.instance_ == IntPtr.Zero)
+            {
+                Engine.logError(string.Format("Failed to load resource of type {0} from {1}.", name, _path));
+                return default(T);
+            }
+            return (T)Activator.CreateInstance(typeof(T), resource.instance_);
         }
 
         public static uint Hash(string _type)
         {
-            char[] c =_type.ToCharArray();
+            char[] c = _type.ToCharArray();
             uint crc = 0xffffFFFF;
             int idx = 0;
             while (idx < c.Length)
             {
                 crc = (crc >> 8) ^ crc32Table[crc & 0xFF ^ c[idx++]];
-                Console.WriteLine(crc.ToString());
-                };
+            };
 
             return ~crc;
         }
