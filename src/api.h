@@ -965,6 +965,31 @@ mono_add_internal_call("Lumix.Terrain::setTerrainYScale", fRenderScene_setTerrai
 		mono_add_internal_call("Lumix.Input::isMouseDown", f);
 	}
 	{
+		typedef float (InputSystem::*MethodType)(unsigned int);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&InputSystem::getActionValue>;
+		mono_add_internal_call("Lumix.Input::getActionValue", f);
+	}
+	{
+		typedef float (InputSystem::*MethodType)() const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&InputSystem::getMouseXMove>;
+		mono_add_internal_call("Lumix.Input::getMouseXMove", f);
+	}
+	{
+		typedef float (InputSystem::*MethodType)() const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&InputSystem::getMouseYMove>;
+		mono_add_internal_call("Lumix.Input::getMouseYMove", f);
+	}
+	{
+		typedef Lumix::Vec2 (InputSystem::*MethodType)() const;
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&InputSystem::getMousePos>;
+		mono_add_internal_call("Lumix.Input::getMousePos", f);
+	}
+	{
+		typedef void (InputSystem::*MethodType)(unsigned int, Lumix::InputSystem::InputType, int, int);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&InputSystem::addAction>;
+		mono_add_internal_call("Lumix.Input::addAction", f);
+	}
+	{
 		typedef Lumix::Entity (PhysicsScene::*MethodType)(const Lumix::Vec3 &, const Lumix::Vec3 &, Lumix::Entity);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&PhysicsScene::raycast>;
 		mono_add_internal_call("Lumix.PhysicsScene::raycast", f);
@@ -1008,6 +1033,11 @@ mono_add_internal_call("Lumix.Terrain::setTerrainYScale", fRenderScene_setTerrai
 		typedef void (PhysicsScene::*MethodType)();
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&PhysicsScene::removeCollisionLayer>;
 		mono_add_internal_call("Lumix.PhysicsScene::removeCollisionLayer", f);
+	}
+	{
+		typedef void (PhysicsScene::*MethodType)(Lumix::ComponentHandle, const Lumix::Vec3 &);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&PhysicsScene::moveController>;
+		mono_add_internal_call("Lumix.PhysicalController::moveController", f);
 	}
 	{
 		typedef void (Renderer::*MethodType)(const Lumix::Path &);

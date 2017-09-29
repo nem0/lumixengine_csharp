@@ -319,7 +319,7 @@ namespace LumixBindings
         {
             if (IsEnum)
             {
-                return "int";
+                return _api ? "int" : Type.Replace("::", ".");
             }
             switch(NativeCPP)
             {

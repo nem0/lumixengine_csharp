@@ -12,6 +12,10 @@ namespace Lumix
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static void setControllerLayer(IntPtr scene, int cmp, int value);
 
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		extern static void moveController(IntPtr instance, int cmp, Vec3 v);
+
+
 
 		public static string GetCmpType{ get { return "physical_controller"; } }
 
@@ -31,6 +35,11 @@ namespace Lumix
 
 		public PhysicalController(Entity _entity, int _cmpId)
 			: base(_entity, _cmpId, getScene(_entity.instance_, GetCmpType)) { }
+
+		public void MoveController(Vec3 v)
+		{
+			moveController(scene_, componentId_, v);
+		}
 
 	}//end class
 

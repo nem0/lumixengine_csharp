@@ -44,6 +44,18 @@ namespace Lumix
             return result;
         }
 
+        public static Real Atan2(Real y, Real x)
+        {
+            return (Real)Math.Atan2(y, x);
+        }
+        public static Real ASin(Real value)
+        {
+            return (Real)Math.Asin(value);
+        }
+        public static Real ACos(Real value)
+        {
+            return (Real)Math.Acos(value);
+        }
         /// <summary>
         /// 
         /// </summary>

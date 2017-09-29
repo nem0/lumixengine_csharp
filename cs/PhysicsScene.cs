@@ -42,6 +42,34 @@ namespace Lumix
 		extern static void removeCollisionLayer(IntPtr instance);
 
 
+		public enum D6Motion
+		{
+			LOCKED,
+			LIMITED,
+			FREE,
+		}
+
+		public enum ActorType
+		{
+			BOX,
+			MESH,
+			CAPSULE,
+			SPHERE,
+		}
+
+		public enum BoneOrientation
+		{
+			X,
+			Y,
+		}
+
+		public enum DynamicType
+		{
+			STATIC,
+			DYNAMIC,
+			KINEMATIC,
+		}
+
 		public PhysicsScene(IntPtr _instance)
 			:base(_instance){ }
 

@@ -471,7 +471,7 @@ namespace LumixBindings
                         tmpWriter.WriteLine("using System.Runtime.CompilerServices;\n");
                         tmpWriter.WriteLine("namespace Lumix"); ;
                         tmpWriter.WriteLine("{");
-                        WriteCsharpClass(tmpWriter, kvp.Value, kvp.Key, true);
+                        WriteCsharpClass(tmpWriter, kvp.Value, kvp.Value[0].ManagedClass, true);
                         tmpWriter.WriteLine("}");
                     }
                 }
@@ -517,7 +517,14 @@ namespace LumixBindings
 
             project.Export(Bindings.CSRootPath);
         }
-
+        void WriteCsharpEnum(StreamWriter _writer, EnumValue _enum, string _nativeClass)
+        {
+            _writer.WriteLine("\t\tpublic enum " + _enum.Name);
+            _writer.WriteLine("\t\t{");
+            foreach (var val in _enum.Values)
+                _writer.WriteLine("\t\t\t" + val.Key + ",");
+            _writer.WriteLine("\t\t}\n");
+        }
         void WriteCsharpClass(StreamWriter _writer,List<FunctionRegister> _methods, string _name, bool _isStatic, bool _isPartial = false)
         {
             //class def
@@ -556,6 +563,20 @@ namespace LumixBindings
                 _writer.Write("\t\t\t get {{ return {0}; }}\n", knownResourceTypes.Select(x => x).Where(x => x.Class == _name).First().ResourceType);
                 _writer.Write("\t\t}\n\n");
 
+            }
+            //check for enums
+            foreach(var ns in nsc_.Values)
+            {
+                foreach(var e in ns.Enums)
+                {
+                    if (e.FullyQualyfiedType.ToLower().Replace("lumix::","").StartsWith(_methods[0].NativeClass.ToLower()))
+                    {
+                        if (string.IsNullOrEmpty(e.Name))
+                            continue;
+
+                        WriteCsharpEnum(_writer, e, _methods[0].NativeClass);
+                    }
+                }
             }
             //if(_name.ToLower().EndsWith("scene"))
 
@@ -660,6 +681,8 @@ namespace LumixBindings
                         if (++idx < meth[k].Values.Length)
                             args += ", ";
                     }
+                    if (_func.NativeClass != _func.ManagedClass)
+                        args = args.Replace(_func.NativeClass, _func.ManagedClass);
                     _writer.Write(string.Format("\t\textern static {0} {1}({2});\n", (meth[k].IsReturnSomething ? meth[k].ReturnTypemap.ToCsharp(true) : "void"), _func.Name, args));
                 }
             }
@@ -695,7 +718,10 @@ namespace LumixBindings
                             continue;
                         if (arg.TypeMap.NativeCPP == "Lumix::" + _klassName && _isPartial)
                             continue;
-                        _writer.Write(arg.TypeMap.ToCsharp() + " ");
+                        var tArg = arg.TypeMap.ToCsharp();
+                        if (_func.NativeClass != _func.ManagedClass)
+                            tArg = tArg.Replace(_func.NativeClass, _func.ManagedClass);
+                        _writer.Write(tArg + " ");
                         _writer.Write(arg.Name);
                         if (k + 1 < meth[i].Values.Length)
                             _writer.Write(", ");
@@ -749,6 +775,8 @@ namespace LumixBindings
                         close = true;
                         _writer.Write(string.Format("new {0}(", meth[i].ReturnTypemap.Type));
                     }
+                    if (_func.NativeClass != _func.ManagedClass)
+                        args = args.Replace(_func.NativeClass, _func.ManagedClass);
                     //call native func
                     _writer.Write(string.Format("{0}({1}){2};\n", _func.Name, args, close ? ")" : ""));
                     if (meth[i].IsReturnSomething)

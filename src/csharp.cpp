@@ -1574,6 +1574,11 @@ CSHARP_FUNCTION(AudioScene, stop, nostatic, AudioScene, class);
 CSHARP_FUNCTION(AudioScene, setVolume, nostatic, AudioScene, class);
 
 CSHARP_FUNCTION(InputSystem, isMouseDown, static, Input, class);
+CSHARP_FUNCTION(InputSystem, getActionValue, static, Input, class);
+CSHARP_FUNCTION(InputSystem, getMouseXMove, static, Input, class);
+CSHARP_FUNCTION(InputSystem, getMouseYMove, static, Input, class);
+CSHARP_FUNCTION(InputSystem, getMousePos, static, Input, class);
+CSHARP_FUNCTION(InputSystem, addAction, static, Input, class);
 
 CSHARP_FUNCTION(PhysicsScene, raycast, nostatic, PhysicsScene, class);
 CSHARP_FUNCTION(PhysicsScene, raycastEx, nostatic, PhysicsScene, class);
@@ -1584,6 +1589,8 @@ CSHARP_FUNCTION(PhysicsScene, setLayersCanCollide, nostatic, PhysicsScene, class
 CSHARP_FUNCTION(PhysicsScene, getCollisionsLayersCount, nostatic, PhysicsScene, class);
 CSHARP_FUNCTION(PhysicsScene, addCollisionLayer, nostatic, PhysicsScene, class);
 CSHARP_FUNCTION(PhysicsScene, removeCollisionLayer, nostatic, PhysicsScene, class);
+CSHARP_FUNCTION(PhysicsScene, moveController, nostatic, PhysicalController, component);
+
 CSHARP_FUNCTION(Renderer, makeScreenshot, static, Renderer, class);
 CSHARP_FUNCTION(Renderer, isOpenGL, static, Renderer, class);
 CSHARP_FUNCTION(Renderer, getLayersCount, static, Renderer, class);

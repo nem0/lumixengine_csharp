@@ -51,6 +51,11 @@ namespace Lumix
         {
             return entity.GetComponent<T>();
         }
+
+        public T CreateComponent<T>() where T : Component
+        {
+            return entity.CreateComponent<T>();
+        }
         public virtual void Create()
         {
 

@@ -7,7 +7,7 @@
     <ProjectGuid>{70703C8A-8BDE-4126-8493-0DBE0C04BD0F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Lumix.Examples</RootNamespace>
+    <RootNamespace>Lumix</RootNamespace>
     <AssemblyName>Lumix.Examples</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Creature.cs" />
+    <Compile Include="Player.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Spawner.cs" />
   </ItemGroup>

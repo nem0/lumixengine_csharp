@@ -6,7 +6,7 @@ namespace Lumix
 {
 	public partial class Resource	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static int getState(IntPtr instance);
+		extern static Resource.State getState(IntPtr instance);
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -37,12 +37,19 @@ namespace Lumix
 		extern static System.IntPtr getResourceManager(IntPtr instance);
 
 
+		public enum State
+		{
+			EMPTY,
+			READY,
+			FAILURE,
+		}
+
 		public Resource(IntPtr _instance)
 		{
 			instance_ = _instance;
 		}
 
-		public int GetState()
+		public Resource.State GetState()
 		{
 			return getState(instance_);
 		}
