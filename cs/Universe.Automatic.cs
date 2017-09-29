@@ -13,7 +13,7 @@ namespace Lumix
 		extern static int instantiatePrefab(IntPtr instance, System.IntPtr prefab, Vec3 pos, Quat rot, float scale);
 
 
-		internal Universe(IntPtr _instance)
+		public Universe(IntPtr _instance)
 		{
 			instance_ = _instance;
 		}

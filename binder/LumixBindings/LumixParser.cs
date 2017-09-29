@@ -619,7 +619,7 @@ namespace LumixBindings
 
         void WriteCsharpDefaultCtor(StreamWriter _writer,string _name, string _baseClass = "")
         {
-            _writer.WriteLine("\t\tinternal " + _name + "(IntPtr _instance)");
+            _writer.WriteLine("\t\tpublic " + _name + "(IntPtr _instance)");
             if (!string.IsNullOrEmpty(_baseClass))
             {
                 _writer.WriteLine("\t\t\t:base(_instance){ }\n");

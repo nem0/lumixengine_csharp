@@ -60,7 +60,7 @@ namespace Lumix
 		extern static void addDebugCylinder(IntPtr instance, Vec3 position, Vec3 up, float radius, uint color, float life);
 
 
-		internal RenderScene(IntPtr _instance)
+		public RenderScene(IntPtr _instance)
 			:base(_instance){ }
 
 		public void AddDebugTriangle(Vec3 p0, Vec3 p1, Vec3 p2, uint color, float life)

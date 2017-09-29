@@ -133,7 +133,7 @@ namespace Lumix
 		extern static System.IntPtr getScene(IntPtr instance, uint hash);
 
 
-		internal Entity(IntPtr _instance)
+		public Entity(IntPtr _instance)
 		{
 			instance_ = _instance;
 		}

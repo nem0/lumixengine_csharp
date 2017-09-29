@@ -42,7 +42,7 @@ namespace Lumix
 		extern static void removeCollisionLayer(IntPtr instance);
 
 
-		internal PhysicsScene(IntPtr _instance)
+		public PhysicsScene(IntPtr _instance)
 			:base(_instance){ }
 
 		public Entity Raycast(Vec3 origin, Vec3 dir, Entity ignore_entity)

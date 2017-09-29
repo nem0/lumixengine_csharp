@@ -12,7 +12,7 @@ namespace Lumix
 		extern static System.IntPtr get(IntPtr instance, uint type);
 
 
-		internal ResourceManager(IntPtr _instance)
+		public ResourceManager(IntPtr _instance)
 		{
 			instance_ = _instance;
 		}

@@ -9,7 +9,7 @@ namespace Lumix
 		extern static System.IntPtr getResourceManager(IntPtr instance);
 
 
-		internal Engine(IntPtr _instance)
+		public Engine(IntPtr _instance)
 		{
 			instance_ = _instance;
 		}

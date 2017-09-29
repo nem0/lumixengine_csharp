@@ -40,7 +40,7 @@ namespace Lumix
 		extern static System.IntPtr getResourceManager(IntPtr instance);
 
 
-		internal Resource(IntPtr _instance)
+		public Resource(IntPtr _instance)
 		{
 			instance_ = _instance;
 		}

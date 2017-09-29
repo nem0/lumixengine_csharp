@@ -10,7 +10,7 @@ namespace Lumix
 		extern static bool isNavmeshReady(IntPtr instance);
 
 
-		internal NavigationScene(IntPtr _instance)
+		public NavigationScene(IntPtr _instance)
 			:base(_instance){ }
 
 		public bool IsNavmeshReady()

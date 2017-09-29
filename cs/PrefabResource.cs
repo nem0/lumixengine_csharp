@@ -15,7 +15,7 @@ namespace Lumix
 			 get { return "prefab"; }
 		}
 
-		internal PrefabResource(IntPtr _instance)
+		public PrefabResource(IntPtr _instance)
 			:base(_instance){ }
 
 		public void Unload()

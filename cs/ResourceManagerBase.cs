@@ -34,7 +34,7 @@ namespace Lumix
 		extern static void reload(IntPtr instance, System.IntPtr resource);
 
 
-		internal ResourceManagerBase(IntPtr _instance)
+		public ResourceManagerBase(IntPtr _instance)
 		{
 			instance_ = _instance;
 		}

@@ -22,7 +22,7 @@ namespace Lumix
 		extern static void setVolume(IntPtr instance, int sound_id, float volume);
 
 
-		internal AudioScene(IntPtr _instance)
+		public AudioScene(IntPtr _instance)
 			:base(_instance){ }
 
 		public void SetEcho(int sound_id, float wet_dry_mix, float feedback, float left_delay, float right_delay)
