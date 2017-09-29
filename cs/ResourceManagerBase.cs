@@ -13,9 +13,9 @@ namespace Lumix
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static System.IntPtr load(IntPtr instance, string path);
+		extern static Resource load(IntPtr instance, string path);
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void load(IntPtr instance, System.IntPtr resource);
+		extern static void load(IntPtr instance, Resource resource);
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -25,13 +25,13 @@ namespace Lumix
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static void unload(IntPtr instance, string path);
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void unload(IntPtr instance, System.IntPtr resource);
+		extern static void unload(IntPtr instance, Resource resource);
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static void reload(IntPtr instance, string path);
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void reload(IntPtr instance, System.IntPtr resource);
+		extern static void reload(IntPtr instance, Resource resource);
 
 
 		public ResourceManagerBase(IntPtr _instance)
@@ -46,7 +46,7 @@ namespace Lumix
 
 		public Resource Load(string path)
 		{
-			return new Resource(load(instance_, path));
+			return load(instance_, path);
 		}
 
 		public void Load(Resource resource)

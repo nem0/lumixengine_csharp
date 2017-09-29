@@ -1618,14 +1618,14 @@ CSHARP_FUNCTION(ResourceManagerBase, unload, nostatic, ResourceManagerBase, clas
 CSHARP_FUNCTION(ResourceManagerBase, reload, nostatic, ResourceManagerBase, class);
 
 //resource
-CSHARP_FUNCTION(Resource, getState, nostatic, Resource, class);
-CSHARP_FUNCTION(Resource, isEmpty, nostatic, Resource, class);
-CSHARP_FUNCTION(Resource, isReady, nostatic, Resource, class);
-CSHARP_FUNCTION(Resource, isFailure, nostatic, Resource, class);
-CSHARP_FUNCTION(Resource, getRefCount, nostatic, Resource, class);
-CSHARP_FUNCTION(Resource, size, nostatic, Resource, class);
-CSHARP_FUNCTION(Resource, getPath, nostatic, Resource, class);
-CSHARP_FUNCTION(Resource, getResourceManager, nostatic, Resource, class);
+CSHARP_FUNCTION(Resource, getState, nostatic, Resource, partial);
+CSHARP_FUNCTION(Resource, isEmpty, nostatic, Resource, partial);
+CSHARP_FUNCTION(Resource, isReady, nostatic, Resource, partial);
+CSHARP_FUNCTION(Resource, isFailure, nostatic, Resource, partial);
+CSHARP_FUNCTION(Resource, getRefCount, nostatic, Resource, partial);
+CSHARP_FUNCTION(Resource, size, nostatic, Resource, partial);
+CSHARP_FUNCTION(Resource, getPath, nostatic, Resource, partial);
+CSHARP_FUNCTION(Resource, getResourceManager, nostatic, Resource, partial);
 /*
 CSHARP_FUNCTION(AnimationScene, getAnimableAnimation, nostatic, AnimationScene, component);
 CSHARP_FUNCTION(AnimationScene, getAnimation, nostatic, AnimationScene, component);

@@ -372,7 +372,7 @@ namespace LumixBindings
                     return "int";
             }
             //last resort
-            if (!_nativeDecl && Bindings.WrappedClasses.Contains(Type))
+            if (!_nativeDecl && Bindings.WrappedClasses.Contains(Type) || Type == "Resource")
                 return Type;
 
             return type;

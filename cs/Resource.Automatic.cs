@@ -4,8 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public partial class Resource
-	{
+	public partial class Resource	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static int getState(IntPtr instance);
 
@@ -87,5 +86,6 @@ namespace Lumix
 		{
 			 return _value.instance_;
 		}
-    }
+	}
+
 }

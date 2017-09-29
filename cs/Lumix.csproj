@@ -51,6 +51,7 @@
     <Compile Include="Manual\IScene.cs" />
     <Compile Include="Manual\Mathf.cs" />
     <Compile Include="Manual\Quat.cs" />
+    <Compile Include="Manual\Resource.cs" />
     <Compile Include="Manual\Resources.cs" />
     <Compile Include="Manual\Universe.cs" />
     <Compile Include="Manual\Vec.cs" />
@@ -64,10 +65,10 @@
     <Compile Include="ResourceManager.cs" />
     <Compile Include="PrefabResource.cs" />
     <Compile Include="ResourceManagerBase.cs" />
-    <Compile Include="Resource.cs" />
     <Compile Include="Entity.Automatic.cs" />
     <Compile Include="Universe.Automatic.cs" />
     <Compile Include="Engine.Automatic.cs" />
+    <Compile Include="Resource.Automatic.cs" />
     <Compile Include="Animable.cs" />
     <Compile Include="SharedAnimController.cs" />
     <Compile Include="AmbientSound.cs" />
