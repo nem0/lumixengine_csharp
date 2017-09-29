@@ -1430,11 +1430,15 @@ void CSharpPluginImpl::setStaticField(const char* name_space, const char* class_
 	ASSERT(mono_class);
 	if (!mono_class) return;
 
+	MonoVTable *vtable = mono_class_vtable(mono_domain_get(), mono_class);
+	ASSERT(vtable);
+	if (!vtable) return;
+
 	MonoClassField* field = mono_class_get_field_from_name(mono_class, field_name);
 	ASSERT(field);
 	if (!field) return;
 
-	mono_field_set_value(nullptr, field, value);
+	mono_field_static_set_value(vtable, field, &value);
 }
 
 

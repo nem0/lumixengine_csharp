@@ -1125,6 +1125,11 @@ mono_add_internal_call("Lumix.Terrain::setTerrainYScale", fRenderScene_setTerrai
 		mono_add_internal_call("Lumix.ResourceManager::get", f);
 	}
 	{
+		typedef void (PrefabResource::*MethodType)();
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&PrefabResource::unload>;
+		mono_add_internal_call("Lumix.PrefabResource::unload", f);
+	}
+	{
 		typedef void (ResourceManagerBase::*MethodType)(bool);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&ResourceManagerBase::enableUnload>;
 		mono_add_internal_call("Lumix.ResourceManagerBase::enableUnload", f);
