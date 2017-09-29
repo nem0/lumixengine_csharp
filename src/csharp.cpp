@@ -1485,7 +1485,10 @@ LUMIX_PLUGIN_ENTRY(lumixengine_csharp)
 }
 
 
-}
+} // namespace Lumix
+
+
+#define CSHARP_RESOURCE(ResourceClass, resource_type)
 #define CSHARP_FUNCTION(a,b,c,d,e);
 //animation
 CSHARP_FUNCTION(AnimationScene, getControllerInputIndex, nostatic, AnimController, component);
@@ -1614,3 +1617,13 @@ CSHARP_FUNCTION(AnimationScene, setControllerDefaultSet, nostatic, AnimationScen
 CSHARP_FUNCTION(AnimationScene, getControllerDefaultSet, nostatic, AnimationScene, component);
 CSHARP_FUNCTION(AnimationScene, getControllerResource, nostatic, AnimationScene, component);
 */
+
+CSHARP_RESOURCE(Animation, "animation");
+CSHARP_RESOURCE(Clip, "clip");
+CSHARP_RESOURCE(ControllerResource, "anim_controller");
+CSHARP_RESOURCE(Material, "materia");
+CSHARP_RESOURCE(Model, "model");
+CSHARP_RESOURCE(PhysicsGeometry, "physics");
+CSHARP_RESOURCE(PrefabResource, "prefab");
+CSHARP_RESOURCE(Shader, "shader");
+CSHARP_RESOURCE(Texture, "texture");
