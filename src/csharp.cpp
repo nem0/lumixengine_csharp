@@ -53,6 +53,7 @@ struct CSharpPluginImpl : public CSharpPlugin
 	void loadAssembly() override;
 	int getNamesCount() const override { return m_names.size(); }
 	const char* getName(int idx) const override { return m_names.at(idx).c_str(); }
+	void setStaticField(const char* name_space, const char* class_name, const char* field_name, void* value);
 
 	Engine& m_engine;
 	IAllocator& m_allocator;
@@ -1414,6 +1415,21 @@ CSharpPluginImpl::CSharpPluginImpl(Engine& engine)
 }
 
 
+
+void CSharpPluginImpl::setStaticField(const char* name_space, const char* class_name, const char* field_name, void* value)
+{
+	MonoClass* mono_class = mono_class_from_name(mono_assembly_get_image(m_assembly), name_space, class_name);
+	ASSERT(mono_class);
+	if (!mono_class) return;
+
+	MonoClassField* field = mono_class_get_field_from_name(mono_class, field_name);
+	ASSERT(field);
+	if (!field) return;
+
+	mono_field_set_value(nullptr, field, value);
+}
+
+
 CSharpPluginImpl::~CSharpPluginImpl()
 {
 	unloadAssembly();
@@ -1469,6 +1485,7 @@ void CSharpPluginImpl::loadAssembly()
 			m_names.insert(crc32(n), string(n, allocator));
 		}
 	}
+	setStaticField("Lumix", "Engine", "instance_", &m_engine);
 	m_on_assembly_load.invoke();
 }
 
