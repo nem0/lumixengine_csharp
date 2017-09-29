@@ -650,7 +650,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 			Array<Script>& scripts = cmp->scripts;
 			for (Script& script : scripts)
 			{
-				tryCallMethod(script.gc_handle, "StartGame", false);
+				tryCallMethod(script.gc_handle, "OnStartGame", false);
 			}
 		}
 		m_is_game_running = true;
