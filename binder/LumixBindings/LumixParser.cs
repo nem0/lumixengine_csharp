@@ -121,7 +121,7 @@ namespace LumixBindings
                             continue;
                         }
                     }
-                    if (t.ToLower().StartsWith("csharp_function("))
+                    if (t.ToLower().StartsWith("csharp_function(")|| t.ToLower().StartsWith("csharp_function_property("))
                     {
                         rawFunction += t;
                         readFunction = true;

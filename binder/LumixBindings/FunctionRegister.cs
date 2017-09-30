@@ -141,7 +141,7 @@ namespace LumixBindings
         public FunctionRegister(string _content)
         {
             content_ = _content;
-            var tmp = content_.Replace("CSHARP_FUNCTION(", "").Replace("(", "").Replace(")", "").Replace(";", "");
+            var tmp = content_.Replace("CSHARP_FUNCTION(", "").Replace("CSHARP_FUNCTION_PROPERTY(", "").Replace("(", "").Replace(")", "").Replace(";", "");
             data_ = tmp.Split(',').ToTrimmedArray();
         }
 
