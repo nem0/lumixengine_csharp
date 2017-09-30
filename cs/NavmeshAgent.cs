@@ -99,9 +99,12 @@ namespace Lumix
 			return navigate(scene_, componentId_, dest, speed, stop_distance);
 		}
 
-		public float GetAgentSpeed()
+		public float Speed
 		{
-			return getAgentSpeed(scene_, componentId_);
+			get
+			{
+				return getAgentSpeed(scene_, componentId_);
+			}
 		}
 
 	}//end class

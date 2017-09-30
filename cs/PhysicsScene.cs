@@ -105,9 +105,12 @@ namespace Lumix
 			setLayersCanCollide(instance_, layer1, layer2, can_collide);
 		}
 
-		public int GetCollisionsLayersCount()
+		public int CollisionsLayersCount
 		{
-			return getCollisionsLayersCount(instance_);
+			get
+			{
+				return getCollisionsLayersCount(instance_);
+			}
 		}
 
 		public void AddCollisionLayer()

@@ -324,7 +324,7 @@ namespace LumixBindings
             switch(NativeCPP)
             {
                 case "Lumix::Resource &":
-                    return _nativeDecl ? "intptr" : "Resource";
+                    return _api ? "intptr" : "Resource";
                 case "const Lumix::Path &":
                     return _api ? "string" : "string";
                 case "const Lumix::Vec2 &":

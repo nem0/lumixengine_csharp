@@ -1520,7 +1520,9 @@ LUMIX_PLUGIN_ENTRY(lumixengine_csharp)
 
 
 #define CSHARP_RESOURCE(ResourceClass, resource_type)
-#define CSHARP_FUNCTION(a,b,c,d,e);
+#define CSHARP_FUNCTION(NativeClass,NativeFunction,staticness,ManagedClass,type);
+//define getter only properties
+#define CSHARP_FUNCTION(NativeClass,NativeFunction,staticness,ManagedClass,type,PropertyName);
 //animation
 CSHARP_FUNCTION(AnimationScene, getControllerInputIndex, nostatic, AnimController, component);
 CSHARP_FUNCTION(AnimationScene, setControllerInput, nostatic, AnimController, component);
@@ -1528,27 +1530,27 @@ CSHARP_FUNCTION(AnimationScene, setControllerInput, nostatic, AnimController, co
 //navigation
 CSHARP_FUNCTION(NavigationScene, cancelNavigation, nostatic, NavmeshAgent, component);
 CSHARP_FUNCTION(NavigationScene, navigate, nostatic, NavmeshAgent, component);
-CSHARP_FUNCTION(NavigationScene, getAgentSpeed, nostatic, NavmeshAgent, component);
+CSHARP_FUNCTION(NavigationScene, getAgentSpeed, nostatic, NavmeshAgent, component,Speed);
 CSHARP_FUNCTION(NavigationScene, isNavmeshReady, nostatic, NavigationScene, class);
 
 //entity
-CSHARP_FUNCTION(Universe, getFirstEntity, nostatic, Entity, partial);
-CSHARP_FUNCTION(Universe, getNextEntity, nostatic, Entity, partial);
+CSHARP_FUNCTION(Universe, getFirstEntity, nostatic, Entity, partial,FirstEntity);
+CSHARP_FUNCTION(Universe, getNextEntity, nostatic, Entity, partial,NextEntity);
 CSHARP_FUNCTION(Universe, getEntityName, nostatic, Entity, partial);
 CSHARP_FUNCTION(Universe, setEntityName, nostatic, Entity, partial);
-CSHARP_FUNCTION(Universe, isDescendant, nostatic, Entity, partial);
+CSHARP_FUNCTION(Universe, isDescendant, nostatic, Entity, partial,IsDescent);
 CSHARP_FUNCTION(Universe, getParent, nostatic, Entity, partial);
-CSHARP_FUNCTION(Universe, getFirstChild, nostatic, Entity, partial);
-CSHARP_FUNCTION(Universe, getNextSibling, nostatic, Entity, partial);
+CSHARP_FUNCTION(Universe, getFirstChild, nostatic, Entity, partial,FirstChild);
+CSHARP_FUNCTION(Universe, getNextSibling, nostatic, Entity, partial,NextSibling);
 CSHARP_FUNCTION(Universe, getLocalTransform, nostatic, Entity, partial);
-CSHARP_FUNCTION(Universe, getLocalScale, nostatic, Entity, partial);
+CSHARP_FUNCTION(Universe, getLocalScale, nostatic, Entity, partial,LocalScale);
 CSHARP_FUNCTION(Universe, setParent, nostatic, Entity, partial);
 CSHARP_FUNCTION(Universe, setLocalPosition, nostatic, Entity, partial);
 CSHARP_FUNCTION(Universe, setLocalRotation, nostatic, Entity, partial);
 CSHARP_FUNCTION(Universe, setLocalTransform, nostatic, Entity, partial);
 CSHARP_FUNCTION(Universe, computeLocalTransform, nostatic, Entity, partial);
 CSHARP_FUNCTION(Universe, setMatrix, nostatic, Entity, partial);
-CSHARP_FUNCTION(Universe, getPositionAndRotation, nostatic, Entity, partial);
+CSHARP_FUNCTION(Universe, getPositionAndRotation, nostatic, Entity, partial,PositionAndRoatation);
 CSHARP_FUNCTION(Universe, getMatrix, nostatic, Entity, partial);
 CSHARP_FUNCTION(Universe, setTransform, nostatic, Entity, partial);
 CSHARP_FUNCTION(Universe, setTransformKeepChildren, nostatic, Entity, partial);
@@ -1575,9 +1577,9 @@ CSHARP_FUNCTION(AudioScene, setVolume, nostatic, AudioScene, class);
 
 CSHARP_FUNCTION(InputSystem, isMouseDown, static, Input, class);
 CSHARP_FUNCTION(InputSystem, getActionValue, static, Input, class);
-CSHARP_FUNCTION(InputSystem, getMouseXMove, static, Input, class);
-CSHARP_FUNCTION(InputSystem, getMouseYMove, static, Input, class);
-CSHARP_FUNCTION(InputSystem, getMousePos, static, Input, class);
+CSHARP_FUNCTION(InputSystem, getMouseXMove, static, Input, class,MouseXMove);
+CSHARP_FUNCTION(InputSystem, getMouseYMove, static, Input, class,MouseYMove);
+CSHARP_FUNCTION(InputSystem, getMousePos, static, Input, class,MousePos);
 CSHARP_FUNCTION(InputSystem, addAction, static, Input, class);
 
 CSHARP_FUNCTION(PhysicsScene, raycast, nostatic, PhysicsScene, class);
@@ -1586,14 +1588,20 @@ CSHARP_FUNCTION(PhysicsScene, getCollisionLayerName, nostatic, PhysicsScene, cla
 CSHARP_FUNCTION(PhysicsScene, setCollisionLayerName, nostatic, PhysicsScene, class);
 CSHARP_FUNCTION(PhysicsScene, canLayersCollide, nostatic, PhysicsScene, class);
 CSHARP_FUNCTION(PhysicsScene, setLayersCanCollide, nostatic, PhysicsScene, class);
-CSHARP_FUNCTION(PhysicsScene, getCollisionsLayersCount, nostatic, PhysicsScene, class);
+CSHARP_FUNCTION(PhysicsScene, getCollisionsLayersCount, nostatic, PhysicsScene, class, CollisionsLayersCount);
 CSHARP_FUNCTION(PhysicsScene, addCollisionLayer, nostatic, PhysicsScene, class);
 CSHARP_FUNCTION(PhysicsScene, removeCollisionLayer, nostatic, PhysicsScene, class);
+//physical controller
 CSHARP_FUNCTION(PhysicsScene, moveController, nostatic, PhysicalController, component);
 
+//mesh rigid actor
+CSHARP_FUNCTION(PhysicsScene, applyForceToActor, nostatic, MeshRigidActor, component);
+CSHARP_FUNCTION(PhysicsScene, getActorSpeed, nostatic, MeshRigidActor, component,ActorSpeed);
+CSHARP_FUNCTION(PhysicsScene, putToSleep, nostatic, MeshRigidActor, component);
+
 CSHARP_FUNCTION(Renderer, makeScreenshot, static, Renderer, class);
-CSHARP_FUNCTION(Renderer, isOpenGL, static, Renderer, class);
-CSHARP_FUNCTION(Renderer, getLayersCount, static, Renderer, class);
+CSHARP_FUNCTION(Renderer, isOpenGL, static, Renderer, class,IsOpenGL);
+CSHARP_FUNCTION(Renderer, getLayersCount, static, Renderer, class,LayersCount);
 CSHARP_FUNCTION(Renderer, getLayer, static, Renderer, class);
 CSHARP_FUNCTION(Renderer, getLayerName, static, Renderer, class);
 CSHARP_FUNCTION(RenderScene, addDebugTriangle, nostatic, RenderScene, class);
@@ -1609,7 +1617,7 @@ CSHARP_FUNCTION(RenderScene, addDebugFrustum, nostatic, RenderScene, class);
 CSHARP_FUNCTION(RenderScene, addDebugCapsule, nostatic, RenderScene, class);
 CSHARP_FUNCTION(RenderScene, addDebugCylinder, nostatic, RenderScene, class);
 
-CSHARP_FUNCTION(AnimationScene, getControllerEntity, nostatic, AnimController, component);
+CSHARP_FUNCTION(AnimationScene, getControllerEntity, nostatic, AnimController, component,ControllerEntity);
 
 //engine
 CSHARP_FUNCTION(Engine, getResourceManager, nostatic, Engine, partial);
@@ -1625,14 +1633,14 @@ CSHARP_FUNCTION(ResourceManagerBase, unload, nostatic, ResourceManagerBase, clas
 CSHARP_FUNCTION(ResourceManagerBase, reload, nostatic, ResourceManagerBase, class);
 
 //resource
-CSHARP_FUNCTION(Resource, getState, nostatic, Resource, partial);
-CSHARP_FUNCTION(Resource, isEmpty, nostatic, Resource, partial);
-CSHARP_FUNCTION(Resource, isReady, nostatic, Resource, partial);
-CSHARP_FUNCTION(Resource, isFailure, nostatic, Resource, partial);
-CSHARP_FUNCTION(Resource, getRefCount, nostatic, Resource, partial);
-CSHARP_FUNCTION(Resource, size, nostatic, Resource, partial);
-CSHARP_FUNCTION(Resource, getPath, nostatic, Resource, partial);
-CSHARP_FUNCTION(Resource, getResourceManager, nostatic, Resource, partial);
+CSHARP_FUNCTION(Resource, getState, nostatic, Resource, partial,CurrentState);
+CSHARP_FUNCTION(Resource, isEmpty, nostatic, Resource, partial,IsEmpty);
+CSHARP_FUNCTION(Resource, isReady, nostatic, Resource, partial,IsReady);
+CSHARP_FUNCTION(Resource, isFailure, nostatic, Resource, partial,IsFailure);
+CSHARP_FUNCTION(Resource, getRefCount, nostatic, Resource, partial,RefCount);
+CSHARP_FUNCTION(Resource, size, nostatic, Resource, partial,Size);
+CSHARP_FUNCTION(Resource, getPath, nostatic, Resource, partial,Path);
+CSHARP_FUNCTION(Resource, getResourceManager, nostatic, Resource, partial,ResourceManager);
 /*
 CSHARP_FUNCTION(AnimationScene, getAnimableAnimation, nostatic, AnimationScene, component);
 CSHARP_FUNCTION(AnimationScene, getAnimation, nostatic, AnimationScene, component);

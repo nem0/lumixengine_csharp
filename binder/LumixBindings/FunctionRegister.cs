@@ -72,19 +72,34 @@ namespace LumixBindings
 
         public bool IsComponent
         {
-            get { return data_[data_.Length - 1] == "component"; }
+            get { return data_[4] == "component"; }
         }
 
         public bool IsClass
         {
-            get { return data_[data_.Length - 1] == "class"; }
+            get { return data_[4] == "class"; }
         }
 
         public bool IsPartial
         {
-            get { return data_[data_.Length - 1] == "partial"; }
+            get { return data_[4] == "partial"; }
         }
 
+        public bool IsGetterOnly
+        {
+            get { return data_.Length == 6; }
+        }
+
+        public string PropertyName
+        {
+            get
+            {
+                if (!IsGetterOnly)
+                    return Name;
+
+                return data_[5];
+            }
+        }
         public string[] Components
         {
             get
@@ -102,9 +117,15 @@ namespace LumixBindings
                 else
                 {
                     ///CSHARP_FUNCTION(PhysicsScene, getActorComponent, nostatic, (BoxRigidActor, SphereRigidActor, CapsuleRigidActor, MeshRigidActor), component);
-                    if (IsComponent)
+                    if (IsComponent && !IsGetterOnly)
                     {
                         string[] ret = new string[data_.Length - 4];
+                        Array.Copy(data_, 3, ret, 0, ret.Length);
+                        return ret;
+                    }
+                    else if(IsGetterOnly)
+                    {
+                        string[] ret = new string[data_.Length - 5];
                         Array.Copy(data_, 3, ret, 0, ret.Length);
                         return ret;
                     }

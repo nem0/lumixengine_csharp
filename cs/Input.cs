@@ -60,19 +60,28 @@ namespace Lumix
 			return getActionValue(action);
 		}
 
-		public static float GetMouseXMove()
+		public static float MouseXMove
 		{
-			return getMouseXMove();
+			get
+			{
+				return getMouseXMove();
+			}
 		}
 
-		public static float GetMouseYMove()
+		public static float MouseYMove
 		{
-			return getMouseYMove();
+			get
+			{
+				return getMouseYMove();
+			}
 		}
 
-		public static Vec2 GetMousePos()
+		public static Vec2 MousePos
 		{
-			return getMousePos();
+			get
+			{
+				return getMousePos();
+			}
 		}
 
 		public static void AddAction(uint action, Input.InputType type, int key, int controller_id)

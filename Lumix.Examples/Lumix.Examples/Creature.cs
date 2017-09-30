@@ -54,7 +54,7 @@ namespace Lumix
 			Target = entity.Universe.GetEntityByName("target");
             ///get agent speed from navigation and set it as input to animation controller
             /// so it can play the right animation
-            var agentSpeed = agent_.GetAgentSpeed();
+            var agentSpeed = agent_.Speed;
             animController_.SetControllerInput(speedInputIdx_, agentSpeed);
 
             //try to move to where player is every few seconds
@@ -62,7 +62,6 @@ namespace Lumix
             if (nextFollow > 0) return;
 
             nextFollow = FollowTick;
-
 
             if (Target != null)
             {

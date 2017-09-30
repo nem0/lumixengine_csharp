@@ -81,7 +81,7 @@ namespace Lumix
 
             v.Set(0, 0, Input.GetActionValue(CONTROLLER_MOVE_Y) * 0.1f);
             physicalController_.MoveController(q.Rotate(v) * _deltaTime);
-
+            
             if(Input.GetActionValue(LEFT_ACTION) > 0)
             {
                 v.Set(-speed, 0, 0);

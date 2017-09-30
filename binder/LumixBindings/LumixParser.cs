@@ -523,6 +523,15 @@ namespace LumixBindings
                 _writer.WriteLine("\t\t\t" + val.Key + ",");
             _writer.WriteLine("\t\t}\n");
         }
+
+        void WriteCsharpGetProperty(StreamWriter _writer, FunctionRegister _func, bool _isStatic)
+        {
+            var meth = nsc_.GetMethodFromClass(_func.NativeClass.Replace("Impl", ""), _func.Name);
+            _writer.WriteLine("\t\tpublic " + (_isStatic ? "static" : "") + _func.PropertyName);
+            _writer.WriteLine("\t\t{");
+            _writer.WriteLine("\t\t\t return ");
+            _writer.WriteLine("\t\t}");
+        }
         void WriteCsharpClass(StreamWriter _writer,List<FunctionRegister> _methods, string _name, bool _isStatic, bool _isPartial = false)
         {
             //class def
@@ -695,37 +704,40 @@ namespace LumixBindings
         void WriteCsharpFunction(StreamWriter _writer, FunctionRegister _func, bool _isStatic,bool _isPartial = false, string _klassName = "")
         {
             var meth = nsc_.GetMethodFromClass(_func.NativeClass.Replace("Impl", ""), _func.Name);
-            if(_func.Name == "instantiatePrefab")
-            {
 
-            }
             if (meth != null)
             {
                 for (int i = 0; i < meth.Length; i++)
                 {
                     //func def
                     _writer.Write("\t\tpublic " + (_isStatic ? "static " : "") + (meth[i].IsReturnSomething ? meth[i].ReturnTypemap.ToCsharp() : "void"));
-                    _writer.Write(" " + meth[i].Name.Capitalize());
+                    if (_func.IsGetterOnly)
+                        _writer.Write(" " + _func.PropertyName + "\n");
+                    else
+                        _writer.Write(" " + meth[i].Name.Capitalize());
 
-                    //arguments
-                    _writer.Write("(");
-                    for (int k = 0; k < meth[i].Values.Length; k++)
+
+                    if (!_func.IsGetterOnly)
                     {
-                        var arg = meth[i].Values[k];
-                        if (arg.TypeMap.NativeCPP == "Lumix::ComponentHandle" && _func.IsComponent)
-                            continue;
-                        if (arg.TypeMap.NativeCPP == "Lumix::" + _klassName && _isPartial)
-                            continue;
-                        var tArg = arg.TypeMap.ToCsharp();
-                        if (_func.NativeClass != _func.ManagedClass)
-                            tArg = tArg.Replace(_func.NativeClass, _func.ManagedClass);
-                        _writer.Write(tArg + " ");
-                        _writer.Write(arg.Name);
-                        if (k + 1 < meth[i].Values.Length)
-                            _writer.Write(", ");
+                        //arguments only for functions
+                        _writer.Write("(");
+                        for (int k = 0; k < meth[i].Values.Length; k++)
+                        {
+                            var arg = meth[i].Values[k];
+                            if (arg.TypeMap.NativeCPP == "Lumix::ComponentHandle" && _func.IsComponent)
+                                continue;
+                            if (arg.TypeMap.NativeCPP == "Lumix::" + _klassName && _isPartial)
+                                continue;
+                            var tArg = arg.TypeMap.ToCsharp();
+                            if (_func.NativeClass != _func.ManagedClass)
+                                tArg = tArg.Replace(_func.NativeClass, _func.ManagedClass);
+                            _writer.Write(tArg + " ");
+                            _writer.Write(arg.Name);
+                            if (k + 1 < meth[i].Values.Length)
+                                _writer.Write(", ");
+                        }
+                        _writer.Write(")\n");
                     }
-                    _writer.Write(")\n");
-
                     //func body start
                     _writer.WriteLine("\t\t{");
                     bool isEntReturn = false;
@@ -733,12 +745,18 @@ namespace LumixBindings
                     {
                         if (meth[i].ReturnTypemap.NativeCPP == "Lumix::Entity")
                         {
-                            _writer.Write("\t\t\tint x = ");
+                            if (_func.IsGetterOnly)
+                                _writer.Write("\t\t\tget\n\t\t\t{\n\t\t\t\tint x= ");
+                            else
+                                _writer.Write("\t\t\tint x = ");
                             isEntReturn = true;
                         }
                         else
                         {
-                            _writer.Write("\t\t\treturn ");
+                            if (_func.IsGetterOnly)
+                                _writer.Write("\t\t\tget\n\t\t\t{\n\t\t\t\treturn ");
+                            else
+                                _writer.Write("\t\t\treturn ");
                         }
                     }
                     else
@@ -781,17 +799,23 @@ namespace LumixBindings
                     {
                         if (meth[i].ReturnTypemap.NativeCPP == "Lumix::Entity")
                         {
-                            _writer.WriteLine("\t\t\t if(x < 0) return null;");
+                            if (_func.IsGetterOnly)
+                                _writer.WriteLine("\t\t\t\tif(x < 0) return null;");
+                            else
+                                _writer.WriteLine("\t\t\t if(x < 0) return null;");
                             if (!_klassName.ToLower().EndsWith("scene"))
                             {
-                                _writer.WriteLine("\t\t\treturn new Entity({0}instance_, x);", ((_klassName == "Entity" || _klassName == "Universe") ? "" : "entity_."));
+                                if (_func.IsGetterOnly)
+                                    _writer.WriteLine("\t\t\t\treturn new Entity({0}instance_, x);", ((_klassName == "Entity" || _klassName == "Universe") ? "" : "entity_."));
+                                else
+                                    _writer.WriteLine("\t\t\treturn new Entity({0}instance_, x);", ((_klassName == "Entity" || _klassName == "Universe") ? "" : "entity_."));
                             }
                             else if (_klassName.ToLower() != "universe")
                                 _writer.WriteLine("\t\t\treturn new Entity(getUniverse(instance_), x);");
                         }
-
                     }
-                   
+                    if (_func.IsGetterOnly)
+                        _writer.WriteLine("\t\t\t}");
                     //func body end
                     _writer.WriteLine("\t\t}\n");
                 }

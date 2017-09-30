@@ -64,11 +64,14 @@ namespace Lumix
 			setControllerInput(scene_, componentId_, input_idx, value);
 		}
 
-		public Entity GetControllerEntity()
+		public Entity ControllerEntity
 		{
-			int x = getControllerEntity(scene_, componentId_);
-			 if(x < 0) return null;
-			return new Entity(entity_.instance_, x);
+			get
+			{
+				int x= getControllerEntity(scene_, componentId_);
+				if(x < 0) return null;
+				return new Entity(entity_.instance_, x);
+			}
 		}
 
 	}//end class

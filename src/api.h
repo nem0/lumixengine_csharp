@@ -1040,6 +1040,21 @@ mono_add_internal_call("Lumix.Terrain::setTerrainYScale", fRenderScene_setTerrai
 		mono_add_internal_call("Lumix.PhysicalController::moveController", f);
 	}
 	{
+		typedef void (PhysicsScene::*MethodType)(Lumix::ComponentHandle, const Lumix::Vec3 &);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&PhysicsScene::applyForceToActor>;
+		mono_add_internal_call("Lumix.MeshRigidActor::applyForceToActor", f);
+	}
+	{
+		typedef float (PhysicsScene::*MethodType)(Lumix::ComponentHandle);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&PhysicsScene::getActorSpeed>;
+		mono_add_internal_call("Lumix.MeshRigidActor::getActorSpeed", f);
+	}
+	{
+		typedef void (PhysicsScene::*MethodType)(Lumix::ComponentHandle);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&PhysicsScene::putToSleep>;
+		mono_add_internal_call("Lumix.MeshRigidActor::putToSleep", f);
+	}
+	{
 		typedef void (Renderer::*MethodType)(const Lumix::Path &);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Renderer::makeScreenshot>;
 		mono_add_internal_call("Lumix.Renderer::makeScreenshot", f);

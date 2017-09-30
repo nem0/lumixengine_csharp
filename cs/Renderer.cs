@@ -30,14 +30,20 @@ namespace Lumix
 			makeScreenshot(filename);
 		}
 
-		public static bool IsOpenGL()
+		public static bool IsOpenGL
 		{
-			return isOpenGL();
+			get
+			{
+				return isOpenGL();
+			}
 		}
 
-		public static int GetLayersCount()
+		public static int LayersCount
 		{
-			return getLayersCount();
+			get
+			{
+				return getLayersCount();
+			}
 		}
 
 		public static int GetLayer(string name)

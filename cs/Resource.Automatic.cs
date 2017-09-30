@@ -49,44 +49,68 @@ namespace Lumix
 			instance_ = _instance;
 		}
 
-		public Resource.State GetState()
+		public Resource.State CurrentState
 		{
-			return getState(instance_);
+			get
+			{
+				return getState(instance_);
+			}
 		}
 
-		public bool IsEmpty()
+		public bool IsEmpty
 		{
-			return isEmpty(instance_);
+			get
+			{
+				return isEmpty(instance_);
+			}
 		}
 
-		public bool IsReady()
+		public bool IsReady
 		{
-			return isReady(instance_);
+			get
+			{
+				return isReady(instance_);
+			}
 		}
 
-		public bool IsFailure()
+		public bool IsFailure
 		{
-			return isFailure(instance_);
+			get
+			{
+				return isFailure(instance_);
+			}
 		}
 
-		public int GetRefCount()
+		public int RefCount
 		{
-			return getRefCount(instance_);
+			get
+			{
+				return getRefCount(instance_);
+			}
 		}
 
-		public int Size()
+		public int Size
 		{
-			return size(instance_);
+			get
+			{
+				return size(instance_);
+			}
 		}
 
-		public string GetPath()
+		public string Path
 		{
-			return getPath(instance_);
+			get
+			{
+				return getPath(instance_);
+			}
 		}
 
-		public ResourceManagerBase GetResourceManager()
+		public ResourceManagerBase ResourceManager
 		{
-			return new ResourceManagerBase(getResourceManager(instance_));
+			get
+			{
+				return new ResourceManagerBase(getResourceManager(instance_));
+			}
 		}
 
 		public static implicit operator System.IntPtr(Resource _value)

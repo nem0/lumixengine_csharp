@@ -178,42 +178,60 @@ namespace Lumix
 			set { setName(instance_, entity_Id_, value); }
 		}
 
-		public Entity GetFirstEntity()
+		public Entity FirstEntity
 		{
-			int x = getFirstEntity(instance_);
-			 if(x < 0) return null;
-			return new Entity(instance_, x);
+			get
+			{
+				int x= getFirstEntity(instance_);
+				if(x < 0) return null;
+				return new Entity(instance_, x);
+			}
 		}
 
-		public Entity GetNextEntity()
+		public Entity NextEntity
 		{
-			int x = getNextEntity(instance_, entity_Id_);
-			 if(x < 0) return null;
-			return new Entity(instance_, x);
+			get
+			{
+				int x= getNextEntity(instance_, entity_Id_);
+				if(x < 0) return null;
+				return new Entity(instance_, x);
+			}
 		}
 
-		public bool IsDescendant()
+		public bool IsDescent
 		{
-			return isDescendant(instance_, entity_Id_, entity_Id_);
+			get
+			{
+				return isDescendant(instance_, entity_Id_, entity_Id_);
+			}
 		}
 
-		public Entity GetFirstChild()
+		public Entity FirstChild
 		{
-			int x = getFirstChild(instance_, entity_Id_);
-			 if(x < 0) return null;
-			return new Entity(instance_, x);
+			get
+			{
+				int x= getFirstChild(instance_, entity_Id_);
+				if(x < 0) return null;
+				return new Entity(instance_, x);
+			}
 		}
 
-		public Entity GetNextSibling()
+		public Entity NextSibling
 		{
-			int x = getNextSibling(instance_, entity_Id_);
-			 if(x < 0) return null;
-			return new Entity(instance_, x);
+			get
+			{
+				int x= getNextSibling(instance_, entity_Id_);
+				if(x < 0) return null;
+				return new Entity(instance_, x);
+			}
 		}
 
-		public float GetLocalScale()
+		public float LocalScale
 		{
-			return getLocalScale(instance_, entity_Id_);
+			get
+			{
+				return getLocalScale(instance_, entity_Id_);
+			}
 		}
 
 		public void SetLocalPosition(Vec3 pos)
@@ -231,9 +249,12 @@ namespace Lumix
 			return computeLocalTransform(instance_, entity_Id_, global_transform);
 		}
 
-		public System.IntPtr GetPositionAndRotation()
+		public System.IntPtr PositionAndRoatation
 		{
-			return getPositionAndRotation(instance_, entity_Id_);
+			get
+			{
+				return getPositionAndRotation(instance_, entity_Id_);
+			}
 		}
 
 		public void SetTransform(System.IntPtr transform)
