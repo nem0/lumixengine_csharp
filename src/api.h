@@ -1172,7 +1172,7 @@ mono_add_internal_call("Lumix.Terrain::setTerrainYScale", fRenderScene_setTerrai
 	{
 		typedef void (ResourceManagerBase::*MethodType)(Lumix::Resource &);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&ResourceManagerBase::load>;
-		mono_add_internal_call("Lumix.ResourceManagerBase::load(intptr,Resource)", f);
+		mono_add_internal_call("Lumix.ResourceManagerBase::load(intptr,intptr)", f);
 	}
 	{
 		typedef void (ResourceManagerBase::*MethodType)();
@@ -1187,7 +1187,7 @@ mono_add_internal_call("Lumix.Terrain::setTerrainYScale", fRenderScene_setTerrai
 	{
 		typedef void (ResourceManagerBase::*MethodType)(Lumix::Resource &);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&ResourceManagerBase::unload>;
-		mono_add_internal_call("Lumix.ResourceManagerBase::unload(intptr,Resource)", f);
+		mono_add_internal_call("Lumix.ResourceManagerBase::unload(intptr,intptr)", f);
 	}
 	{
 		typedef void (ResourceManagerBase::*MethodType)(const Lumix::Path &);
@@ -1197,7 +1197,7 @@ mono_add_internal_call("Lumix.Terrain::setTerrainYScale", fRenderScene_setTerrai
 	{
 		typedef void (ResourceManagerBase::*MethodType)(Lumix::Resource &);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&ResourceManagerBase::reload>;
-		mono_add_internal_call("Lumix.ResourceManagerBase::reload(intptr,Resource)", f);
+		mono_add_internal_call("Lumix.ResourceManagerBase::reload(intptr,intptr)", f);
 	}
 	{
 		typedef Lumix::Resource::State (Resource::*MethodType)() const;

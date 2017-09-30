@@ -144,7 +144,7 @@ namespace LumixBindings
             {
                 var test = kfucn.Components;
             }
-           
+
 
             //dump to disk, for debuging!
             //using (StreamWriter sw = new StreamWriter("functions.h"))
@@ -158,6 +158,11 @@ namespace LumixBindings
             //    sw.Flush();
             //}
 
+            var project = new Project("Lumix");
+            var normalClasses = knownFunctions.GetClasses(false);
+            Bindings.WrappedClasses.AddRange(normalClasses.Keys);
+            var staticClasses = knownFunctions.GetClasses();
+            var partialClasses = knownFunctions.GetPartialClass();
 
             using (StreamWriter tmpWriter = new StreamWriter(Bindings.ApiPath))
             {
@@ -169,7 +174,6 @@ namespace LumixBindings
                     {
                         if (func.IsInvalid)
                             continue;
-                        
                         tmpWriter.WriteLine("{");
                         tmpWriter.WriteLine(func.ToString());
                         tmpWriter.WriteLine("}");
@@ -193,11 +197,8 @@ namespace LumixBindings
                     string cast = "";
                     if (func.IsClass)
                     {
-                       
-                     
                         var meth = nsc_.GetMethodFromClass(func.NativeClass, func.Name);
                         bool needCast = meth.Length > 1;
-                        
                         for (int k = 0; k < meth.Length; k++)
                         {
                             tmpWriter.WriteLine("\t{");
@@ -289,15 +290,12 @@ namespace LumixBindings
                 //        tmpWriter.WriteLine("\t}");
                 //    }
                 //}
-            }
+            }//end api creation
+
 
 
           
-            var project = new Project("Lumix");
-            var normalClasses = knownFunctions.GetClasses(false);
-            Bindings.WrappedClasses.AddRange(normalClasses.Keys);
-            var staticClasses = knownFunctions.GetClasses();
-            var partialClasses = knownFunctions.GetPartialClass();
+        
 
             //write down components
             var klasses = knownRegisters_.SortByClass();
