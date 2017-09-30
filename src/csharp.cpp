@@ -1472,6 +1472,19 @@ void CSharpPluginImpl::unloadAssembly()
 }
 
 
+static bool isNativeComponent(MonoClass* cl)
+{
+	MonoCustomAttrInfo* attrs = mono_custom_attrs_from_class(cl);
+	if (!attrs) return false;
+	MonoObject* obj = mono_custom_attrs_get_attr(attrs, cl);
+	if (!obj) return false;
+	MonoClass* attr_class = obj ? mono_object_get_class(obj) : nullptr;
+	if (!attr_class) return false;
+	const char* attr_name = mono_class_get_name(attr_class);
+	return equalStrings(attr_name, "NativeComponent");
+}
+
+
 void CSharpPluginImpl::loadAssembly()
 {
 	ASSERT(!m_assembly);
@@ -1494,7 +1507,8 @@ void CSharpPluginImpl::loadAssembly()
 		MonoClass* cl = mono_class_get(img, i | MONO_TOKEN_TYPE_DEF);
 		const char* n = mono_class_get_name(cl);
 		MonoClass* parent = mono_class_get_parent(cl);
-		if (component_class == parent && !equalStrings(n, "NativeComponent"))
+		
+		if (component_class == parent && isNativeComponent(cl))
 		{
 			m_names.insert(crc32(n), string(n, allocator));
 		}
