@@ -6,17 +6,41 @@ using Real = System.Double;
 using System;
 using System.Runtime.InteropServices;
 
-
 namespace Lumix
 {
-
-
-    public struct Vec4
+    [Serializable]
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Vec4 : ICloneable, IEquatable<Vec4>
     {
         public Real x;
         public Real y;
         public Real z;
         public Real w;
+
+        /// <summary>
+        /// Returns the vector (0,0,0,0).
+        /// </summary>
+        public static Vec4 Zero { get { return new Vec4(); } }
+        /// <summary>
+        /// Returns the vector (1,1,1,1).
+        /// </summary>
+        public static Vec4 One { get { return new Vec4(1.0f, 1.0f, 1.0f, 1.0f); } }
+        /// <summary>
+        /// Returns the vector (1,0,0,0).
+        /// </summary>
+        public static Vec4 UnitX { get { return new Vec4(1.0f, 0.0f, 0.0f, 0.0f); } }
+        /// <summary>
+        /// Returns the vector (0,1,0,0).
+        /// </summary>
+        public static Vec4 UnitY { get { return new Vec4(0.0f, 1.0f, 0.0f, 0.0f); } }
+        /// <summary>
+        /// Returns the vector (0,0,1,0).
+        /// </summary>
+        public static Vec4 UnitZ { get { return new Vec4(0.0f, 0.0f, 1.0f, 0.0f); } }
+        /// <summary>
+        /// Returns the vector (0,0,0,1).
+        /// </summary>
+        public static Vec4 UnitW { get { return new Vec4(0.0f, 0.0f, 0.0f, 1.0f); } }
 
         public Vec4(Real _x, Real _y, Real _z, Real _w)
         {
@@ -24,6 +48,94 @@ namespace Lumix
             y = _y;
             z = _z;
             w = _w;
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vector"></param>
+        public Vec4(Vec4 vector)
+        {
+            x = vector.x;
+            y = vector.y;
+            z = vector.z;
+            w = vector.w;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public Real this[int index]
+        {
+            get
+            {
+                switch (index)
+                {
+                    case 0:
+                        return x;
+                    case 1:
+                        return y;
+                    case 2:
+                        return z;
+                    case 3:
+                        return w;
+                    default:
+                        throw new IndexOutOfRangeException("Vector has only 4 indices!");
+                }
+            }
+            set
+            {
+                switch (index)
+                {
+                    case 0:
+                        x = value;
+                        break;
+                    case 1:
+                        y = value;
+                        break;
+                    case 2:
+                        z = value;
+                        break;
+                    case 3:
+                        w = value;
+                        break;
+                    default:
+                        throw new IndexOutOfRangeException("Vector has only 4 indices!");
+                }
+            }
+        }
+
+        object ICloneable.Clone()
+        {
+            return new Vec4(this);
+        }
+
+        public Vec4 Clone()
+        {
+            return new Vec4(this);
+        }
+
+        public override int GetHashCode()
+        {
+            return x.GetHashCode() ^ y.GetHashCode() ^ z.GetHashCode() ^ w.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return string.Format("X:{0},Y:{1},Z:{2},W:{3}", x, y, z, w);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is Vec4))
+                return false;
+            return Equals((Vec4)obj);
+        }
+
+        public bool Equals(Vec4 v)
+        {
+            return v.x == this.x && v.y == this.y && v.z == this.z & v.w == this.w;
         }
     }
 
