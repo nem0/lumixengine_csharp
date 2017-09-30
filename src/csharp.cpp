@@ -1508,7 +1508,7 @@ void CSharpPluginImpl::loadAssembly()
 		const char* n = mono_class_get_name(cl);
 		MonoClass* parent = mono_class_get_parent(cl);
 		
-		if (component_class == parent && isNativeComponent(cl))
+		if (!isNativeComponent(cl))
 		{
 			m_names.insert(crc32(n), string(n, allocator));
 		}
