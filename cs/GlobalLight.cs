@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class GlobalLight : NativeComponent
+	[NativeComponent( Type = "global_light")]
+	public class GlobalLight :Component
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static Vec3 getGlobalLightColor(IntPtr scene, int cmp);

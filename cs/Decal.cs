@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class Decal : NativeComponent
+	[NativeComponent( Type = "decal")]
+	public class Decal :Component
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static string getDecalMaterialPath(IntPtr scene, int cmp);

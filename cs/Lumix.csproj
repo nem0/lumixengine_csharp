@@ -42,6 +42,7 @@
     <Reference Include="System.Xml"/>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Manual\Actions.cs" />
     <Compile Include="Manual\Component.cs" />
     <Compile Include="Manual\EditorInfo.cs" />
     <Compile Include="Manual\Engine.cs" />
@@ -50,25 +51,15 @@
     <Compile Include="Manual\IResourceType.cs" />
     <Compile Include="Manual\IScene.cs" />
     <Compile Include="Manual\Mathf.cs" />
+    <Compile Include="Manual\NativeComponent.cs" />
     <Compile Include="Manual\Quat.cs" />
+    <Compile Include="Manual\ReflectionHelper.cs" />
     <Compile Include="Manual\Resource.cs" />
     <Compile Include="Manual\Resources.cs" />
+    <Compile Include="Manual\RigidActor.cs" />
     <Compile Include="Manual\Universe.cs" />
     <Compile Include="Manual\Vec.cs" />
     <Compile Include="AnimController.cs" />
-    <Compile Include="Input.cs" />
-    <Compile Include="Renderer.cs" />
-    <Compile Include="NavigationScene.cs" />
-    <Compile Include="AudioScene.cs" />
-    <Compile Include="PhysicsScene.cs" />
-    <Compile Include="RenderScene.cs" />
-    <Compile Include="ResourceManager.cs" />
-    <Compile Include="PrefabResource.cs" />
-    <Compile Include="ResourceManagerBase.cs" />
-    <Compile Include="Entity.Automatic.cs" />
-    <Compile Include="Universe.Automatic.cs" />
-    <Compile Include="Engine.Automatic.cs" />
-    <Compile Include="Resource.Automatic.cs" />
     <Compile Include="Animable.cs" />
     <Compile Include="SharedAnimController.cs" />
     <Compile Include="AmbientSound.cs" />
@@ -102,6 +93,20 @@
     <Compile Include="PointLight.cs" />
     <Compile Include="Decal.cs" />
     <Compile Include="Terrain.cs" />
+    <Compile Include="Renderer.cs" />
+    <Compile Include="NavigationScene.cs" />
+    <Compile Include="AudioScene.cs" />
+    <Compile Include="PhysicsScene.cs" />
+    <Compile Include="RenderScene.cs" />
+    <Compile Include="ResourceManager.cs" />
+    <Compile Include="PrefabResource.cs" />
+    <Compile Include="ResourceManagerBase.cs" />
+    <Compile Include="Entity.Automatic.cs" />
+    <Compile Include="Universe.Automatic.cs" />
+    <Compile Include="Input.Automatic.cs" />
+    <Compile Include="Engine.Automatic.cs" />
+    <Compile Include="Resource.Automatic.cs" />
+    <Compile Include="RigidActor.Automatic.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
  </Project>

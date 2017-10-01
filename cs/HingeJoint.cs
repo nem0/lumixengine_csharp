@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class HingeJoint : NativeComponent
+	[NativeComponent( Type = "hinge_joint")]
+	public class HingeJoint :Component
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static Entity getJointConnectedBody(IntPtr scene, int cmp);

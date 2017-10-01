@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class LuaScript : NativeComponent
+	[NativeComponent( Type = "lua_script")]
+	public class LuaScript :Component
 	{
 
 		public static string GetCmpType{ get { return "lua_script"; } }

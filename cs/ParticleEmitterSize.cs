@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class ParticleEmitterSize : NativeComponent
+	[NativeComponent( Type = "particle_emitter_size")]
+	public class ParticleEmitterSize :Component
 	{
 
 		public static string GetCmpType{ get { return "particle_emitter_size"; } }

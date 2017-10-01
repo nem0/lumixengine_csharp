@@ -127,11 +127,14 @@ namespace Lumix
 			}
 		}
 	}
+    //public interface INativeComponent
+    //{
 
-    public class NativeComponent : Component
-    {
-        public NativeComponent(Entity _entity, int _cmpId, IntPtr _scene)
-            : base(_entity, _cmpId, _scene) { }
+    //}
+    //public class NativeComponent : Component
+    //{
+    //    public NativeComponent(Entity _entity, int _cmpId, IntPtr _scene)
+    //        : base(_entity, _cmpId, _scene) { }
 
-    }
+    //}
 }

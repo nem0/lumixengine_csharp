@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class ParticleEmitterPlane : NativeComponent
+	[NativeComponent( Type = "particle_emitter_plane")]
+	public class ParticleEmitterPlane :Component
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static float getParticleEmitterPlaneBounce(IntPtr scene, int cmp);

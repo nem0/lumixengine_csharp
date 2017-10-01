@@ -111,8 +111,8 @@ mono_add_internal_call("Lumix.SphereRigidActor::setDynamicType", fPhysicsScene_s
 
 }
 {
-auto fPhysicsScene_isTrigger = &csharp_getProperty<bool, PhysicsScene, &PhysicsScene::isTrigger>;
-mono_add_internal_call("Lumix.SphereRigidActor::isTrigger", fPhysicsScene_isTrigger);
+auto fPhysicsScene_getIsTrigger = &csharp_getProperty<bool, PhysicsScene, &PhysicsScene::getIsTrigger>;
+mono_add_internal_call("Lumix.SphereRigidActor::getIsTrigger", fPhysicsScene_getIsTrigger);
 auto fPhysicsScene_setIsTrigger = &csharp_setProperty<bool, PhysicsScene, &PhysicsScene::setIsTrigger>;
 mono_add_internal_call("Lumix.SphereRigidActor::setIsTrigger", fPhysicsScene_setIsTrigger);
 
@@ -139,8 +139,8 @@ mono_add_internal_call("Lumix.CapsuleRigidActor::setDynamicType", fPhysicsScene_
 
 }
 {
-auto fPhysicsScene_isTrigger = &csharp_getProperty<bool, PhysicsScene, &PhysicsScene::isTrigger>;
-mono_add_internal_call("Lumix.CapsuleRigidActor::isTrigger", fPhysicsScene_isTrigger);
+auto fPhysicsScene_getIsTrigger = &csharp_getProperty<bool, PhysicsScene, &PhysicsScene::getIsTrigger>;
+mono_add_internal_call("Lumix.CapsuleRigidActor::getIsTrigger", fPhysicsScene_getIsTrigger);
 auto fPhysicsScene_setIsTrigger = &csharp_setProperty<bool, PhysicsScene, &PhysicsScene::setIsTrigger>;
 mono_add_internal_call("Lumix.CapsuleRigidActor::setIsTrigger", fPhysicsScene_setIsTrigger);
 
@@ -335,8 +335,8 @@ mono_add_internal_call("Lumix.BoxRigidActor::setDynamicType", fPhysicsScene_setD
 
 }
 {
-auto fPhysicsScene_isTrigger = &csharp_getProperty<bool, PhysicsScene, &PhysicsScene::isTrigger>;
-mono_add_internal_call("Lumix.BoxRigidActor::isTrigger", fPhysicsScene_isTrigger);
+auto fPhysicsScene_getIsTrigger = &csharp_getProperty<bool, PhysicsScene, &PhysicsScene::getIsTrigger>;
+mono_add_internal_call("Lumix.BoxRigidActor::getIsTrigger", fPhysicsScene_getIsTrigger);
 auto fPhysicsScene_setIsTrigger = &csharp_setProperty<bool, PhysicsScene, &PhysicsScene::setIsTrigger>;
 mono_add_internal_call("Lumix.BoxRigidActor::setIsTrigger", fPhysicsScene_setIsTrigger);
 
@@ -1253,6 +1253,21 @@ mono_add_internal_call("Lumix.Terrain::setTerrainYScale", fRenderScene_setTerrai
 		typedef Lumix::ResourceManagerBase& (Resource::*MethodType)();
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&Resource::getResourceManager>;
 		mono_add_internal_call("Lumix.Resource::getResourceManager", f);
+	}
+	{
+		typedef void (PhysicsScene::*MethodType)(Lumix::ComponentHandle, const Lumix::Vec3 &);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&PhysicsScene::applyForceToActor>;
+		mono_add_internal_call("Lumix.RigidActor::applyForceToActor", f);
+	}
+	{
+		typedef float (PhysicsScene::*MethodType)(Lumix::ComponentHandle);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&PhysicsScene::getActorSpeed>;
+		mono_add_internal_call("Lumix.RigidActor::getActorSpeed", f);
+	}
+	{
+		typedef void (PhysicsScene::*MethodType)(Lumix::ComponentHandle);
+		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&PhysicsScene::putToSleep>;
+		mono_add_internal_call("Lumix.RigidActor::putToSleep", f);
 	}
 	{
 		typedef Lumix::Animation* (AnimationScene::*MethodType)(Lumix::ComponentHandle);

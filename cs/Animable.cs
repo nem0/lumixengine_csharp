@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class Animable : NativeComponent
+	[NativeComponent( Type = "animable")]
+	public class Animable :Component
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static string getAnimation(IntPtr scene, int cmp);

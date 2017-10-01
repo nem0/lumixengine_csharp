@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class BoneAttachment : NativeComponent
+	[NativeComponent( Type = "bone_attachment")]
+	public class BoneAttachment :Component
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static Entity getBoneAttachmentParent(IntPtr scene, int cmp);

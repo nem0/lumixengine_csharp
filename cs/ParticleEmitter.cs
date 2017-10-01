@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class ParticleEmitter : NativeComponent
+	[NativeComponent( Type = "particle_emitter")]
+	public class ParticleEmitter :Component
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static Vec2 getParticleEmitterInitialLife(IntPtr scene, int cmp);

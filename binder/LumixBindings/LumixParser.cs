@@ -163,7 +163,7 @@ namespace LumixBindings
             Bindings.WrappedClasses.AddRange(normalClasses.Keys);
             var staticClasses = knownFunctions.GetClasses();
             var partialClasses = knownFunctions.GetPartialClass();
-
+            var components = knownFunctions.GetComponents();
             using (StreamWriter tmpWriter = new StreamWriter(Bindings.ApiPath))
             {
                 var natives = knownRegisters_.SortByNativeClass();
@@ -299,8 +299,11 @@ namespace LumixBindings
 
             //write down components
             var klasses = knownRegisters_.SortByClass();
+           
             foreach (var klass in klasses)
             {
+                if (components.ContainsKey(klass.Key))
+                    components.Remove(klass.Key);
                 project.AddClass(klass.Key);
                 using (StreamWriter tmpWriter = new StreamWriter(Path.Combine(Bindings.CSRootPath, klass.Key + ".cs")))
                 {
@@ -310,8 +313,11 @@ namespace LumixBindings
                     tmpWriter.WriteLine("using System.Runtime.CompilerServices;\n");
                     tmpWriter.WriteLine("namespace Lumix"); ;
                     tmpWriter.WriteLine("{"); ;
+
+                    bool isActor = klass.Key.ToLower().EndsWith("actor");
+                    tmpWriter.WriteLine("\t[NativeComponent( Type = \"" + klass.Key.Replace("ModelInstance", "renderable").ToSeperateLower() + "\")]");
                     //class def
-                    tmpWriter.WriteLine("\tpublic class " + klass.Key + " : NativeComponent");
+                    tmpWriter.WriteLine("\tpublic class " + klass.Key + " :" + (isActor ? "RigidActor" : "Component"));
                     tmpWriter.WriteLine("\t{");
                     //local fields
                     //tmpWriter.WriteLine("\t\tint componentId_;");
@@ -456,63 +462,91 @@ namespace LumixBindings
                     tmpWriter.Close();
                 }
 
-                
-                //write down static classes
-                foreach (var kvp in staticClasses)
-                {
-                    project.AddClass(kvp.Value[0].ManagedClass);
-                    using (var tmpWriter = new StreamWriter(Path.Combine(Bindings.CSRootPath, kvp.Value[0].ManagedClass + ".cs")))
-                    {
-                        //write down the using directives
-                        tmpWriter.WriteLine("using System;");
-                        tmpWriter.WriteLine("using System.Runtime.InteropServices;");
-                        tmpWriter.WriteLine("using System.Runtime.CompilerServices;\n");
-                        tmpWriter.WriteLine("namespace Lumix"); ;
-                        tmpWriter.WriteLine("{");
-                        WriteCsharpClass(tmpWriter, kvp.Value, kvp.Value[0].ManagedClass, true);
-                        tmpWriter.WriteLine("}");
-                    }
-                }
-
-               
-                //write down normal classes
-                foreach (var kvp in normalClasses)
-                {
-                    project.AddClass(kvp.Key);
-                    using (var tmpWriter = new StreamWriter(Path.Combine(Bindings.CSRootPath, kvp.Key + ".cs")))
-                    {
-                        //write down the using directives
-                        tmpWriter.WriteLine("using System;");
-                        tmpWriter.WriteLine("using System.Runtime.InteropServices;");
-                        tmpWriter.WriteLine("using System.Runtime.CompilerServices;\n");
-                        tmpWriter.WriteLine("namespace Lumix"); ;
-                        tmpWriter.WriteLine("{");
-                        WriteCsharpClass(tmpWriter, kvp.Value, kvp.Key, false);
-                        tmpWriter.WriteLine("}");
-                    }
-                }
-
-            
-                //write down partial classes
-                foreach (var kvp in partialClasses)
-                {
-                    
-                    project.AddClass(kvp.Value[0].ManagedClass+".Automatic");
-                    using (var tmpWriter = new StreamWriter(Path.Combine(Bindings.CSRootPath, kvp.Value[0].ManagedClass + ".Automatic.cs")))
-                    {
-                        //write down the using directives
-                        tmpWriter.WriteLine("using System;");
-                        tmpWriter.WriteLine("using System.Runtime.InteropServices;");
-                        tmpWriter.WriteLine("using System.Runtime.CompilerServices;\n");
-                        tmpWriter.WriteLine("namespace Lumix"); ;
-                        tmpWriter.WriteLine("{");
-                        WriteCsharpClass(tmpWriter, kvp.Value, kvp.Value[0].ManagedClass, false, true);
-                        tmpWriter.WriteLine("}");
-                    }
-                }
-
             }
 
+
+            //write down static classes
+            foreach (var kvp in staticClasses)
+            {
+                if (components.ContainsKey(kvp.Key))
+                    components.Remove(kvp.Key);
+                project.AddClass(kvp.Value[0].ManagedClass);
+                using (var tmpWriter = new StreamWriter(Path.Combine(Bindings.CSRootPath, kvp.Value[0].ManagedClass + ".cs")))
+                {
+                    //write down the using directives
+                    tmpWriter.WriteLine("using System;");
+                    tmpWriter.WriteLine("using System.Runtime.InteropServices;");
+                    tmpWriter.WriteLine("using System.Runtime.CompilerServices;\n");
+                    tmpWriter.WriteLine("namespace Lumix"); ;
+                    tmpWriter.WriteLine("{");
+                    WriteCsharpClass(tmpWriter, kvp.Value, kvp.Value[0].ManagedClass, true);
+                    tmpWriter.WriteLine("}");
+                }
+            }
+
+
+            //write down normal classes
+            foreach (var kvp in normalClasses)
+            {
+                if (components.ContainsKey(kvp.Key))
+                    components.Remove(kvp.Key);
+
+                project.AddClass(kvp.Key);
+                using (var tmpWriter = new StreamWriter(Path.Combine(Bindings.CSRootPath, kvp.Key + ".cs")))
+                {
+                    //write down the using directives
+                    tmpWriter.WriteLine("using System;");
+                    tmpWriter.WriteLine("using System.Runtime.InteropServices;");
+                    tmpWriter.WriteLine("using System.Runtime.CompilerServices;\n");
+                    tmpWriter.WriteLine("namespace Lumix"); ;
+                    tmpWriter.WriteLine("{");
+                    WriteCsharpClass(tmpWriter, kvp.Value, kvp.Key, false);
+                    tmpWriter.WriteLine("}");
+                }
+            }
+
+
+            //write down partial classes
+            foreach (var kvp in partialClasses)
+            {
+                if (components.ContainsKey(kvp.Key))
+                    components.Remove(kvp.Key);
+
+                project.AddClass(kvp.Value[0].ManagedClass + ".Automatic");
+                using (var tmpWriter = new StreamWriter(Path.Combine(Bindings.CSRootPath, kvp.Value[0].ManagedClass + ".Automatic.cs")))
+                {
+                    //write down the using directives
+                    tmpWriter.WriteLine("using System;");
+                    tmpWriter.WriteLine("using System.Runtime.InteropServices;");
+                    tmpWriter.WriteLine("using System.Runtime.CompilerServices;\n");
+                    tmpWriter.WriteLine("namespace Lumix"); ;
+                    tmpWriter.WriteLine("{");
+                    if (kvp.Value[0].ManagedClass == "Input")
+                    {
+
+                    }
+                    WriteCsharpClass(tmpWriter, kvp.Value, kvp.Value[0].ManagedClass, false, true, false,kvp.Value[0].IsStatic && kvp.Value[0].IsPartial);
+                    tmpWriter.WriteLine("}");
+                }
+            }
+
+            //write down normal components
+            foreach (var kvp in components)
+            {
+
+                project.AddClass(kvp.Value[0].ManagedClass + ".Automatic");
+                using (var tmpWriter = new StreamWriter(Path.Combine(Bindings.CSRootPath, kvp.Value[0].ManagedClass + ".Automatic.cs")))
+                {
+                    //write down the using directives
+                    tmpWriter.WriteLine("using System;");
+                    tmpWriter.WriteLine("using System.Runtime.InteropServices;");
+                    tmpWriter.WriteLine("using System.Runtime.CompilerServices;\n");
+                    tmpWriter.WriteLine("namespace Lumix"); ;
+                    tmpWriter.WriteLine("{");
+                    WriteCsharpClass(tmpWriter, kvp.Value, kvp.Value[0].ManagedClass, false, true, true);
+                    tmpWriter.WriteLine("}");
+                }
+            }
             project.Export(Bindings.CSRootPath);
         }
         void WriteCsharpEnum(StreamWriter _writer, EnumValue _enum, string _nativeClass)
@@ -532,7 +566,7 @@ namespace LumixBindings
             _writer.WriteLine("\t\t\t return ");
             _writer.WriteLine("\t\t}");
         }
-        void WriteCsharpClass(StreamWriter _writer,List<FunctionRegister> _methods, string _name, bool _isStatic, bool _isPartial = false)
+        void WriteCsharpClass(StreamWriter _writer, List<FunctionRegister> _methods, string _name, bool _isStatic, bool _isPartial = false, bool _isComponent = false, bool _fakeStatic = false)
         {
             //class def
             Class Class = null;
@@ -542,12 +576,12 @@ namespace LumixBindings
             if (!_isStatic && !_isPartial)
             {
                 Class = nsc_.GetClassByName(_name).FirstOrDefault();
-                if(Class.HasBaseClass)
+                if (Class.HasBaseClass)
                 {
                     _writer.Write(" : " + Class.BaseClass);
                 }
 
-                if(isResourceType)
+                if (isResourceType)
                 {
                     _writer.Write((Class.HasBaseClass ? "," : "") + "IResourceType");
                 }
@@ -555,8 +589,8 @@ namespace LumixBindings
             }
             _writer.WriteLine("\t{");
 
-            if (!_isStatic && !_isPartial && !Class.HasBaseClass)
-                _writer.WriteLine("\t\tinternal IntPtr instance_;\n");
+            if (!_isStatic && !_isPartial && !Class.HasBaseClass || _isComponent || _fakeStatic)
+                _writer.WriteLine(string.Format("\t\tinternal {0}IntPtr instance_;\n", _fakeStatic ? "static " : ""));
             //write down all mono decls
             foreach (var func in _methods)
             {
@@ -572,11 +606,11 @@ namespace LumixBindings
 
             }
             //check for enums
-            foreach(var ns in nsc_.Values)
+            foreach (var ns in nsc_.Values)
             {
-                foreach(var e in ns.Enums)
+                foreach (var e in ns.Enums)
                 {
-                    if (e.FullyQualyfiedType.ToLower().Replace("lumix::","").StartsWith(_methods[0].NativeClass.ToLower()))
+                    if (e.FullyQualyfiedType.ToLower().Replace("lumix::", "").StartsWith(_methods[0].NativeClass.ToLower()))
                     {
                         if (string.IsNullOrEmpty(e.Name))
                             continue;
@@ -591,12 +625,12 @@ namespace LumixBindings
             //    FunctionRegister tmp = new FunctionRegister(string.Format("CSHARP_FUNCTION({0}, getUniverse, nostatic, {1}, class);","IScene", _name));
             //    WriteCsharpMonoDecl(_writer, tmp, _isStatic);
             //}
-            if(!_isStatic)
+            if (!_isStatic && !_fakeStatic)
             {
                 WriteCsharpDefaultCtor(_writer, _name, (Class != null && Class.HasBaseClass ? Class.BaseClass : ""));
             }
             //convert funcs in properties where possible
-            var props = new List<KeyValuePair<FunctionRegister, FunctionRegister>>(); 
+            var props = new List<KeyValuePair<FunctionRegister, FunctionRegister>>();
             if (_isPartial)//propertie extraction only for partials atm
             {
                 props = _methods.GetProperties(nsc_);
@@ -633,13 +667,16 @@ namespace LumixBindings
                     if (val.Key != null)
                         continue;
                 }
-                WriteCsharpFunction(_writer, func, _isStatic, _isPartial, _name);
+                WriteCsharpFunction(_writer, func, func.IsStatic, _isPartial, _name);
             }
-            if(!_isStatic && _name != "Engine")
+            if (!_isStatic && _name != "Engine")
             {
                 _writer.WriteLine("\t\tpublic static implicit operator System.IntPtr(" + _name + " _value)");
                 _writer.WriteLine("\t\t{");
-                _writer.WriteLine("\t\t\t return _value.instance_;");
+                if (_fakeStatic)
+                    _writer.WriteLine("\t\t\t return instance_;");
+                else
+                    _writer.WriteLine("\t\t\t return _value.instance_;");
                 _writer.WriteLine("\t\t}");
             }
             _writer.WriteLine("\t}");
@@ -703,6 +740,10 @@ namespace LumixBindings
 
         void WriteCsharpFunction(StreamWriter _writer, FunctionRegister _func, bool _isStatic,bool _isPartial = false, string _klassName = "")
         {
+            if(_func.Name == "addAction")
+            {
+
+            }
             var meth = nsc_.GetMethodFromClass(_func.NativeClass.Replace("Impl", ""), _func.Name);
 
             if (meth != null)
@@ -765,7 +806,7 @@ namespace LumixBindings
                     }
 
                     string args = "";
-                    if (!_isStatic)
+                    if (!_isStatic || (_isStatic && _isPartial))
                     {
                         args = _func.IsComponent ? "scene_" : "instance_";
                         if (meth[i].Values.Length > 0)

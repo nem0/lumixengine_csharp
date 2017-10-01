@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class ParticleEmitterLinearMovement : NativeComponent
+	[NativeComponent( Type = "particle_emitter_linear_movement")]
+	public class ParticleEmitterLinearMovement :Component
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static Vec2 getParticleEmitterLinearMovementX(IntPtr scene, int cmp);

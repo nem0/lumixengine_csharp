@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class Camera : NativeComponent
+	[NativeComponent( Type = "camera")]
+	public class Camera :Component
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static string getCameraSlot(IntPtr scene, int cmp);

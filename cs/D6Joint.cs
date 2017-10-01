@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class D6Joint : NativeComponent
+	[NativeComponent( Type = "d6_joint")]
+	public class D6Joint :Component
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static Entity getJointConnectedBody(IntPtr scene, int cmp);

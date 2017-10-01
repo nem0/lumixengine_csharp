@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class ParticleEmitterSpawnShape : NativeComponent
+	[NativeComponent( Type = "particle_emitter_spawn_shape")]
+	public class ParticleEmitterSpawnShape :Component
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static float getParticleEmitterShapeRadius(IntPtr scene, int cmp);

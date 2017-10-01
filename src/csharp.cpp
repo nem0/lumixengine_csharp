@@ -1514,6 +1514,7 @@ void CSharpPluginImpl::loadAssembly()
 		}
 	}
 	setStaticField("Lumix", "Engine", "instance_", &m_engine);
+	setStaticField("Lumix", "Input", "instance_", &m_engine.getInputSystem());
 	m_on_assembly_load.invoke();
 }
 
@@ -1589,12 +1590,12 @@ CSHARP_FUNCTION(AudioScene, play, nostatic, AudioScene, class);
 CSHARP_FUNCTION(AudioScene, stop, nostatic, AudioScene, class);
 CSHARP_FUNCTION(AudioScene, setVolume, nostatic, AudioScene, class);
 
-CSHARP_FUNCTION(InputSystem, isMouseDown, static, Input, class);
-CSHARP_FUNCTION(InputSystem, getActionValue, static, Input, class);
-CSHARP_FUNCTION_PROPERTY(InputSystem, getMouseXMove, static, Input, class,MouseXMove);
-CSHARP_FUNCTION_PROPERTY(InputSystem, getMouseYMove, static, Input, class,MouseYMove);
-CSHARP_FUNCTION_PROPERTY(InputSystem, getMousePos, static, Input, class,MousePos);
-CSHARP_FUNCTION(InputSystem, addAction, static, Input, class);
+CSHARP_FUNCTION(InputSystem, isMouseDown, static, Input, partial);
+CSHARP_FUNCTION(InputSystem, getActionValue, static, Input, partial);
+CSHARP_FUNCTION_PROPERTY(InputSystem, getMouseXMove, static, Input, partial,MouseXMove);
+CSHARP_FUNCTION_PROPERTY(InputSystem, getMouseYMove, static, Input, partial,MouseYMove);
+CSHARP_FUNCTION_PROPERTY(InputSystem, getMousePos, static, Input, partial,MousePos);
+CSHARP_FUNCTION(InputSystem, addAction, static, Input, partial);
 
 CSHARP_FUNCTION(PhysicsScene, raycast, nostatic, PhysicsScene, class);
 CSHARP_FUNCTION(PhysicsScene, raycastEx, nostatic, PhysicsScene, class);
@@ -1655,6 +1656,19 @@ CSHARP_FUNCTION_PROPERTY(Resource, getRefCount, nostatic, Resource, partial,RefC
 CSHARP_FUNCTION_PROPERTY(Resource, size, nostatic, Resource, partial,Size);
 CSHARP_FUNCTION_PROPERTY(Resource, getPath, nostatic, Resource, partial,Path);
 CSHARP_FUNCTION_PROPERTY(Resource, getResourceManager, nostatic, Resource, partial,ResourceManager);
+
+//RigidActor
+CSHARP_FUNCTION(PhysicsScene, applyForceToActor, nostatic, RigidActor, component);
+CSHARP_FUNCTION_PROPERTY(PhysicsScene, getActorSpeed, nostatic, RigidActor, component, ActorSpeed);
+CSHARP_FUNCTION(PhysicsScene, putToSleep, nostatic, RigidActor, component);
+//CSHARP_FUNCTION(PhysicsScene, isTrigger, nostatic, RigidActor, component);
+//CSHARP_FUNCTION(PhysicsScene, setIsTrigger, nostatic, RigidActor, component);
+//CSHARP_FUNCTION(PhysicsScene, getDynamicType, nostatic, RigidActor, component);
+//CSHARP_FUNCTION(PhysicsScene, setDynamicType, nostatic, RigidActor, component);
+
+//sphere rigid actor
+//CSHARP_FUNCTION(PhysicsScene, getSphereRadius, nostatic, SphereRigidActor, component);
+//CSHARP_FUNCTION(PhysicsScene, setSphereRadius, nostatic, SphereRigidActor, component);
 /*
 CSHARP_FUNCTION(AnimationScene, getAnimableAnimation, nostatic, AnimationScene, component);
 CSHARP_FUNCTION(AnimationScene, getAnimation, nostatic, AnimationScene, component);

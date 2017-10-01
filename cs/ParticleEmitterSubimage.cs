@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class ParticleEmitterSubimage : NativeComponent
+	[NativeComponent( Type = "particle_emitter_subimage")]
+	public class ParticleEmitterSubimage :Component
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static int getParticleEmitterSubimageRows(IntPtr scene, int cmp);

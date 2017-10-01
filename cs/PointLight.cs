@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class PointLight : NativeComponent
+	[NativeComponent( Type = "point_light")]
+	public class PointLight :Component
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static Vec3 getPointLightColor(IntPtr scene, int cmp);

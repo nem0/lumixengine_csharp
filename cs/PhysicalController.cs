@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class PhysicalController : NativeComponent
+	[NativeComponent( Type = "physical_controller")]
+	public class PhysicalController :Component
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static int getControllerLayer(IntPtr scene, int cmp);

@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class SphericalJoint : NativeComponent
+	[NativeComponent( Type = "spherical_joint")]
+	public class SphericalJoint :Component
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static Entity getJointConnectedBody(IntPtr scene, int cmp);

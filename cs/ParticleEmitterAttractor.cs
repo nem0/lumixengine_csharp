@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class ParticleEmitterAttractor : NativeComponent
+	[NativeComponent( Type = "particle_emitter_attractor")]
+	public class ParticleEmitterAttractor :RigidActor
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static float getParticleEmitterAttractorForce(IntPtr scene, int cmp);

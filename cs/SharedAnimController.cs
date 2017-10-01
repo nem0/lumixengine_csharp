@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class SharedAnimController : NativeComponent
+	[NativeComponent( Type = "shared_anim_controller")]
+	public class SharedAnimController :Component
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static Entity getSharedControllerParent(IntPtr scene, int cmp);

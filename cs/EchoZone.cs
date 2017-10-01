@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class EchoZone : NativeComponent
+	[NativeComponent( Type = "echo_zone")]
+	public class EchoZone :Component
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static float getEchoZoneRadius(IntPtr scene, int cmp);

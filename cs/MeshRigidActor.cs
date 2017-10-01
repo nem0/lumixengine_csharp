@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class MeshRigidActor : NativeComponent
+	[NativeComponent( Type = "mesh_rigid_actor")]
+	public class MeshRigidActor :RigidActor
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static string getShapeSource(IntPtr scene, int cmp);

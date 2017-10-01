@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class NavmeshAgent : NativeComponent
+	[NativeComponent( Type = "navmesh_agent")]
+	public class NavmeshAgent :Component
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static float getAgentRadius(IntPtr scene, int cmp);

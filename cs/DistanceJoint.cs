@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class DistanceJoint : NativeComponent
+	[NativeComponent( Type = "distance_joint")]
+	public class DistanceJoint :Component
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static float getDistanceJointDamping(IntPtr scene, int cmp);

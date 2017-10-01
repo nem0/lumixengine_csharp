@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class SphereRigidActor : NativeComponent
+	[NativeComponent( Type = "sphere_rigid_actor")]
+	public class SphereRigidActor :RigidActor
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static float getSphereRadius(IntPtr scene, int cmp);
@@ -19,7 +20,7 @@ namespace Lumix
 		extern static void setDynamicType(IntPtr scene, int cmp, int value);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static bool isTrigger(IntPtr scene, int cmp);
+		extern static bool getIsTrigger(IntPtr scene, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static void setIsTrigger(IntPtr scene, int cmp, bool value);
@@ -55,7 +56,7 @@ namespace Lumix
 		/// </summary>
 		public bool IsTrigger
 		{
-			get { return isTrigger(scene_, componentId_); }
+			get { return getIsTrigger(scene_, componentId_); }
 			set { setIsTrigger(scene_, componentId_, value); }
 		}
 

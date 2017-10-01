@@ -99,6 +99,12 @@ namespace LumixBindings
                     continue;
                 File.Copy(file, Path.Combine(path, Path.GetFileName(file)), true);
             }
+
+            var examples = Directory.GetFiles(Bindings.ExamplePath, "*.cs", SearchOption.TopDirectoryOnly);
+            foreach (var file in examples)
+            {
+                File.Copy(file, Path.Combine(path, Path.GetFileName(file)), true);
+            }
         }
     }
 }

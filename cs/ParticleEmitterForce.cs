@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class ParticleEmitterForce : NativeComponent
+	[NativeComponent( Type = "particle_emitter_force")]
+	public class ParticleEmitterForce :Component
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static Vec3 getParticleEmitterAcceleration(IntPtr scene, int cmp);

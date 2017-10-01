@@ -13,6 +13,7 @@ namespace LumixBindings
         public static readonly string EditorCsPath = @"../../../../../../lumixengine_data/cs";
         public static readonly string ApiPath =      @"../../../../../src/api.h";
         public static readonly string CSRootPath = @"../../../../../cs/";
+        public static readonly string ExamplePath = @"../../../../../Lumix.Examples/Lumix.Examples";
         public static readonly bool DebugToken = false;
         public static readonly bool IgnoreOperator = true;
 
@@ -278,6 +279,28 @@ namespace LumixBindings
             foreach (var func in _this)
             {
                 if (!func.IsPartial)
+                    continue;
+                if (!ret.ContainsKey(func.ManagedClass))
+                {
+                    ret.Add(func.ManagedClass, new List<FunctionRegister>());
+                }
+                ret[func.ManagedClass].Add(func);
+            }
+            return ret;
+        }
+
+        public static Dictionary<string, List<FunctionRegister>> GetComponents(this List<FunctionRegister> _this)
+        {
+            Dictionary<string, List<FunctionRegister>> ret = new Dictionary<string, List<FunctionRegister>>();
+            foreach (var func in _this)
+            {
+                if(func.ManagedClass == "RigidActor")
+                {
+
+                }
+                if (!func.IsComponent && func.Components.Length != 1 || func.IsClass)
+                    continue;
+                if (func.NativeClass == func.ManagedClass)
                     continue;
                 if (!ret.ContainsKey(func.ManagedClass))
                 {

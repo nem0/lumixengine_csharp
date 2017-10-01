@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class AmbientSound : NativeComponent
+	[NativeComponent( Type = "ambient_sound")]
+	public class AmbientSound :Component
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static int getAmbientSoundClipIndex(IntPtr scene, int cmp);

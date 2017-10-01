@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class Ragdoll : NativeComponent
+	[NativeComponent( Type = "ragdoll")]
+	public class Ragdoll :Component
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static int getRagdollLayer(IntPtr scene, int cmp);

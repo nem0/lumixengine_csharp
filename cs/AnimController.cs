@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class AnimController : NativeComponent
+	[NativeComponent( Type = "anim_controller")]
+	public class AnimController :Component
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static string getControllerSource(IntPtr scene, int cmp);

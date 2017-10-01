@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class ModelInstance : NativeComponent
+	[NativeComponent( Type = "renderable")]
+	public class ModelInstance :Component
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static string getModelInstancePath(IntPtr scene, int cmp);

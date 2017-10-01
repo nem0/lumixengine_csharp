@@ -77,19 +77,11 @@ namespace LumixBindings
                 ///iterate through all found classes in each ns
                 foreach(var @class in ns.Values)
                 {
-                    if(@class.Name == "OutputBlob")
-                    {
-                    }
-                    //var pos = clang.getCursorSpelling(@class.Cursor);
                     ///search for methods within each class
                     clang.visitChildren(@class.Cursor, @class.Visit, new CXClientData(IntPtr.Zero));
                     ///iterate through all found method in each class
                     foreach (var meth in @class.Values)
                     {
-                        if(meth.Name == "applyForceToActor")
-                        {
-
-                        }
                          var parent = clang.getCursorSemanticParent(meth.Cursor);
                         clang.visitChildren(meth.Cursor, meth.Visit, new CXClientData(IntPtr.Zero));
                     }
@@ -100,30 +92,30 @@ namespace LumixBindings
 
             List<Class> uniqueClasses = new List<Class>();
             List<string> done = new List<string>();
-            using (StreamWriter sw = new StreamWriter("macros"))
-            {
-                foreach(var ns in nsc.Values) 
-                {
-                    foreach(var klass in ns.Values)
-                    {
-                        foreach(var meth in klass.Values)
-                        {
-                            string id = klass.Name + "_" + meth.Name;
-                            if (!done.Contains(id))
-                            {
-                                if (!uniqueClasses.Contains(klass))
-                                    uniqueClasses.Add(klass);
-                                bool isStatic = Bindings.StaticClasses.Contains(klass.Name);
-                                var rename = Bindings.ClassRenames.Find(x => x.Key == klass.Name);
-                                string managedClass = (rename.Key == null ? klass.Name.Replace("Impl","") : rename.Value);
-                                sw.WriteLine("CSHARP_FUNCTION(" + klass.Name.Replace("Impl", "") + "," + meth.Name + ","+(isStatic ? "static" : "nostatic")+"," + managedClass + ","+(isStatic ? "class":"component")+");");
-                                done.Add(id);
-                            }
-                        }
-                    }
-                }
-                sw.Flush();
-            }
+            //using (StreamWriter sw = new StreamWriter("macros"))
+            //{
+            //    foreach(var ns in nsc.Values) 
+            //    {
+            //        foreach(var klass in ns.Values)
+            //        {
+            //            foreach(var meth in klass.Values)
+            //            {
+            //                string id = klass.Name + "_" + meth.Name;
+            //                if (!done.Contains(id))
+            //                {
+            //                    if (!uniqueClasses.Contains(klass))
+            //                        uniqueClasses.Add(klass);
+            //                    bool isStatic = Bindings.StaticClasses.Contains(klass.Name);
+            //                    var rename = Bindings.ClassRenames.Find(x => x.Key == klass.Name);
+            //                    string managedClass = (rename.Key == null ? klass.Name.Replace("Impl","") : rename.Value);
+            //                    sw.WriteLine("CSHARP_FUNCTION(" + klass.Name.Replace("Impl", "") + "," + meth.Name + ","+(isStatic ? "static" : "nostatic")+"," + managedClass + ","+(isStatic ? "class":"component")+");");
+            //                    done.Add(id);
+            //                }
+            //            }
+            //        }
+            //    }
+            //    sw.Flush();
+            //}
             nsc.Cleanup();
             var lumixParser = new LumixParser(nsc);
             lumixParser.Parse();

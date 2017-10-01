@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class PhysicalHeightfield : NativeComponent
+	[NativeComponent( Type = "physical_heightfield")]
+	public class PhysicalHeightfield :Component
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static string getHeightmapSource(IntPtr scene, int cmp);

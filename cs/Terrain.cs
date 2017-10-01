@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public class Terrain : NativeComponent
+	[NativeComponent( Type = "terrain")]
+	public class Terrain :Component
 	{
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static string getTerrainMaterialPath(IntPtr scene, int cmp);
