@@ -1485,6 +1485,19 @@ static bool isNativeComponent(MonoClass* cl)
 }
 
 
+static bool isComponent(MonoClass* mono_class)
+{
+	MonoClass* parent = mono_class_get_parent(mono_class);
+	while (parent)
+	{
+		const char* n = mono_class_get_name(parent);
+		if (equalIStrings(n, "Component")) return true;
+		parent = mono_class_get_parent(parent);
+	}
+	return false;
+}
+
+
 void CSharpPluginImpl::loadAssembly()
 {
 	ASSERT(!m_assembly);
@@ -1508,7 +1521,7 @@ void CSharpPluginImpl::loadAssembly()
 		const char* n = mono_class_get_name(cl);
 		MonoClass* parent = mono_class_get_parent(cl);
 		
-		if (!isNativeComponent(cl))
+		if (!isNativeComponent(cl) && isComponent(cl))
 		{
 			m_names.insert(crc32(n), string(n, allocator));
 		}
