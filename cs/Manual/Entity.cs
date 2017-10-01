@@ -41,7 +41,18 @@ namespace Lumix
             instance_ = _universe;
             entity_Id_ = _id;
         }
-         public T GetComponent<T>() where T : Component
+        
+		public bool IsNativeComponent<T>()
+		{
+			System.Attribute[] attrs = System.Attribute.GetCustomAttributes(typeof(T));
+			foreach(var attr in attrs)
+			{
+					if(attr is NativeComponent) return true;
+			}
+			return false;
+		}
+		
+		public T GetComponent<T>() where T : Component
         {
             for (int i = 0, c = components.Count; i < c; ++i)
             {
@@ -49,8 +60,9 @@ namespace Lumix
                 if (cmp is T) return cmp as T;
             }
 
-            if (typeof(T).IsSubclassOf(typeof(NativeComponent)))
+			if (IsNativeComponent<T>())
             {
+				Engine.logError("test");
                 var prop = typeof(T).GetProperty("GetCmpType", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
                 string cmp_type = (string)prop.GetValue(null, null);
 
