@@ -558,6 +558,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 {
 	StudioCSharpPlugin(StudioApp& app)
 		: m_app(app)
+		, m_compile_log(app.getWorldEditor().getAllocator())
 	{
 		m_filter[0] = '\0';
 		m_new_script_name[0] = '\0';
@@ -588,6 +589,17 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 				CSharpPlugin& plugin = (CSharpPlugin&)scene->getPlugin();
 				plugin.loadAssembly();
 			}
+			else
+			{
+				char tmp[1024];
+				int tmp_size;
+				while((tmp_size = PlatformInterface::getProcessOutput(*m_compile_process, tmp, lengthOf(tmp) - 1)) != -1)
+				{
+					tmp[tmp_size] = 0;
+					m_compile_log.cat(tmp);
+				}
+				g_log_error.log("C#") << m_compile_log;
+			}
 			PlatformInterface::destroyProcess(*m_compile_process);
 			m_compile_process = nullptr;
 		}
@@ -598,7 +610,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 			if (tmp_size != -1)
 			{
 				tmp[tmp_size] = 0;
-				g_log_error.log("C#") << tmp;
+				m_compile_log.cat(tmp);
 			}
 		}
 	}
@@ -762,6 +774,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 		m_deferred_compile = false;
 		if (m_compile_process) return;
 
+		m_compile_log = "";
 		CSharpScriptScene* scene = getScene();
 		CSharpPlugin& plugin = (CSharpPlugin&)scene->getPlugin();
 		plugin.unloadAssembly();
@@ -772,6 +785,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 	PlatformInterface::Process* m_compile_process = nullptr;
 	StudioApp& m_app;
 	FileSystemWatcher* m_watcher;
+	string m_compile_log;
 	char m_filter[128];
 	char m_new_script_name[128];
 	bool m_deferred_compile = false;
