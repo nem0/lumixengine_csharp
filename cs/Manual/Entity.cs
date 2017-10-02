@@ -140,5 +140,14 @@ namespace Lumix
         {
             return value.entity_Id_;
         }
+
+        public void Rotate(Vec3 _angles)
+        {
+            _angles.x = _angles.x.ToRadians();
+            _angles.y = _angles.y.ToRadians();
+            _angles.y = _angles.z.ToRadians();
+            Quat rot = Quat.FromEuler(_angles);
+            this.Rotation = Rotation * rot;
+        }
     }
 }
