@@ -25,18 +25,6 @@ namespace Lumix
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static void setActorLayer(IntPtr scene, int cmp, int value);
 
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void applyForceToActor(IntPtr instance, int cmp, Vec3 force);
-
-
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getActorSpeed(IntPtr instance, int cmp);
-
-
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void putToSleep(IntPtr instance, int cmp);
-
-
 
 		public static string GetCmpType{ get { return "mesh_rigid_actor"; } }
 
@@ -74,24 +62,6 @@ namespace Lumix
 
 		public MeshRigidActor(Entity _entity, int _cmpId)
 			: base(_entity, _cmpId, getScene(_entity.instance_, GetCmpType)) { }
-
-		public void ApplyForceToActor(Vec3 force)
-		{
-			applyForceToActor(scene_, componentId_, force);
-		}
-
-		public float ActorSpeed
-		{
-			get
-			{
-				return getActorSpeed(scene_, componentId_);
-			}
-		}
-
-		public void PutToSleep()
-		{
-			putToSleep(scene_, componentId_);
-		}
 
 	}//end class
 

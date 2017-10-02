@@ -588,9 +588,12 @@ namespace LumixBindings
                 _writer.Write("\n");
             }
             _writer.WriteLine("\t{");
-
+            if (_fakeStatic)//supress warning "never assigned", we do that actually on native side
+                _writer.WriteLine("\t\t#pragma warning disable 0649");
             if (!_isStatic && !_isPartial && !Class.HasBaseClass || _isComponent || _fakeStatic)
                 _writer.WriteLine(string.Format("\t\tinternal {0}IntPtr instance_;\n", _fakeStatic ? "static " : ""));
+            if (_fakeStatic)
+                _writer.WriteLine("\t\t#pragma warning restore 0649");
             //write down all mono decls
             foreach (var func in _methods)
             {

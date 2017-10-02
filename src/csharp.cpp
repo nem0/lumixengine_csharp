@@ -1623,9 +1623,6 @@ CSHARP_FUNCTION(PhysicsScene, removeCollisionLayer, nostatic, PhysicsScene, clas
 CSHARP_FUNCTION(PhysicsScene, moveController, nostatic, PhysicalController, component);
 
 //mesh rigid actor
-CSHARP_FUNCTION(PhysicsScene, applyForceToActor, nostatic, MeshRigidActor, component);
-CSHARP_FUNCTION_PROPERTY(PhysicsScene, getActorSpeed, nostatic, MeshRigidActor, component,ActorSpeed);
-CSHARP_FUNCTION(PhysicsScene, putToSleep, nostatic, MeshRigidActor, component);
 
 CSHARP_FUNCTION(Renderer, makeScreenshot, static, Renderer, class);
 CSHARP_FUNCTION_PROPERTY(Renderer, isOpenGL, static, Renderer, class,IsOpenGL);

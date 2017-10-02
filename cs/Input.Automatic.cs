@@ -5,8 +5,10 @@ using System.Runtime.CompilerServices;
 namespace Lumix
 {
 	public partial class Input	{
+		#pragma warning disable 0649
 		internal static IntPtr instance_;
 
+		#pragma warning restore 0649
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static bool isMouseDown(IntPtr instance, Input.MouseButton button);
 
