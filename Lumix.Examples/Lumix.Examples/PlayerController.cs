@@ -22,7 +22,7 @@ namespace Lumix
             Input.AddAction(Actions.RIGHT_ACTION, Input.InputType.PRESSED, 'D', -1);
         }
 
-        void Update()
+        void Update(float _deltaTime)
         {
             if (rigidActor_ == null)
                 return;
