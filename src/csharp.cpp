@@ -395,6 +395,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		, m_entities_gc_handles(plugin.m_allocator)
 		, m_updates(plugin.m_allocator)
 		, m_is_game_running(false)
+		, m_physics_on_contact(-1)
 	{
 		universe.registerComponentType(CSHARP_SCRIPT_TYPE, this, &CSharpScriptSceneImpl::serializeCSharpScript, &CSharpScriptSceneImpl::deserializeCSharpScript);
 
@@ -643,8 +644,34 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	#undef CSHARP_SUBOBJECT
 
 
+	void onContact(Entity e1, Entity e2, const Vec3& pos)
+	{
+		MonoObject* e1_obj = mono_gchandle_get_target(getEntityGCHandle(e1));
+		MonoObject* e2_obj = mono_gchandle_get_target(getEntityGCHandle(e2));
+		auto call = [this, pos](const ScriptComponent* cmp, MonoObject* entity) {
+			for (const Script& scr : cmp->scripts)
+			{
+				tryCallMethodInternal(scr.gc_handle, "OnContact", entity, pos);
+			}
+		};
+
+		int idx = m_scripts.find(e1);
+		if (idx >= 0) call(m_scripts.at(idx), e2_obj);
+		idx = m_scripts.find(e2);
+		if (idx >= 0) call(m_scripts.at(idx), e1_obj);
+	}
+
+
 	void startGame() override
 	{
+		PhysicsScene* phy_scene = (PhysicsScene*)m_universe.getScene(crc32("physics"));
+		if (phy_scene)
+		{
+			m_physics_on_contact = phy_scene->addOnContactCallback([](Entity e1, Entity e2, const Vec3& pos, void* user_data){
+				((CSharpScriptSceneImpl*)user_data)->onContact(e1, e2, pos);
+			}, this);
+		}
+
 		for (ScriptComponent* cmp : m_scripts)
 		{
 			Array<Script>& scripts = cmp->scripts;
@@ -657,7 +684,16 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	}
 
 
-	void stopGame() override { m_is_game_running = false; }
+	void stopGame() override 
+	{
+		m_is_game_running = false; 
+		PhysicsScene* phy_scene = (PhysicsScene*)m_universe.getScene(crc32("physics"));
+		if (phy_scene && m_physics_on_contact >= 0)
+		{
+			phy_scene->removeOnContactCallback(m_physics_on_contact);
+			m_physics_on_contact = -1;
+		}
+	}
 
 
 	void getClassName(u32 name_hash, char(&out_name)[256]) const
@@ -1299,18 +1335,30 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 
 	template <typename T>
-	bool tryCallMethodInternal(u32 gc_handle, const char* method_name, T arg0)
+	void* toCSharpArg(T* arg)
+	{
+		return (void*)arg;
+	}
+
+	template <>
+	void* toCSharpArg<MonoObject*>(MonoObject** arg)
+	{
+		return *arg;
+	}
+
+	template <typename... T>
+	bool tryCallMethodInternal(u32 gc_handle, const char* method_name, T... args)
 	{
 		MonoObject* obj = mono_gchandle_get_target(gc_handle);
 		ASSERT(obj);
 		MonoClass* mono_class = mono_object_get_class(obj);
 		ASSERT(mono_class);
-		MonoMethod* method = mono_class_get_method_from_name(mono_class, method_name, 1);
+		MonoMethod* method = mono_class_get_method_from_name(mono_class, method_name, sizeof...(args));
 		if (!method) return false;
 
 		MonoObject* exc = nullptr;
-		void* args[] = { &arg0 };
-		mono_runtime_invoke(method, obj, args, &exc);
+		void* mono_args[] = { toCSharpArg(&args)... };
+		mono_runtime_invoke(method, obj, mono_args, &exc);
 		handleException(exc);
 
 		return exc == nullptr;
@@ -1408,6 +1456,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	CSharpPluginImpl& m_system;
 	Universe& m_universe;
 	bool m_is_game_running;
+	int m_physics_on_contact;
 };
 
 
@@ -1623,7 +1672,6 @@ CSHARP_FUNCTION(PhysicsScene, removeCollisionLayer, nostatic, PhysicsScene, clas
 CSHARP_FUNCTION(PhysicsScene, moveController, nostatic, PhysicalController, component);
 
 //mesh rigid actor
-
 CSHARP_FUNCTION(Renderer, makeScreenshot, static, Renderer, class);
 CSHARP_FUNCTION_PROPERTY(Renderer, isOpenGL, static, Renderer, class,IsOpenGL);
 CSHARP_FUNCTION_PROPERTY(Renderer, getLayersCount, static, Renderer, class,LayersCount);
