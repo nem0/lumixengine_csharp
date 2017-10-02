@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 namespace Lumix
 {
 	public partial class Input	{
-		public static IntPtr instance_;
+		internal static IntPtr instance_;
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static bool isMouseDown(IntPtr instance, Input.MouseButton button);

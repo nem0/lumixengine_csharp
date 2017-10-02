@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Lumix
 {
+    [NativeComponentBase("sphere_rigid_actor","mesh_rigid_actor")]
     public partial class RigidActor : Component
     {
         public RigidActor(Entity _entity, int _cmpId, IntPtr _scene)

@@ -42,16 +42,34 @@ namespace Lumix
             entity_Id_ = _id;
         }
         
-		public bool IsNativeComponent<T>()
+		public bool IsNativeComponent<T>(out NativeComponent _attrib)
 		{
+            _attrib = null;
 			System.Attribute[] attrs = System.Attribute.GetCustomAttributes(typeof(T));
 			foreach(var attr in attrs)
 			{
-					if(attr is NativeComponent) return true;
+                if (attr is NativeComponent)
+                {
+                    _attrib = attr as NativeComponent;
+                    return true;
+                }
 			}
 			return false;
 		}
-		
+		public bool IsNativeComponentBase<T>(out NativeComponentBase _attrib)
+        {
+            _attrib = null;
+            var attrs = Attribute.GetCustomAttributes(typeof(T));
+            foreach (var attr in attrs)
+            {
+                if (attr is NativeComponentBase)
+                {
+                    _attrib = attr as NativeComponentBase;
+                    return true;
+                }
+            }
+            return false;
+        }
 		public T GetComponent<T>() where T : Component
         {
             for (int i = 0, c = components.Count; i < c; ++i)
@@ -59,25 +77,34 @@ namespace Lumix
                 var cmp = components[i];
                 if (cmp is T) return cmp as T;
             }
-
-			if (IsNativeComponent<T>())
+            NativeComponent prop;
+            NativeComponentBase ncb;
+			if (IsNativeComponent<T>(out prop))
             {
-				Engine.logError("test");
-                var prop = typeof(T).GetProperty("GetCmpType", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
-                string cmp_type = (string)prop.GetValue(null, null);
+                //Engine.logError("test");
+                // var prop = typeof(T).GetProperty("GetCmpType", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                string cmp_type = prop.Type;//(string)prop.GetValue(null, null);
 
                 int cmp_id = getComponent(instance_, entity_Id_, cmp_type);
                 if (cmp_id < 0) return null;
 
-                var cmp = (T)System.Activator.CreateInstance(typeof(T), new object[] { this, cmp_id }); ///new T();
-				//cmp.componentId_ = cmp_id;
-				//cmp.scene_ = getScene(instance_, cmp_type);
-				//cmp.entity_ = this;
-
+                var cmp = (T)System.Activator.CreateInstance(typeof(T), new object[] { this, cmp_id });
                 components.Add(cmp);
                 return cmp;
             }
-
+            else if(IsNativeComponentBase<T>(out ncb))
+            {
+                var types = ncb.SupportedTypes;
+                for (int k = 0; k < types.Length; k++)
+                {
+                    int cmp_id = getComponent(instance_, entity_Id_, types[k]);
+                    if (cmp_id < 0) continue;
+                    Type t = Type.GetType("Lumix." + types[k].Capitalize('_'));
+                    var cmp = (T)System.Activator.CreateInstance(t, new object[] { this, cmp_id });
+                    components.Add(cmp);
+                    return cmp;
+                }
+            }
             return null;
         }
 

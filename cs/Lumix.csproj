@@ -47,6 +47,7 @@
     <Compile Include="Manual\EditorInfo.cs" />
     <Compile Include="Manual\Engine.cs" />
     <Compile Include="Manual\Entity.cs" />
+    <Compile Include="Manual\Extensions.cs" />
     <Compile Include="Manual\Imgui.cs" />
     <Compile Include="Manual\IResourceType.cs" />
     <Compile Include="Manual\IScene.cs" />
