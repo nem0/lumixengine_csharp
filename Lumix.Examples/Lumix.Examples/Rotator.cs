@@ -11,7 +11,7 @@ namespace Lumix
         Vec3 rotate_;
         void OnStartGame()
         {
-            rotate_ = new Vec3(.15f, .30f, .45f);
+            rotate_ = new Vec3(15f, 30f, 45f);
         }
         void Update(float _deltaTime)
         {

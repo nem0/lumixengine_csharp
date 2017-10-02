@@ -145,7 +145,7 @@ namespace Lumix
         {
             _angles.x = _angles.x.ToRadians();
             _angles.y = _angles.y.ToRadians();
-            _angles.y = _angles.z.ToRadians();
+            _angles.z = _angles.z.ToRadians();
             Quat rot = Quat.FromEuler(_angles);
             this.Rotation = Rotation * rot;
         }
