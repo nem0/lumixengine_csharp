@@ -755,6 +755,11 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 			ImGui::PopID();
 		}
 
+		if (m_compile_log.length() > 0 && ImGui::CollapsingHeader("Log"))
+		{
+			ImGui::Text("%s", m_compile_log.c_str());
+		}
+
 		ImGui::EndDock();
 	}
 
