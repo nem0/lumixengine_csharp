@@ -403,9 +403,6 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 		createImGuiAPI();
 		createEngineAPI();
-		/*createRendererAPI();
-		createPhysicsAPI();
-		createAnimationAPI();*/
 
 		m_system.m_on_assembly_load.bind<CSharpScriptSceneImpl, &CSharpScriptSceneImpl::onAssemblyLoad>(this);
 		m_system.m_on_assembly_unload.bind<CSharpScriptSceneImpl, &CSharpScriptSceneImpl::onAssemblyUnload>(this);
@@ -539,111 +536,6 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	}
 
 
-	#define CSHARP_PROPERTY(Type, Scene, Class, Property) \
-		do { \
-			auto f = &csharp_getProperty<Type, Scene, &Scene::get##Class##Property>; \
-			mono_add_internal_call("Lumix." ## #Class ## "::get" ## #Property, f); \
-			auto f2 = &csharp_setProperty<Type, Scene, &Scene::set##Class##Property>; \
-			mono_add_internal_call("Lumix." ## #Class ## "::set" ## #Property, f2); \
-		} while (false)
-
-	#define CSHARP_SUBOBJECT(Scene, Class, Subclass) \
-		do { \
-			auto f = csharp_getSubobjectCount<Scene, &Scene::get##Subclass##Count>; \
-			mono_add_internal_call("Lumix." ## #Class ## "::get" ## #Subclass ##  "Count", f); \
-			auto f2 = csharp_addSubobject<Scene, &Scene::add##Subclass##>; \
-			mono_add_internal_call("Lumix." ## #Class ## "::add" ## #Subclass, f2); \
-			auto f3 = csharp_removeSubobject<Scene, &Scene::remove##Subclass##>; \
-			mono_add_internal_call("Lumix." ## #Class ## "::remove" ## #Subclass, f3); \
-		} while(false)
-
-	#define CSHARP_SUBPROPERTY(Type, Scene, Class, Subclass, Property) \
-		do { \
-			auto f = &csharp_getSubproperty<Type, Scene, &Scene::get##Subclass##Property>; \
-			mono_add_internal_call("Lumix." ## #Class ## "::get" ## #Subclass ## #Property, f); \
-			auto f2 = &csharp_setSubproperty<Type, Scene, &Scene::set##Subclass##Property>; \
-			mono_add_internal_call("Lumix." ## #Class ## "::set" ## #Subclass ## #Property, f2); \
-		} while (false)
-
-	void createRendererAPI()
-	{
-		CSHARP_PROPERTY(Entity, RenderScene, BoneAttachment, Parent);
-		CSHARP_PROPERTY(int, RenderScene, BoneAttachment, Bone);
-		CSHARP_PROPERTY(Vec3, RenderScene, BoneAttachment, Position);
-		CSHARP_PROPERTY(Vec3, RenderScene, BoneAttachment, Rotation);
-
-		CSHARP_PROPERTY(float, RenderScene, Camera, FOV);
-		CSHARP_PROPERTY(float, RenderScene, Camera, NearPlane);
-		CSHARP_PROPERTY(float, RenderScene, Camera, FarPlane);
-		CSHARP_PROPERTY(float, RenderScene, Camera, OrthoSize);
-		CSHARP_PROPERTY(const char*, RenderScene, Camera, Slot);
-
-		CSHARP_PROPERTY(Vec3, RenderScene, Decal, Scale);
-		CSHARP_PROPERTY(Path, RenderScene, Decal, MaterialPath);
-
-		CSHARP_PROPERTY(Path, RenderScene, ModelInstance, Path);
-
-		CSHARP_PROPERTY(float, RenderScene, Terrain, XZScale);
-		CSHARP_PROPERTY(float, RenderScene, Terrain, YScale);
-		CSHARP_PROPERTY(Path, RenderScene, Terrain, MaterialPath);
-
-		CSHARP_SUBOBJECT(RenderScene, Terrain, Grass);
-		CSHARP_SUBPROPERTY(int, RenderScene, Terrain, Grass, Density);
-
-		CSHARP_PROPERTY(Vec3, RenderScene, GlobalLight, Color);
-		CSHARP_PROPERTY(float, RenderScene, GlobalLight, Intensity);
-		CSHARP_PROPERTY(float, RenderScene, GlobalLight, IndirectIntensity);
-
-		CSHARP_PROPERTY(float, RenderScene, PointLight, Intensity);
-		CSHARP_PROPERTY(Vec3, RenderScene, PointLight, Color);
-		CSHARP_PROPERTY(float, RenderScene, PointLight, SpecularIntensity);
-		CSHARP_PROPERTY(Vec3, RenderScene, PointLight, SpecularColor);
-
-		CSHARP_PROPERTY(float, RenderScene, Fog, Bottom);
-		CSHARP_PROPERTY(Vec3, RenderScene, Fog, Color);
-		CSHARP_PROPERTY(float, RenderScene, Fog, Density);
-		CSHARP_PROPERTY(float, RenderScene, Fog, Height);
-
-		CSHARP_PROPERTY(Vec3, RenderScene, ParticleEmitter, Acceleration);
-		CSHARP_PROPERTY(Path, RenderScene, ParticleEmitter, MaterialPath);
-		CSHARP_PROPERTY(bool, RenderScene, ParticleEmitter, Autoemit);
-
-		CSHARP_PROPERTY(float, RenderScene, ParticleEmitterPlane, Bounce);
-		
-		CSHARP_PROPERTY(float, RenderScene, ParticleEmitterShape, Radius);
-	}
-
-
-	void createPhysicsAPI()
-	{
-		CSHARP_PROPERTY(float, PhysicsScene, Capsule, Radius);
-		CSHARP_PROPERTY(float, PhysicsScene, Capsule, Height);
-
-		CSHARP_PROPERTY(int, PhysicsScene, Controller, Layer);
-
-		CSHARP_PROPERTY(float, PhysicsScene, Heightmap, XZScale);
-		CSHARP_PROPERTY(float, PhysicsScene, Heightmap, YScale);
-
-		CSHARP_PROPERTY(float, PhysicsScene, Sphere, Radius);
-	}
-
-
-	void createAnimationAPI()
-	{
-		CSHARP_PROPERTY(Entity, AnimationScene, SharedController, Parent);
-
-		CSHARP_PROPERTY(float, AnimationScene, Animable, Time);
-
-		mono_add_internal_call("Lumix.Animable::setSource", csharp_Animable_setSource);
-		mono_add_internal_call("Lumix.Animable::getSource", csharp_Animable_getSource);
-	}
-
-
-	#undef CSHARP_PROPERTY
-	#undef CSHARP_SUBPROPERTY
-	#undef CSHARP_SUBOBJECT
-
-	
 	void onContact(const PhysicsScene::ContactData& data)
 	{
 		MonoObject* e1_obj = mono_gchandle_get_target(getEntityGCHandle(data.e1));
