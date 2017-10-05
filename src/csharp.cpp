@@ -643,21 +643,21 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	#undef CSHARP_SUBPROPERTY
 	#undef CSHARP_SUBOBJECT
 
-
-	void onContact(Entity e1, Entity e2, const Vec3& pos)
+	
+	void onContact(const PhysicsScene::ContactData& data)
 	{
-		MonoObject* e1_obj = mono_gchandle_get_target(getEntityGCHandle(e1));
-		MonoObject* e2_obj = mono_gchandle_get_target(getEntityGCHandle(e2));
-		auto call = [this, pos](const ScriptComponent* cmp, MonoObject* entity) {
+		MonoObject* e1_obj = mono_gchandle_get_target(getEntityGCHandle(data.e1));
+		MonoObject* e2_obj = mono_gchandle_get_target(getEntityGCHandle(data.e2));
+		auto call = [this, &data](const ScriptComponent* cmp, MonoObject* entity) {
 			for (const Script& scr : cmp->scripts)
 			{
-				tryCallMethodInternal(scr.gc_handle, "OnContact", entity, pos);
+				tryCallMethodInternal(scr.gc_handle, "OnContact", entity, data.position);
 			}
 		};
 
-		int idx = m_scripts.find(e1);
+		int idx = m_scripts.find(data.e1);
 		if (idx >= 0) call(m_scripts.at(idx), e2_obj);
-		idx = m_scripts.find(e2);
+		idx = m_scripts.find(data.e2);
 		if (idx >= 0) call(m_scripts.at(idx), e1_obj);
 	}
 
@@ -667,9 +667,9 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		PhysicsScene* phy_scene = (PhysicsScene*)m_universe.getScene(crc32("physics"));
 		if (phy_scene)
 		{
-			m_physics_on_contact = phy_scene->addOnContactCallback([](Entity e1, Entity e2, const Vec3& pos, void* user_data){
-				((CSharpScriptSceneImpl*)user_data)->onContact(e1, e2, pos);
-			}, this);
+			Delegate<void(const PhysicsScene::ContactData&)> cb;
+			cb.bind<CSharpScriptSceneImpl, &CSharpScriptSceneImpl::onContact>(this);
+			m_physics_on_contact = phy_scene->addOnContactCallback(cb);
 		}
 
 		for (ScriptComponent* cmp : m_scripts)

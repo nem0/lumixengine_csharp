@@ -329,6 +329,27 @@ mono_add_internal_call("Lumix.PhysicalController::setControllerLayer", fPhysicsS
 }
 {
 auto fPhysicsScene_getDynamicType = &csharp_getProperty<Lumix::PhysicsScene::DynamicType, PhysicsScene, &PhysicsScene::getDynamicType>;
+mono_add_internal_call("Lumix.RigidActor::getDynamicType", fPhysicsScene_getDynamicType);
+auto fPhysicsScene_setDynamicType = &csharp_setProperty<Lumix::PhysicsScene::DynamicType, PhysicsScene, &PhysicsScene::setDynamicType>;
+mono_add_internal_call("Lumix.RigidActor::setDynamicType", fPhysicsScene_setDynamicType);
+
+}
+{
+auto fPhysicsScene_getIsTrigger = &csharp_getProperty<bool, PhysicsScene, &PhysicsScene::getIsTrigger>;
+mono_add_internal_call("Lumix.RigidActor::getIsTrigger", fPhysicsScene_getIsTrigger);
+auto fPhysicsScene_setIsTrigger = &csharp_setProperty<bool, PhysicsScene, &PhysicsScene::setIsTrigger>;
+mono_add_internal_call("Lumix.RigidActor::setIsTrigger", fPhysicsScene_setIsTrigger);
+
+}
+{
+auto fPhysicsScene_getActorLayer = &csharp_getProperty<int, PhysicsScene, &PhysicsScene::getActorLayer>;
+mono_add_internal_call("Lumix.RigidActor::getActorLayer", fPhysicsScene_getActorLayer);
+auto fPhysicsScene_setActorLayer = &csharp_setProperty<int, PhysicsScene, &PhysicsScene::setActorLayer>;
+mono_add_internal_call("Lumix.RigidActor::setActorLayer", fPhysicsScene_setActorLayer);
+
+}
+{
+auto fPhysicsScene_getDynamicType = &csharp_getProperty<Lumix::PhysicsScene::DynamicType, PhysicsScene, &PhysicsScene::getDynamicType>;
 mono_add_internal_call("Lumix.BoxRigidActor::getDynamicType", fPhysicsScene_getDynamicType);
 auto fPhysicsScene_setDynamicType = &csharp_setProperty<Lumix::PhysicsScene::DynamicType, PhysicsScene, &PhysicsScene::setDynamicType>;
 mono_add_internal_call("Lumix.BoxRigidActor::setDynamicType", fPhysicsScene_setDynamicType);

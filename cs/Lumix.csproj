@@ -54,11 +54,10 @@
     <Compile Include="Manual\Mathf.cs" />
     <Compile Include="Manual\NativeComponent.cs" />
     <Compile Include="Manual\Quat.cs" />
-    <Compile Include="Manual\ReflectionHelper.cs" />
     <Compile Include="Manual\Resource.cs" />
     <Compile Include="Manual\Resources.cs" />
     <Compile Include="Manual\RigidActor.cs" />
-    <Compile Include="Manual\Universe.cs" />
+    <Compile Include="Manual\universe.cs" />
     <Compile Include="Manual\Vec.cs" />
     <Compile Include="AnimController.cs" />
     <Compile Include="Animable.cs" />
@@ -75,6 +74,7 @@
     <Compile Include="DistanceJoint.cs" />
     <Compile Include="HingeJoint.cs" />
     <Compile Include="PhysicalController.cs" />
+    <Compile Include="RigidActor.cs" />
     <Compile Include="BoxRigidActor.cs" />
     <Compile Include="MeshRigidActor.cs" />
     <Compile Include="PhysicalHeightfield.cs" />
@@ -107,7 +107,6 @@
     <Compile Include="Input.Automatic.cs" />
     <Compile Include="Engine.Automatic.cs" />
     <Compile Include="Resource.Automatic.cs" />
-    <Compile Include="RigidActor.Automatic.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
  </Project>
