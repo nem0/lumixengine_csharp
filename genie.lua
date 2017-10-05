@@ -6,6 +6,7 @@ project "lumixengine_csharp"
 	libType()
 	files { 
 		"src/**.c",
+		"src/api.txt",
 		"src/**.cpp",
 		"src/**.h",
 		"genie.lua"
