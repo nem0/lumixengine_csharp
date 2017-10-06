@@ -29,7 +29,9 @@
 #include <mono/metadata/assembly.h>
 #include <mono/metadata/debug-helpers.h>
 #include <mono/metadata/mono-config.h>
+#include <mono/metadata/mono-debug.h>
 #include <mono/metadata/tokentype.h>
+#include <mono/utils/mono-logger.h>
 
 
 #pragma comment(lib, "mono-2.0-sgen.lib")
@@ -395,7 +397,6 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		, m_entities_gc_handles(plugin.m_allocator)
 		, m_updates(plugin.m_allocator)
 		, m_is_game_running(false)
-		, m_physics_on_contact(-1)
 	{
 		universe.registerComponentType(CSHARP_SCRIPT_TYPE, this, &CSharpScriptSceneImpl::serializeCSharpScript, &CSharpScriptSceneImpl::deserializeCSharpScript);
 
@@ -559,9 +560,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		PhysicsScene* phy_scene = (PhysicsScene*)m_universe.getScene(crc32("physics"));
 		if (phy_scene)
 		{
-			Delegate<void(const PhysicsScene::ContactData&)> cb;
-			cb.bind<CSharpScriptSceneImpl, &CSharpScriptSceneImpl::onContact>(this);
-			m_physics_on_contact = phy_scene->addOnContactCallback(cb);
+			phy_scene->onContact().bind<CSharpScriptSceneImpl, &CSharpScriptSceneImpl::onContact>(this);;
 		}
 
 		for (ScriptComponent* cmp : m_scripts)
@@ -580,10 +579,9 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	{
 		m_is_game_running = false; 
 		PhysicsScene* phy_scene = (PhysicsScene*)m_universe.getScene(crc32("physics"));
-		if (phy_scene && m_physics_on_contact >= 0)
+		if (phy_scene)
 		{
-			phy_scene->removeOnContactCallback(m_physics_on_contact);
-			m_physics_on_contact = -1;
+			phy_scene->onContact().unbind<CSharpScriptSceneImpl, &CSharpScriptSceneImpl::onContact>(this);;
 		}
 	}
 
@@ -1348,8 +1346,18 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	CSharpPluginImpl& m_system;
 	Universe& m_universe;
 	bool m_is_game_running;
-	int m_physics_on_contact;
 };
+
+
+static void initDebug()
+{
+	mono_debug_init(MONO_DEBUG_FORMAT_MONO);
+	const char *options[] = {
+		"--soft-breakpoints",
+		"--debugger-agent=transport=dt_socket,address=127.0.0.1:55555,embedding=1,server=y,suspend=n"
+	};
+	mono_jit_parse_options(2, (char **)options);
+}
 
 
 CSharpPluginImpl::CSharpPluginImpl(Engine& engine)
@@ -1359,7 +1367,21 @@ CSharpPluginImpl::CSharpPluginImpl(Engine& engine)
 	, m_on_assembly_load(m_allocator)
 	, m_on_assembly_unload(m_allocator)
 {
+	auto printer = [](const char* msg, mono_bool is_stdout) {
+		g_log_error.log("Mono") << msg;
+	};
+
+	auto logger = [](const char *log_domain, const char *log_level, const char *message, mono_bool fatal, void *user_data)
+	{
+		g_log_error.log("Mono") << message;
+	};
+
+	mono_trace_set_print_handler(printer);
+	mono_trace_set_printerr_handler(printer);
+	mono_trace_set_log_handler(logger, nullptr);
+
 	mono_set_dirs("C:\\Program Files\\Mono\\lib", "C:\\Program Files\\Mono\\etc");
+	initDebug();
 	mono_config_parse(nullptr);
 	m_domain = mono_jit_init("lumix");
 	loadAssembly();

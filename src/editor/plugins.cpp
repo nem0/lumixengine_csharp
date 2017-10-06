@@ -784,7 +784,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 		CSharpPlugin& plugin = (CSharpPlugin&)scene->getPlugin();
 		plugin.unloadAssembly();
 		IAllocator& allocator = m_app.getWorldEditor().getAllocator();
-		m_compile_process = PlatformInterface::createProcess("c:\\windows\\system32\\cmd.exe", "/c \"\"C:\\Program Files\\Mono\\bin\\mcs.bat\" -out:\"cs\\main.dll\" -target:library -unsafe -recurse:\"cs\\*.cs\"", allocator);
+		m_compile_process = PlatformInterface::createProcess("c:\\windows\\system32\\cmd.exe", "/c \"\"C:\\Program Files\\Mono\\bin\\mcs.bat\" -out:\"cs\\main.dll\" -target:library -g -unsafe -recurse:\"cs\\*.cs\"", allocator);
 	}
 
 	PlatformInterface::Process* m_compile_process = nullptr;
