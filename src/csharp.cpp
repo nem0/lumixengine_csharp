@@ -665,6 +665,25 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 						serializer.write("value", mono_string_to_utf8(str));
 						break;
 					}
+					case MONO_TYPE_CLASS:
+					{
+						MonoType* type = mono_field_get_type(field);
+						MonoClass* mono_class = mono_type_get_class(type);
+						const char* class_name = mono_class_get_name(mono_class);
+						serializer.write("class", class_name);
+						if (equalStrings(class_name, "Entity"))
+						{
+							MonoObject* field_obj = mono_field_get_value_object(mono_domain_get(), field, obj);
+							Entity entity = INVALID_ENTITY;
+							MonoClassField* entity_id_field = mono_class_get_field_from_name(mono_class, "entity_Id_");
+							if (entity_id_field && field_obj)
+							{
+								mono_field_get_value(field_obj, entity_id_field, &entity.index);
+							}
+							serializer.write("entity", entity.index);
+						}
+						break;
+					}
 					default: ASSERT(false);
 				}
 			}
@@ -741,7 +760,27 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 						}
 						break;
 					}
+					case MONO_TYPE_CLASS:
+					{
+						char saved_class_name[64];
+						serializer.read(saved_class_name, lengthOf(saved_class_name));
+						if (equalStrings(saved_class_name, "Entity"))
+						{
+							Entity entity;
+							serializer.read(&entity.index);
 
+							MonoType* type = mono_field_get_type(field);
+							MonoClass* mono_class = mono_type_get_class(type);
+							const char* script_class_name = mono_class_get_name(mono_class);
+							if (is_matching && equalStrings(script_class_name, "Entity"))
+							{
+								u32 handle = getEntityGCHandle(entity);
+								MonoObject* entity_obj = mono_gchandle_get_target(handle);
+								mono_field_set_value(obj, field, entity_obj);
+							}
+						}
+						break;
+					}
 					default: ASSERT(false);
 				}
 			}
@@ -1031,8 +1070,8 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 							{
 								MonoObject* field_obj = mono_field_get_value_object(mono_domain_get(), field, obj);
 								Entity entity = INVALID_ENTITY;
-								MonoClassField* entity_id_field = mono_class_get_field_from_name(mono_class, "_entity_id");
-								if (field_obj)
+								MonoClassField* entity_id_field = mono_class_get_field_from_name(mono_class, "entity_Id_");
+								if (entity_id_field && field_obj)
 								{
 									mono_field_get_value(field_obj, entity_id_field, &entity.index);
 								}

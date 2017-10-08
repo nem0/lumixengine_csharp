@@ -21,7 +21,10 @@
 #include <cstdlib>
 
 #include <mono/jit/jit.h>
+#include <mono/metadata/debug-helpers.h>
 #include <mono/metadata/metadata.h>
+#include <mono/metadata/mono-debug.h>
+
 
 namespace Lumix
 {
@@ -583,6 +586,8 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 	{
 		const char* code_path = "C:\\Program Files (x86)\\Microsoft VS Code\\Code.exe";
 		if (PlatformInterface::fileExists(code_path)) m_vs_code_path = code_path;
+		const char* code_path_64 = "C:\\Program Files\\Microsoft VS Code\\Code.exe";
+		if (PlatformInterface::fileExists(code_path_64)) m_vs_code_path = code_path_64;
 	}
 
 
@@ -766,6 +771,12 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 		}
 		else
 		{
+			if (mono_is_debugger_attached())
+			{
+				ImGui::Text("Debugger attached");
+				ImGui::SameLine();
+			}
+
 			if (ImGui::Button("Compile")) compile();
 			ImGui::SameLine();
 			if (ImGui::Button("Open VS Code")) openVSCode(nullptr);
