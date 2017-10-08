@@ -464,7 +464,7 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 				if (ImGui::Button("Edit"))
 				{
 					StaticString<MAX_PATH_LENGTH> full_path(editor.getEngine().getDiskFileDevice()->getBasePath(), "cs/", script_name, ".cs");
-					PlatformInterface::shellExecuteOpen(full_path);
+					PlatformInterface::shellExecuteOpen(full_path, nullptr);
 				}
 				ImGui::SameLine();
 				if (ImGui::Button("Remove script"))
@@ -567,6 +567,8 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 		m_watcher = FileSystemWatcher::create("cs", allocator);
 		m_watcher->getCallback().bind<StudioCSharpPlugin, &StudioCSharpPlugin::onFileChanged>(this);
 
+		findVSCode();
+
 		makeUpToDate();
 	}
 
@@ -574,6 +576,13 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 	~StudioCSharpPlugin()
 	{
 		FileSystemWatcher::destroy(m_watcher);
+	}
+
+
+	void findVSCode()
+	{
+		const char* code_path = "C:\\Program Files (x86)\\Microsoft VS Code\\Code.exe";
+		if (PlatformInterface::fileExists(code_path)) m_vs_code_path = code_path;
 	}
 
 
@@ -707,6 +716,40 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 	}
 
 
+	void openVSCode(const char* filename)
+	{
+		if(!PlatformInterface::fileExists(m_vs_code_path)) return;
+
+		WorldEditor& editor = m_app.getWorldEditor();
+		StaticString<MAX_PATH_LENGTH> root(editor.getEngine().getDiskFileDevice()->getBasePath(), "cs/");
+		StaticString<MAX_PATH_LENGTH> vs_code_project_dir(root, ".vscode/");
+		if (!PlatformInterface::dirExists(vs_code_project_dir))
+		{
+			StaticString<MAX_PATH_LENGTH> launch_json_path(vs_code_project_dir, "launch.json");
+
+			PlatformInterface::makePath(vs_code_project_dir);
+			const char* laung_json_content = 
+			"{\n"
+			"	\"version\": \"0.2.0\",\n"
+			"	\"configurations\" : [\n"
+			"		{\n"
+			"			\"name\": \"Attach to Mono\",\n"
+			"				\"request\" : \"attach\",\n"
+			"				\"type\" : \"mono\",\n"
+			"				\"address\" : \"localhost\",\n"
+			"				\"port\" : 55555\n"
+			"		}\n"
+			"	]\n"
+			"}\n";
+			m_app.makeFile(launch_json_path, laung_json_content);
+		}
+		
+		StaticString<MAX_PATH_LENGTH> file_path(root);
+		if (filename) file_path << filename;
+		PlatformInterface::shellExecuteOpen(m_vs_code_path, file_path);
+	}
+
+
 	void onWindowGUI() override
 	{
 		if (!ImGui::BeginDock("C#"))
@@ -724,6 +767,8 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 		else
 		{
 			if (ImGui::Button("Compile")) compile();
+			ImGui::SameLine();
+			if (ImGui::Button("Open VS Code")) openVSCode(nullptr);
 			ImGui::SameLine();
 			if (ImGui::Button("New script")) ImGui::OpenPopup("new_csharp_script");
 			if (ImGui::BeginPopup("new_csharp_script"))
@@ -747,8 +792,8 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 			ImGui::PushID(i);
 			if (ImGui::Button("Edit"))
 			{
-				StaticString<MAX_PATH_LENGTH> path("cs\\", name, ".cs");
-				PlatformInterface::shellExecuteOpen(path);
+				StaticString<MAX_PATH_LENGTH> filename(name, ".cs");
+				openVSCode(filename);
 			}
 			ImGui::SameLine();
 			ImGui::Text("%s", name);
@@ -791,6 +836,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 	StudioApp& m_app;
 	FileSystemWatcher* m_watcher;
 	string m_compile_log;
+	StaticString<MAX_PATH_LENGTH> m_vs_code_path;
 	char m_filter[128];
 	char m_new_script_name[128];
 	bool m_deferred_compile = false;
