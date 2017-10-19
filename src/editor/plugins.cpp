@@ -21,7 +21,10 @@
 #include <cstdlib>
 
 #include <mono/jit/jit.h>
+#include <mono/metadata/debug-helpers.h>
 #include <mono/metadata/metadata.h>
+#include <mono/metadata/mono-debug.h>
+
 
 namespace Lumix
 {
@@ -29,6 +32,304 @@ namespace Lumix
 
 static const ComponentType CSHARP_SCRIPT_TYPE = PropertyRegister::getComponentType("csharp_script");
 static const ResourceType CSHARP_SCRIPT_RESOURCE_TYPE("csharp_script");
+
+
+struct StudioCSharpPlugin : public StudioApp::IPlugin
+{
+	StudioCSharpPlugin(StudioApp& app)
+		: m_app(app)
+		, m_compile_log(app.getWorldEditor().getAllocator())
+	{
+		m_filter[0] = '\0';
+		m_new_script_name[0] = '\0';
+
+		IAllocator& allocator = app.getWorldEditor().getAllocator();
+		m_watcher = FileSystemWatcher::create("cs", allocator);
+		m_watcher->getCallback().bind<StudioCSharpPlugin, &StudioCSharpPlugin::onFileChanged>(this);
+
+		findVSCode();
+
+		makeUpToDate();
+	}
+
+
+	~StudioCSharpPlugin()
+	{
+		FileSystemWatcher::destroy(m_watcher);
+	}
+
+
+	void findVSCode()
+	{
+		const char* code_path = "C:\\Program Files (x86)\\Microsoft VS Code\\Code.exe";
+		if (PlatformInterface::fileExists(code_path)) m_vs_code_path = code_path;
+		const char* code_path_64 = "C:\\Program Files\\Microsoft VS Code\\Code.exe";
+		if (PlatformInterface::fileExists(code_path_64)) m_vs_code_path = code_path_64;
+	}
+
+
+	void update(float)
+	{
+		if (m_deferred_compile) compile();
+		if (!m_compile_process) return;
+		if (PlatformInterface::isProcessFinished(*m_compile_process))
+		{
+			if (PlatformInterface::getProcessExitCode(*m_compile_process) == 0)
+			{
+				CSharpScriptScene* scene = getScene();
+				CSharpPlugin& plugin = (CSharpPlugin&)scene->getPlugin();
+				plugin.loadAssembly();
+			}
+			else
+			{
+				char tmp[1024];
+				int tmp_size;
+				while ((tmp_size = PlatformInterface::getProcessOutput(*m_compile_process, tmp, lengthOf(tmp) - 1)) != -1)
+				{
+					tmp[tmp_size] = 0;
+					m_compile_log.cat(tmp);
+				}
+				g_log_error.log("C#") << m_compile_log;
+			}
+			PlatformInterface::destroyProcess(*m_compile_process);
+			m_compile_process = nullptr;
+		}
+		else
+		{
+			char tmp[1024];
+			int tmp_size = PlatformInterface::getProcessOutput(*m_compile_process, tmp, lengthOf(tmp) - 1);
+			if (tmp_size != -1)
+			{
+				tmp[tmp_size] = 0;
+				m_compile_log.cat(tmp);
+			}
+		}
+	}
+
+
+	void makeUpToDate()
+	{
+		IAllocator& allocator = m_app.getWorldEditor().getAllocator();
+		if (!PlatformInterface::fileExists("cs\\main.dll"))
+		{
+			compile();
+			return;
+		}
+
+		u64 dll_modified = PlatformInterface::getLastModified("cs\\main.dll");
+		PlatformInterface::FileIterator* iter = PlatformInterface::createFileIterator("cs", allocator);
+		PlatformInterface::FileInfo info;
+		while (PlatformInterface::getNextFile(iter, &info))
+		{
+			if (info.is_directory) continue;
+
+			StaticString<MAX_PATH_LENGTH> tmp("cs\\", info.filename);
+			u64 script_modified = PlatformInterface::getLastModified(tmp);
+			if (script_modified > dll_modified)
+			{
+				compile();
+				PlatformInterface::destroyFileIterator(iter);
+				return;
+			}
+		}
+		PlatformInterface::destroyFileIterator(iter);
+	}
+
+
+	void onFileChanged(const char* path)
+	{
+		if (PathUtils::hasExtension(path, "cs")) m_deferred_compile = true;
+	}
+
+
+	void createNewScript(const char* name)
+	{
+		FS::OsFile file;
+		char class_name[128];
+
+		const char* cin = name;
+		char* cout = class_name;
+		bool to_upper = true;
+		while (*cin && cout - class_name < lengthOf(class_name) - 1)
+		{
+			char c = *cin;
+			if (c >= 'a' && c <= 'z')
+			{
+				*cout = to_upper ? *cin - 'a' + 'A' : *cin;
+				to_upper = false;
+			}
+			else if (c >= 'A' && c <= 'Z')
+			{
+				*cout = *cin;
+				to_upper = false;
+			}
+			else if (c >= '0' && c <= '9')
+			{
+				*cout = *cin;
+				to_upper = true;
+			}
+			else
+			{
+				to_upper = true;
+				--cout;
+			}
+			++cout;
+			++cin;
+		}
+		*cout = '\0';
+
+		StaticString<MAX_PATH_LENGTH> path("cs/", class_name, ".cs");
+		if (PlatformInterface::fileExists(path))
+		{
+			g_log_error.log("C#") << path << "already exists";
+			return;
+		}
+		if (!file.open(path, FS::Mode::CREATE_AND_WRITE, m_app.getWorldEditor().getAllocator()))
+		{
+			g_log_error.log("C#") << "Failed to create file " << path;
+			return;
+		}
+
+		file.writeText("public class ");
+		file.writeText(class_name);
+		file.writeText(" : Lumix.Component\n{\n}\n");
+
+		file.close();
+	}
+
+
+	void openVSCode(const char* filename)
+	{
+		if (!PlatformInterface::fileExists(m_vs_code_path)) return;
+
+		WorldEditor& editor = m_app.getWorldEditor();
+		StaticString<MAX_PATH_LENGTH> root(editor.getEngine().getDiskFileDevice()->getBasePath(), "cs/");
+		StaticString<MAX_PATH_LENGTH> vs_code_project_dir(root, ".vscode/");
+		if (!PlatformInterface::dirExists(vs_code_project_dir))
+		{
+			StaticString<MAX_PATH_LENGTH> launch_json_path(vs_code_project_dir, "launch.json");
+
+			PlatformInterface::makePath(vs_code_project_dir);
+			const char* laung_json_content =
+				"{\n"
+				"	\"version\": \"0.2.0\",\n"
+				"	\"configurations\": [\n"
+				"		{\n"
+				"			\"name\": \"Attach to Lumix\",\n"
+				"			\"type\": \"mono\",\n"
+				"			\"request\": \"attach\",\n"
+				"			\"address\": \"127.0.0.1\",\n"
+				"			\"port\": 55555\n"
+				"		}\n"
+				"	]\n"
+				"}\n";
+				
+			m_app.makeFile(launch_json_path, laung_json_content);
+		}
+
+		StaticString<MAX_PATH_LENGTH> file_path(root);
+		if (filename) file_path << filename;
+		PlatformInterface::shellExecuteOpen(m_vs_code_path, file_path);
+	}
+
+
+	void onWindowGUI() override
+	{
+		if (!ImGui::BeginDock("C#"))
+		{
+			ImGui::EndDock();
+			return;
+		}
+
+		CSharpScriptScene* scene = getScene();
+		CSharpPlugin& plugin = (CSharpPlugin&)scene->getPlugin();
+		if (m_compile_process)
+		{
+			ImGui::Text("Compiling...");
+		}
+		else
+		{
+			if (mono_is_debugger_attached())
+			{
+				ImGui::Text("Debugger attached");
+				ImGui::SameLine();
+			}
+
+			if (ImGui::Button("Compile")) compile();
+			ImGui::SameLine();
+			if (ImGui::Button("Open VS Code")) openVSCode(nullptr);
+			ImGui::SameLine();
+			if (ImGui::Button("New script")) ImGui::OpenPopup("new_csharp_script");
+			if (ImGui::BeginPopup("new_csharp_script"))
+			{
+				ImGui::InputText("Name", m_new_script_name, sizeof(m_new_script_name));
+				if (ImGui::Button("Create"))
+				{
+					createNewScript(m_new_script_name);
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::EndPopup();
+			}
+		}
+
+		ImGui::FilterInput("Filter", m_filter, sizeof(m_filter));
+
+		for (int i = 0, c = plugin.getNamesCount(); i < c; ++i)
+		{
+			const char* name = plugin.getName(i);
+			if (m_filter[0] != '\0' && stristr(name, m_filter) == 0) continue;
+			ImGui::PushID(i);
+			if (ImGui::Button("Edit"))
+			{
+				StaticString<MAX_PATH_LENGTH> filename(name, ".cs");
+				openVSCode(filename);
+			}
+			ImGui::SameLine();
+			ImGui::Text("%s", name);
+			ImGui::PopID();
+		}
+
+		if (m_compile_log.length() > 0 && ImGui::CollapsingHeader("Log"))
+		{
+			ImGui::Text("%s", m_compile_log.c_str());
+		}
+
+		ImGui::EndDock();
+	}
+
+
+	const char* getName() const override { return "csharp_script"; }
+
+
+	CSharpScriptScene* getScene() const
+	{
+		WorldEditor& editor = m_app.getWorldEditor();
+		return (CSharpScriptScene*)editor.getUniverse()->getScene(crc32("csharp_script"));
+	}
+
+
+	void compile()
+	{
+		m_deferred_compile = false;
+		if (m_compile_process) return;
+
+		m_compile_log = "";
+		CSharpScriptScene* scene = getScene();
+		CSharpPlugin& plugin = (CSharpPlugin&)scene->getPlugin();
+		plugin.unloadAssembly();
+		IAllocator& allocator = m_app.getWorldEditor().getAllocator();
+		m_compile_process = PlatformInterface::createProcess("c:\\windows\\system32\\cmd.exe", "/c \"\"C:\\Program Files\\Mono\\bin\\mcs.bat\" -out:\"cs\\main.dll\" -target:library -g -unsafe -recurse:\"cs\\*.cs\"", allocator);
+	}
+
+	PlatformInterface::Process* m_compile_process = nullptr;
+	StudioApp& m_app;
+	FileSystemWatcher* m_watcher;
+	string m_compile_log;
+	StaticString<MAX_PATH_LENGTH> m_vs_code_path;
+	char m_filter[128];
+	char m_new_script_name[128];
+	bool m_deferred_compile = false;
+};
 
 
 struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
@@ -411,8 +712,9 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 	}
 
 
-	explicit PropertyGridCSharpPlugin(StudioApp& app)
-		: m_app(app)
+	explicit PropertyGridCSharpPlugin(StudioCSharpPlugin& studio_plugin)
+		: m_app(studio_plugin.m_app)
+		, m_studio_plugin(studio_plugin)
 	{
 		mono_add_internal_call("Lumix.Component::setCSharpProperty", &csharp_Component_setProperty);
 		mono_add_internal_call("Lumix.Component::entityInput", &csharp_entityInput);
@@ -463,8 +765,8 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 				scene->tryCallMethod(gc_handle, "OnInspector", this, true);
 				if (ImGui::Button("Edit"))
 				{
-					StaticString<MAX_PATH_LENGTH> full_path(editor.getEngine().getDiskFileDevice()->getBasePath(), "cs/", script_name, ".cs");
-					PlatformInterface::shellExecuteOpen(full_path);
+					StaticString<MAX_PATH_LENGTH> filename(script_name, ".cs");
+					m_studio_plugin.openVSCode(filename);
 				}
 				ImGui::SameLine();
 				if (ImGui::Button("Remove script"))
@@ -483,6 +785,7 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 	}
 
 	StudioApp& m_app;
+	StudioCSharpPlugin& m_studio_plugin;
 };
 
 
@@ -554,230 +857,6 @@ struct AddCSharpComponentPlugin LUMIX_FINAL : public StudioApp::IAddComponentPlu
 };
 
 
-struct StudioCSharpPlugin : public StudioApp::IPlugin
-{
-	StudioCSharpPlugin(StudioApp& app)
-		: m_app(app)
-	{
-		m_filter[0] = '\0';
-		m_new_script_name[0] = '\0';
-		
-		IAllocator& allocator = app.getWorldEditor().getAllocator();
-		m_watcher = FileSystemWatcher::create("cs", allocator);
-		m_watcher->getCallback().bind<StudioCSharpPlugin, &StudioCSharpPlugin::onFileChanged>(this);
-
-		makeUpToDate();
-	}
-
-
-	~StudioCSharpPlugin()
-	{
-		FileSystemWatcher::destroy(m_watcher);
-	}
-
-
-	void update(float)
-	{
-		if (m_deferred_compile) compile();
-		if (!m_compile_process) return;
-		if (PlatformInterface::isProcessFinished(*m_compile_process))
-		{
-			if (PlatformInterface::getProcessExitCode(*m_compile_process) == 0)
-			{
-				CSharpScriptScene* scene = getScene();
-				CSharpPlugin& plugin = (CSharpPlugin&)scene->getPlugin();
-				plugin.loadAssembly();
-			}
-			PlatformInterface::destroyProcess(*m_compile_process);
-			m_compile_process = nullptr;
-		}
-		else
-		{
-			char tmp[1024];
-			int tmp_size = PlatformInterface::getProcessOutput(*m_compile_process, tmp, lengthOf(tmp) - 1);
-			if (tmp_size != -1)
-			{
-				tmp[tmp_size] = 0;
-				g_log_error.log("C#") << tmp;
-			}
-		}
-	}
-
-
-	void makeUpToDate()
-	{
-		IAllocator& allocator = m_app.getWorldEditor().getAllocator();
-		if (!PlatformInterface::fileExists("cs\\main.dll"))
-		{
-			compile();
-			return;
-		}
-
-		u64 dll_modified = PlatformInterface::getLastModified("cs\\main.dll");
-		PlatformInterface::FileIterator* iter = PlatformInterface::createFileIterator("cs", allocator);
-		PlatformInterface::FileInfo info;
-		while (PlatformInterface::getNextFile(iter, &info))
-		{
-			if (info.is_directory) continue;
-			
-			StaticString<MAX_PATH_LENGTH> tmp("cs\\", info.filename);
-			u64 script_modified = PlatformInterface::getLastModified(tmp);
-			if (script_modified > dll_modified)
-			{
-				compile();
-				PlatformInterface::destroyFileIterator(iter);
-				return;
-			}
-		}
-		PlatformInterface::destroyFileIterator(iter);
-	}
-
-
-	void onFileChanged(const char* path)
-	{
-		if(PathUtils::hasExtension(path, "cs")) m_deferred_compile = true;
-	}
-
-
-	void createNewScript(const char* name)
-	{
-		FS::OsFile file;
-		char class_name[128];
-
-		const char* cin = name;
-		char* cout = class_name;
-		bool to_upper = true;
-		while (*cin && cout - class_name < lengthOf(class_name) - 1)
-		{
-			char c = *cin;
-			if (c >= 'a' && c <= 'z')
-			{
-				*cout = to_upper ? *cin - 'a' + 'A' : *cin;
-				to_upper = false;
-			}
-			else if (c >= 'A' && c <= 'Z')
-			{
-				*cout = *cin;
-				to_upper = false;
-			}
-			else if (c >= '0' && c <= '9')
-			{
-				*cout = *cin;
-				to_upper = true;
-			}
-			else
-			{
-				to_upper = true;
-				--cout;
-			}
-			++cout;
-			++cin;
-		}
-		*cout = '\0';
-
-		StaticString<MAX_PATH_LENGTH> path("cs/", class_name, ".cs");
-		if (PlatformInterface::fileExists(path))
-		{
-			g_log_error.log("C#") << path << "already exists";
-			return;
-		}
-		if (!file.open(path, FS::Mode::CREATE_AND_WRITE, m_app.getWorldEditor().getAllocator()))
-		{
-			g_log_error.log("C#") << "Failed to create file " << path;
-			return;
-		}
-
-		file.writeText("public class ");
-		file.writeText(class_name);
-		file.writeText(" : Lumix.Component\n{\n}\n");
-
-		file.close();
-	}
-
-
-	void onWindowGUI() override
-	{
-		if (!ImGui::BeginDock("C#"))
-		{
-			ImGui::EndDock();
-			return;
-		}
-
-		CSharpScriptScene* scene = getScene();
-		CSharpPlugin& plugin = (CSharpPlugin&)scene->getPlugin();
-		if (m_compile_process)
-		{
-			ImGui::Text("Compiling...");
-		}
-		else
-		{
-			if (ImGui::Button("Compile")) compile();
-			ImGui::SameLine();
-			if (ImGui::Button("New script")) ImGui::OpenPopup("new_csharp_script");
-			if (ImGui::BeginPopup("new_csharp_script"))
-			{
-				ImGui::InputText("Name", m_new_script_name, sizeof(m_new_script_name));
-				if (ImGui::Button("Create"))
-				{
-					createNewScript(m_new_script_name);
-					ImGui::CloseCurrentPopup();
-				}
-				ImGui::EndPopup();
-			}
-		}
-
-		ImGui::FilterInput("Filter", m_filter, sizeof(m_filter));
-
-		for (int i = 0, c = plugin.getNamesCount(); i < c; ++i)
-		{
-			const char* name = plugin.getName(i);
-			if (m_filter[0] != '\0' && stristr(name, m_filter) == 0) continue;
-			ImGui::PushID(i);
-			if (ImGui::Button("Edit"))
-			{
-				StaticString<MAX_PATH_LENGTH> path("cs\\", name, ".cs");
-				PlatformInterface::shellExecuteOpen(path);
-			}
-			ImGui::SameLine();
-			ImGui::Text("%s", name);
-			ImGui::PopID();
-		}
-
-		ImGui::EndDock();
-	}
-
-
-	const char* getName() const override { return "csharp_script"; }
-
-
-	CSharpScriptScene* getScene() const
-	{
-		WorldEditor& editor = m_app.getWorldEditor();
-		return (CSharpScriptScene*)editor.getUniverse()->getScene(crc32("csharp_script"));
-	}
-
-
-	void compile()
-	{
-		m_deferred_compile = false;
-		if (m_compile_process) return;
-
-		CSharpScriptScene* scene = getScene();
-		CSharpPlugin& plugin = (CSharpPlugin&)scene->getPlugin();
-		plugin.unloadAssembly();
-		IAllocator& allocator = m_app.getWorldEditor().getAllocator();
-		m_compile_process = PlatformInterface::createProcess("c:\\windows\\system32\\cmd.exe", "/c \"\"C:\\Program Files\\Mono\\bin\\mcs.bat\" -out:\"cs\\main.dll\" -target:library -unsafe -recurse:\"cs\\*.cs\"", allocator);
-	}
-
-	PlatformInterface::Process* m_compile_process = nullptr;
-	StudioApp& m_app;
-	FileSystemWatcher* m_watcher;
-	char m_filter[128];
-	char m_new_script_name[128];
-	bool m_deferred_compile = false;
-};
-
-
 namespace {
 
 
@@ -816,7 +895,7 @@ LUMIX_STUDIO_ENTRY(lumixengine_csharp)
 	editor.registerEditorCommandCreator("remove_csharp_script", createRemoveScriptCommand);
 	editor.registerEditorCommandCreator("set_csharp_script_property", createSetPropertyCommand);
 
-	auto* pg_plugin = LUMIX_NEW(editor.getAllocator(), PropertyGridCSharpPlugin)(app);
+	auto* pg_plugin = LUMIX_NEW(editor.getAllocator(), PropertyGridCSharpPlugin)(*plugin);
 	app.getPropertyGrid().addPlugin(*pg_plugin);
 }
 

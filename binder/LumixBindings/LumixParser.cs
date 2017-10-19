@@ -98,7 +98,7 @@ namespace LumixBindings
             }
             if (!File.Exists(Bindings.CppSharpPath))
             {
-                Console.WriteLine("Not able to find csharp.cppp");
+                Console.WriteLine("Not able to find " + Bindings.CppSharpPath);
                 return;
             }
 

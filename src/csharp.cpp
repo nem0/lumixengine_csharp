@@ -29,7 +29,9 @@
 #include <mono/metadata/assembly.h>
 #include <mono/metadata/debug-helpers.h>
 #include <mono/metadata/mono-config.h>
+#include <mono/metadata/mono-debug.h>
 #include <mono/metadata/tokentype.h>
+#include <mono/utils/mono-logger.h>
 
 
 #pragma comment(lib, "mono-2.0-sgen.lib")
@@ -402,9 +404,6 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 		createImGuiAPI();
 		createEngineAPI();
-		/*createRendererAPI();
-		createPhysicsAPI();
-		createAnimationAPI();*/
 
 		m_system.m_on_assembly_load.bind<CSharpScriptSceneImpl, &CSharpScriptSceneImpl::onAssemblyLoad>(this);
 		m_system.m_on_assembly_unload.bind<CSharpScriptSceneImpl, &CSharpScriptSceneImpl::onAssemblyUnload>(this);
@@ -538,113 +537,32 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	}
 
 
-	#define CSHARP_PROPERTY(Type, Scene, Class, Property) \
-		do { \
-			auto f = &csharp_getProperty<Type, Scene, &Scene::get##Class##Property>; \
-			mono_add_internal_call("Lumix." ## #Class ## "::get" ## #Property, f); \
-			auto f2 = &csharp_setProperty<Type, Scene, &Scene::set##Class##Property>; \
-			mono_add_internal_call("Lumix." ## #Class ## "::set" ## #Property, f2); \
-		} while (false)
-
-	#define CSHARP_SUBOBJECT(Scene, Class, Subclass) \
-		do { \
-			auto f = csharp_getSubobjectCount<Scene, &Scene::get##Subclass##Count>; \
-			mono_add_internal_call("Lumix." ## #Class ## "::get" ## #Subclass ##  "Count", f); \
-			auto f2 = csharp_addSubobject<Scene, &Scene::add##Subclass##>; \
-			mono_add_internal_call("Lumix." ## #Class ## "::add" ## #Subclass, f2); \
-			auto f3 = csharp_removeSubobject<Scene, &Scene::remove##Subclass##>; \
-			mono_add_internal_call("Lumix." ## #Class ## "::remove" ## #Subclass, f3); \
-		} while(false)
-
-	#define CSHARP_SUBPROPERTY(Type, Scene, Class, Subclass, Property) \
-		do { \
-			auto f = &csharp_getSubproperty<Type, Scene, &Scene::get##Subclass##Property>; \
-			mono_add_internal_call("Lumix." ## #Class ## "::get" ## #Subclass ## #Property, f); \
-			auto f2 = &csharp_setSubproperty<Type, Scene, &Scene::set##Subclass##Property>; \
-			mono_add_internal_call("Lumix." ## #Class ## "::set" ## #Subclass ## #Property, f2); \
-		} while (false)
-
-	void createRendererAPI()
+	void onContact(const PhysicsScene::ContactData& data)
 	{
-		CSHARP_PROPERTY(Entity, RenderScene, BoneAttachment, Parent);
-		CSHARP_PROPERTY(int, RenderScene, BoneAttachment, Bone);
-		CSHARP_PROPERTY(Vec3, RenderScene, BoneAttachment, Position);
-		CSHARP_PROPERTY(Vec3, RenderScene, BoneAttachment, Rotation);
+		MonoObject* e1_obj = mono_gchandle_get_target(getEntityGCHandle(data.e1));
+		MonoObject* e2_obj = mono_gchandle_get_target(getEntityGCHandle(data.e2));
+		auto call = [this, &data](const ScriptComponent* cmp, MonoObject* entity) {
+			for (const Script& scr : cmp->scripts)
+			{
+				tryCallMethodInternal(scr.gc_handle, "OnContact", entity, data.position);
+			}
+		};
 
-		CSHARP_PROPERTY(float, RenderScene, Camera, FOV);
-		CSHARP_PROPERTY(float, RenderScene, Camera, NearPlane);
-		CSHARP_PROPERTY(float, RenderScene, Camera, FarPlane);
-		CSHARP_PROPERTY(float, RenderScene, Camera, OrthoSize);
-		CSHARP_PROPERTY(const char*, RenderScene, Camera, Slot);
-
-		CSHARP_PROPERTY(Vec3, RenderScene, Decal, Scale);
-		CSHARP_PROPERTY(Path, RenderScene, Decal, MaterialPath);
-
-		CSHARP_PROPERTY(Path, RenderScene, ModelInstance, Path);
-
-		CSHARP_PROPERTY(float, RenderScene, Terrain, XZScale);
-		CSHARP_PROPERTY(float, RenderScene, Terrain, YScale);
-		CSHARP_PROPERTY(Path, RenderScene, Terrain, MaterialPath);
-
-		CSHARP_SUBOBJECT(RenderScene, Terrain, Grass);
-		CSHARP_SUBPROPERTY(int, RenderScene, Terrain, Grass, Density);
-
-		CSHARP_PROPERTY(Vec3, RenderScene, GlobalLight, Color);
-		CSHARP_PROPERTY(float, RenderScene, GlobalLight, Intensity);
-		CSHARP_PROPERTY(float, RenderScene, GlobalLight, IndirectIntensity);
-
-		CSHARP_PROPERTY(float, RenderScene, PointLight, Intensity);
-		CSHARP_PROPERTY(Vec3, RenderScene, PointLight, Color);
-		CSHARP_PROPERTY(float, RenderScene, PointLight, SpecularIntensity);
-		CSHARP_PROPERTY(Vec3, RenderScene, PointLight, SpecularColor);
-
-		CSHARP_PROPERTY(float, RenderScene, Fog, Bottom);
-		CSHARP_PROPERTY(Vec3, RenderScene, Fog, Color);
-		CSHARP_PROPERTY(float, RenderScene, Fog, Density);
-		CSHARP_PROPERTY(float, RenderScene, Fog, Height);
-
-		CSHARP_PROPERTY(Vec3, RenderScene, ParticleEmitter, Acceleration);
-		CSHARP_PROPERTY(Path, RenderScene, ParticleEmitter, MaterialPath);
-		CSHARP_PROPERTY(bool, RenderScene, ParticleEmitter, Autoemit);
-
-		CSHARP_PROPERTY(float, RenderScene, ParticleEmitterPlane, Bounce);
-		
-		CSHARP_PROPERTY(float, RenderScene, ParticleEmitterShape, Radius);
+		int idx = m_scripts.find(data.e1);
+		if (idx >= 0) call(m_scripts.at(idx), e2_obj);
+		idx = m_scripts.find(data.e2);
+		if (idx >= 0) call(m_scripts.at(idx), e1_obj);
 	}
-
-
-	void createPhysicsAPI()
-	{
-		CSHARP_PROPERTY(float, PhysicsScene, Capsule, Radius);
-		CSHARP_PROPERTY(float, PhysicsScene, Capsule, Height);
-
-		CSHARP_PROPERTY(int, PhysicsScene, Controller, Layer);
-
-		CSHARP_PROPERTY(float, PhysicsScene, Heightmap, XZScale);
-		CSHARP_PROPERTY(float, PhysicsScene, Heightmap, YScale);
-
-		CSHARP_PROPERTY(float, PhysicsScene, Sphere, Radius);
-	}
-
-
-	void createAnimationAPI()
-	{
-		CSHARP_PROPERTY(Entity, AnimationScene, SharedController, Parent);
-
-		CSHARP_PROPERTY(float, AnimationScene, Animable, Time);
-
-		mono_add_internal_call("Lumix.Animable::setSource", csharp_Animable_setSource);
-		mono_add_internal_call("Lumix.Animable::getSource", csharp_Animable_getSource);
-	}
-
-
-	#undef CSHARP_PROPERTY
-	#undef CSHARP_SUBPROPERTY
-	#undef CSHARP_SUBOBJECT
 
 
 	void startGame() override
 	{
+		PhysicsScene* phy_scene = (PhysicsScene*)m_universe.getScene(crc32("physics"));
+		if (phy_scene)
+		{
+			phy_scene->onContact().bind<CSharpScriptSceneImpl, &CSharpScriptSceneImpl::onContact>(this);;
+		}
+
 		for (ScriptComponent* cmp : m_scripts)
 		{
 			Array<Script>& scripts = cmp->scripts;
@@ -657,7 +575,15 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	}
 
 
-	void stopGame() override { m_is_game_running = false; }
+	void stopGame() override 
+	{
+		m_is_game_running = false; 
+		PhysicsScene* phy_scene = (PhysicsScene*)m_universe.getScene(crc32("physics"));
+		if (phy_scene)
+		{
+			phy_scene->onContact().unbind<CSharpScriptSceneImpl, &CSharpScriptSceneImpl::onContact>(this);;
+		}
+	}
 
 
 	void getClassName(u32 name_hash, char(&out_name)[256]) const
@@ -739,6 +665,25 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 						serializer.write("value", mono_string_to_utf8(str));
 						break;
 					}
+					case MONO_TYPE_CLASS:
+					{
+						MonoType* type = mono_field_get_type(field);
+						MonoClass* mono_class = mono_type_get_class(type);
+						const char* class_name = mono_class_get_name(mono_class);
+						serializer.write("class", class_name);
+						if (equalStrings(class_name, "Entity"))
+						{
+							MonoObject* field_obj = mono_field_get_value_object(mono_domain_get(), field, obj);
+							Entity entity = INVALID_ENTITY;
+							MonoClassField* entity_id_field = mono_class_get_field_from_name(mono_class, "entity_Id_");
+							if (entity_id_field && field_obj)
+							{
+								mono_field_get_value(field_obj, entity_id_field, &entity.index);
+							}
+							serializer.write("entity", entity.index);
+						}
+						break;
+					}
 					default: ASSERT(false);
 				}
 			}
@@ -815,7 +760,27 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 						}
 						break;
 					}
+					case MONO_TYPE_CLASS:
+					{
+						char saved_class_name[64];
+						serializer.read(saved_class_name, lengthOf(saved_class_name));
+						if (equalStrings(saved_class_name, "Entity"))
+						{
+							Entity entity;
+							serializer.read(&entity.index);
 
+							MonoType* type = mono_field_get_type(field);
+							MonoClass* mono_class = mono_type_get_class(type);
+							const char* script_class_name = mono_class_get_name(mono_class);
+							if (is_matching && equalStrings(script_class_name, "Entity"))
+							{
+								u32 handle = getEntityGCHandle(entity);
+								MonoObject* entity_obj = mono_gchandle_get_target(handle);
+								mono_field_set_value(obj, field, entity_obj);
+							}
+						}
+						break;
+					}
 					default: ASSERT(false);
 				}
 			}
@@ -1105,8 +1070,8 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 							{
 								MonoObject* field_obj = mono_field_get_value_object(mono_domain_get(), field, obj);
 								Entity entity = INVALID_ENTITY;
-								MonoClassField* entity_id_field = mono_class_get_field_from_name(mono_class, "_entity_id");
-								if (field_obj)
+								MonoClassField* entity_id_field = mono_class_get_field_from_name(mono_class, "entity_Id_");
+								if (entity_id_field && field_obj)
 								{
 									mono_field_get_value(field_obj, entity_id_field, &entity.index);
 								}
@@ -1299,18 +1264,30 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 
 	template <typename T>
-	bool tryCallMethodInternal(u32 gc_handle, const char* method_name, T arg0)
+	void* toCSharpArg(T* arg)
+	{
+		return (void*)arg;
+	}
+
+	template <>
+	void* toCSharpArg<MonoObject*>(MonoObject** arg)
+	{
+		return *arg;
+	}
+
+	template <typename... T>
+	bool tryCallMethodInternal(u32 gc_handle, const char* method_name, T... args)
 	{
 		MonoObject* obj = mono_gchandle_get_target(gc_handle);
 		ASSERT(obj);
 		MonoClass* mono_class = mono_object_get_class(obj);
 		ASSERT(mono_class);
-		MonoMethod* method = mono_class_get_method_from_name(mono_class, method_name, 1);
+		MonoMethod* method = mono_class_get_method_from_name(mono_class, method_name, sizeof...(args));
 		if (!method) return false;
 
 		MonoObject* exc = nullptr;
-		void* args[] = { &arg0 };
-		mono_runtime_invoke(method, obj, args, &exc);
+		void* mono_args[] = { toCSharpArg(&args)... };
+		mono_runtime_invoke(method, obj, mono_args, &exc);
 		handleException(exc);
 
 		return exc == nullptr;
@@ -1411,6 +1388,17 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 };
 
 
+static void initDebug()
+{
+	mono_debug_init(MONO_DEBUG_FORMAT_MONO);
+	const char *options[] = {
+		"--soft-breakpoints",
+		"--debugger-agent=transport=dt_socket,address=127.0.0.1:55555,embedding=1,server=y,suspend=n"
+	};
+	mono_jit_parse_options(2, (char **)options);
+}
+
+
 CSharpPluginImpl::CSharpPluginImpl(Engine& engine)
 	: m_engine(engine)
 	, m_allocator(engine.getAllocator())
@@ -1418,7 +1406,21 @@ CSharpPluginImpl::CSharpPluginImpl(Engine& engine)
 	, m_on_assembly_load(m_allocator)
 	, m_on_assembly_unload(m_allocator)
 {
+	auto printer = [](const char* msg, mono_bool is_stdout) {
+		g_log_error.log("Mono") << msg;
+	};
+
+	auto logger = [](const char *log_domain, const char *log_level, const char *message, mono_bool fatal, void *user_data)
+	{
+		g_log_error.log("Mono") << message;
+	};
+
+	mono_trace_set_print_handler(printer);
+	mono_trace_set_printerr_handler(printer);
+	mono_trace_set_log_handler(logger, nullptr);
+
 	mono_set_dirs("C:\\Program Files\\Mono\\lib", "C:\\Program Files\\Mono\\etc");
+	initDebug();
 	mono_config_parse(nullptr);
 	m_domain = mono_jit_init("lumix");
 	loadAssembly();
@@ -1545,171 +1547,3 @@ LUMIX_PLUGIN_ENTRY(lumixengine_csharp)
 
 
 } // namespace Lumix
-
-
-#define CSHARP_RESOURCE(ResourceClass, resource_type)
-#define CSHARP_FUNCTION(NativeClass,NativeFunction,staticness,ManagedClass,type);
-//define getter only properties
-#define CSHARP_FUNCTION_PROPERTY(NativeClass,NativeFunction,staticness,ManagedClass,type,PropertyName);
-//animation
-CSHARP_FUNCTION(AnimationScene, getControllerInputIndex, nostatic, AnimController, component);
-CSHARP_FUNCTION(AnimationScene, setControllerInput, nostatic, AnimController, component);
-
-//navigation
-CSHARP_FUNCTION(NavigationScene, cancelNavigation, nostatic, NavmeshAgent, component);
-CSHARP_FUNCTION(NavigationScene, navigate, nostatic, NavmeshAgent, component);
-CSHARP_FUNCTION_PROPERTY(NavigationScene, getAgentSpeed, nostatic, NavmeshAgent, component,Speed);
-CSHARP_FUNCTION(NavigationScene, isNavmeshReady, nostatic, NavigationScene, class);
-
-//entity
-CSHARP_FUNCTION_PROPERTY(Universe, getFirstEntity, nostatic, Entity, partial,FirstEntity);
-CSHARP_FUNCTION_PROPERTY(Universe, getNextEntity, nostatic, Entity, partial,NextEntity);
-CSHARP_FUNCTION(Universe, getEntityName, nostatic, Entity, partial);
-CSHARP_FUNCTION(Universe, setEntityName, nostatic, Entity, partial);
-CSHARP_FUNCTION_PROPERTY(Universe, isDescendant, nostatic, Entity, partial,IsDescent);
-CSHARP_FUNCTION(Universe, getParent, nostatic, Entity, partial);
-CSHARP_FUNCTION_PROPERTY(Universe, getFirstChild, nostatic, Entity, partial,FirstChild);
-CSHARP_FUNCTION_PROPERTY(Universe, getNextSibling, nostatic, Entity, partial,NextSibling);
-CSHARP_FUNCTION(Universe, getLocalTransform, nostatic, Entity, partial);
-CSHARP_FUNCTION_PROPERTY(Universe, getLocalScale, nostatic, Entity, partial,LocalScale);
-CSHARP_FUNCTION(Universe, setParent, nostatic, Entity, partial);
-CSHARP_FUNCTION(Universe, setLocalPosition, nostatic, Entity, partial);
-CSHARP_FUNCTION(Universe, setLocalRotation, nostatic, Entity, partial);
-CSHARP_FUNCTION(Universe, setLocalTransform, nostatic, Entity, partial);
-CSHARP_FUNCTION(Universe, computeLocalTransform, nostatic, Entity, partial);
-CSHARP_FUNCTION(Universe, setMatrix, nostatic, Entity, partial);
-CSHARP_FUNCTION_PROPERTY(Universe, getPositionAndRotation, nostatic, Entity, partial,PositionAndRoatation);
-CSHARP_FUNCTION(Universe, getMatrix, nostatic, Entity, partial);
-CSHARP_FUNCTION(Universe, setTransform, nostatic, Entity, partial);
-CSHARP_FUNCTION(Universe, setTransformKeepChildren, nostatic, Entity, partial);
-CSHARP_FUNCTION(Universe, getTransform, nostatic, Entity, partial);
-CSHARP_FUNCTION(Universe, setRotation, nostatic, Entity, partial);
-CSHARP_FUNCTION(Universe, setPosition, nostatic, Entity, partial);
-CSHARP_FUNCTION(Universe, setScale, nostatic, Entity, partial);
-CSHARP_FUNCTION(Universe, getScale, nostatic, Entity, partial);
-CSHARP_FUNCTION(Universe, getPosition, nostatic, Entity, partial);
-CSHARP_FUNCTION(Universe, getRotation, nostatic, Entity, partial);
-CSHARP_FUNCTION(Universe, getName, nostatic, Entity, partial);
-CSHARP_FUNCTION(Universe, setName, nostatic, Entity, partial);
-CSHARP_FUNCTION(Universe, getScene, nostatic, Entity, partial);
-
-//universe
-CSHARP_FUNCTION(Universe, getEntityByName, nostatic, Universe, partial);
-CSHARP_FUNCTION(Universe, instantiatePrefab, nostatic, Universe, partial);
-
-//audio
-CSHARP_FUNCTION(AudioScene, setEcho, nostatic, AudioScene, class);
-CSHARP_FUNCTION(AudioScene, play, nostatic, AudioScene, class);
-CSHARP_FUNCTION(AudioScene, stop, nostatic, AudioScene, class);
-CSHARP_FUNCTION(AudioScene, setVolume, nostatic, AudioScene, class);
-
-CSHARP_FUNCTION(InputSystem, isMouseDown, static, Input, partial);
-CSHARP_FUNCTION(InputSystem, getActionValue, static, Input, partial);
-CSHARP_FUNCTION_PROPERTY(InputSystem, getMouseXMove, static, Input, partial,MouseXMove);
-CSHARP_FUNCTION_PROPERTY(InputSystem, getMouseYMove, static, Input, partial,MouseYMove);
-CSHARP_FUNCTION_PROPERTY(InputSystem, getMousePos, static, Input, partial,MousePos);
-CSHARP_FUNCTION(InputSystem, addAction, static, Input, partial);
-
-CSHARP_FUNCTION(PhysicsScene, raycast, nostatic, PhysicsScene, class);
-CSHARP_FUNCTION(PhysicsScene, raycastEx, nostatic, PhysicsScene, class);
-CSHARP_FUNCTION(PhysicsScene, getCollisionLayerName, nostatic, PhysicsScene, class);
-CSHARP_FUNCTION(PhysicsScene, setCollisionLayerName, nostatic, PhysicsScene, class);
-CSHARP_FUNCTION(PhysicsScene, canLayersCollide, nostatic, PhysicsScene, class);
-CSHARP_FUNCTION(PhysicsScene, setLayersCanCollide, nostatic, PhysicsScene, class);
-CSHARP_FUNCTION_PROPERTY(PhysicsScene, getCollisionsLayersCount, nostatic, PhysicsScene, class, CollisionsLayersCount);
-CSHARP_FUNCTION(PhysicsScene, addCollisionLayer, nostatic, PhysicsScene, class);
-CSHARP_FUNCTION(PhysicsScene, removeCollisionLayer, nostatic, PhysicsScene, class);
-//physical controller
-CSHARP_FUNCTION(PhysicsScene, moveController, nostatic, PhysicalController, component);
-
-//mesh rigid actor
-
-CSHARP_FUNCTION(Renderer, makeScreenshot, static, Renderer, class);
-CSHARP_FUNCTION_PROPERTY(Renderer, isOpenGL, static, Renderer, class,IsOpenGL);
-CSHARP_FUNCTION_PROPERTY(Renderer, getLayersCount, static, Renderer, class,LayersCount);
-CSHARP_FUNCTION(Renderer, getLayer, static, Renderer, class);
-CSHARP_FUNCTION(Renderer, getLayerName, static, Renderer, class);
-CSHARP_FUNCTION(RenderScene, addDebugTriangle, nostatic, RenderScene, class);
-CSHARP_FUNCTION(RenderScene, addDebugPoint, nostatic, RenderScene, class);
-CSHARP_FUNCTION(RenderScene, addDebugCone, nostatic, RenderScene, class);
-CSHARP_FUNCTION(RenderScene, addDebugLine, nostatic, RenderScene, class);
-CSHARP_FUNCTION(RenderScene, addDebugCross, nostatic, RenderScene, class);
-CSHARP_FUNCTION(RenderScene, addDebugCube, nostatic, RenderScene, class);
-CSHARP_FUNCTION(RenderScene, addDebugCubeSolid, nostatic, RenderScene, class);
-CSHARP_FUNCTION(RenderScene, addDebugCircle, nostatic, RenderScene, class);
-CSHARP_FUNCTION(RenderScene, addDebugSphere, nostatic, RenderScene, class);
-CSHARP_FUNCTION(RenderScene, addDebugFrustum, nostatic, RenderScene, class);
-CSHARP_FUNCTION(RenderScene, addDebugCapsule, nostatic, RenderScene, class);
-CSHARP_FUNCTION(RenderScene, addDebugCylinder, nostatic, RenderScene, class);
-
-CSHARP_FUNCTION_PROPERTY(AnimationScene, getControllerEntity, nostatic, AnimController, component,ControllerEntity);
-
-//engine
-CSHARP_FUNCTION(Engine, getResourceManager, nostatic, Engine, partial);
-//ResourceManager
-CSHARP_FUNCTION(ResourceManager, get, nostatic, ResourceManager, class);
-//prefab
-CSHARP_FUNCTION(PrefabResource, unload, nostatic, PrefabResource, class);
-//ResourceManagerBase
-CSHARP_FUNCTION(ResourceManagerBase, enableUnload, nostatic, ResourceManagerBase, class);
-CSHARP_FUNCTION(ResourceManagerBase, load, nostatic, ResourceManagerBase, class);
-CSHARP_FUNCTION(ResourceManagerBase, removeUnreferenced, nostatic, ResourceManagerBase, class);
-CSHARP_FUNCTION(ResourceManagerBase, unload, nostatic, ResourceManagerBase, class);
-CSHARP_FUNCTION(ResourceManagerBase, reload, nostatic, ResourceManagerBase, class);
-
-//resource
-CSHARP_FUNCTION_PROPERTY(Resource, getState, nostatic, Resource, partial,CurrentState);
-CSHARP_FUNCTION_PROPERTY(Resource, isEmpty, nostatic, Resource, partial,IsEmpty);
-CSHARP_FUNCTION_PROPERTY(Resource, isReady, nostatic, Resource, partial,IsReady);
-CSHARP_FUNCTION_PROPERTY(Resource, isFailure, nostatic, Resource, partial,IsFailure);
-CSHARP_FUNCTION_PROPERTY(Resource, getRefCount, nostatic, Resource, partial,RefCount);
-CSHARP_FUNCTION_PROPERTY(Resource, size, nostatic, Resource, partial,Size);
-CSHARP_FUNCTION_PROPERTY(Resource, getPath, nostatic, Resource, partial,Path);
-CSHARP_FUNCTION_PROPERTY(Resource, getResourceManager, nostatic, Resource, partial,ResourceManager);
-
-//RigidActor
-CSHARP_FUNCTION(PhysicsScene, applyForceToActor, nostatic, RigidActor, component);
-CSHARP_FUNCTION_PROPERTY(PhysicsScene, getActorSpeed, nostatic, RigidActor, component, ActorSpeed);
-CSHARP_FUNCTION(PhysicsScene, putToSleep, nostatic, RigidActor, component);
-//CSHARP_FUNCTION(PhysicsScene, isTrigger, nostatic, RigidActor, component);
-//CSHARP_FUNCTION(PhysicsScene, setIsTrigger, nostatic, RigidActor, component);
-//CSHARP_FUNCTION(PhysicsScene, getDynamicType, nostatic, RigidActor, component);
-//CSHARP_FUNCTION(PhysicsScene, setDynamicType, nostatic, RigidActor, component);
-
-//sphere rigid actor
-//CSHARP_FUNCTION(PhysicsScene, getSphereRadius, nostatic, SphereRigidActor, component);
-//CSHARP_FUNCTION(PhysicsScene, setSphereRadius, nostatic, SphereRigidActor, component);
-/*
-CSHARP_FUNCTION(AnimationScene, getAnimableAnimation, nostatic, AnimationScene, component);
-CSHARP_FUNCTION(AnimationScene, getAnimation, nostatic, AnimationScene, component);
-CSHARP_FUNCTION(AnimationScene, setAnimation, nostatic, AnimationScene, component);
-CSHARP_FUNCTION(AnimationScene, getAnimableTime, nostatic, AnimationScene, component);
-CSHARP_FUNCTION(AnimationScene, setAnimableTime, nostatic, AnimationScene, component);
-CSHARP_FUNCTION(AnimationScene, getAnimableTimeScale, nostatic, AnimationScene, component);
-CSHARP_FUNCTION(AnimationScene, setAnimableTimeScale, nostatic, AnimationScene, component);
-CSHARP_FUNCTION(AnimationScene, getAnimableStartTime, nostatic, AnimationScene, component);
-CSHARP_FUNCTION(AnimationScene, setAnimableStartTime, nostatic, AnimationScene, component);
-CSHARP_FUNCTION(AnimationScene, getControllerInput, nostatic, AnimationScene, component);
-CSHARP_FUNCTION(AnimationScene, setControllerInput, nostatic, AnimationScene, component);
-CSHARP_FUNCTION(AnimationScene, getControllerRootMotion, nostatic, AnimationScene, component);
-CSHARP_FUNCTION(AnimationScene, setControllerSource, nostatic, AnimationScene, component);
-CSHARP_FUNCTION(AnimationScene, getControllerSource, nostatic, AnimationScene, component);
-CSHARP_FUNCTION(AnimationScene, getControllerRoot, nostatic, AnimationScene, component);
-CSHARP_FUNCTION(AnimationScene, getControllerInputIndex, nostatic, AnimationScene, component);
-CSHARP_FUNCTION(AnimationScene, getSharedControllerParent, nostatic, AnimationScene, component);
-CSHARP_FUNCTION(AnimationScene, setSharedControllerParent, nostatic, AnimationScene, component);
-CSHARP_FUNCTION(AnimationScene, applyControllerSet, nostatic, AnimationScene, component);
-CSHARP_FUNCTION(AnimationScene, setControllerDefaultSet, nostatic, AnimationScene, component);
-CSHARP_FUNCTION(AnimationScene, getControllerDefaultSet, nostatic, AnimationScene, component);
-CSHARP_FUNCTION(AnimationScene, getControllerResource, nostatic, AnimationScene, component);
-*/
-
-CSHARP_RESOURCE(Animation, "animation");
-CSHARP_RESOURCE(Clip, "clip");
-CSHARP_RESOURCE(ControllerResource, "anim_controller");
-CSHARP_RESOURCE(Material, "materia");
-CSHARP_RESOURCE(Model, "model");
-CSHARP_RESOURCE(PhysicsGeometry, "physics");
-CSHARP_RESOURCE(PrefabResource, "prefab");
-CSHARP_RESOURCE(Shader, "shader");
-CSHARP_RESOURCE(Texture, "texture");

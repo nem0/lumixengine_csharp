@@ -101,6 +101,7 @@ namespace Lumix
 					string s_val = (string)val;
 					byte[] str_bytes = System.Text.Encoding.ASCII.GetBytes(s_val);
 					str_bytes.CopyTo(s_imgui_text_buffer, 0);
+					s_imgui_text_buffer[str_bytes.Length] = 0;
 					if (ImGui.InputText(f.Name, s_imgui_text_buffer, 0, IntPtr.Zero, IntPtr.Zero))
 					{
 						string new_val = System.Text.Encoding.ASCII.GetString(s_imgui_text_buffer);

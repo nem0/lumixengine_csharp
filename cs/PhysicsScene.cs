@@ -55,6 +55,7 @@ namespace Lumix
 			MESH,
 			CAPSULE,
 			SPHERE,
+			RIGID,
 		}
 
 		public enum BoneOrientation

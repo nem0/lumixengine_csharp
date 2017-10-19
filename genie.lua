@@ -6,6 +6,7 @@ project "lumixengine_csharp"
 	libType()
 	files { 
 		"src/**.c",
+		"src/api.txt",
 		"src/**.cpp",
 		"src/**.h",
 		"genie.lua"
@@ -15,18 +16,6 @@ project "lumixengine_csharp"
 	defines { "BUILDING_CSHARP" }
 	links { "engine" }
 	useLua()
-	defaultConfigurations()
-
-project "lumixengine_csharp_binder"
-	kind "ConsoleApp"
-
-	files {
-			"binder/**.cpp",
-			"genie.lua"
-	}
-
-	defines { "_CRT_SECURE_NO_WARNINGS" }
-	
 	defaultConfigurations()
 	
 table.insert(build_app_callbacks, linkMono)

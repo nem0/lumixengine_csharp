@@ -329,6 +329,27 @@ mono_add_internal_call("Lumix.PhysicalController::setControllerLayer", fPhysicsS
 }
 {
 auto fPhysicsScene_getDynamicType = &csharp_getProperty<Lumix::PhysicsScene::DynamicType, PhysicsScene, &PhysicsScene::getDynamicType>;
+mono_add_internal_call("Lumix.RigidActor::getDynamicType", fPhysicsScene_getDynamicType);
+auto fPhysicsScene_setDynamicType = &csharp_setProperty<Lumix::PhysicsScene::DynamicType, PhysicsScene, &PhysicsScene::setDynamicType>;
+mono_add_internal_call("Lumix.RigidActor::setDynamicType", fPhysicsScene_setDynamicType);
+
+}
+{
+auto fPhysicsScene_getIsTrigger = &csharp_getProperty<bool, PhysicsScene, &PhysicsScene::getIsTrigger>;
+mono_add_internal_call("Lumix.RigidActor::getIsTrigger", fPhysicsScene_getIsTrigger);
+auto fPhysicsScene_setIsTrigger = &csharp_setProperty<bool, PhysicsScene, &PhysicsScene::setIsTrigger>;
+mono_add_internal_call("Lumix.RigidActor::setIsTrigger", fPhysicsScene_setIsTrigger);
+
+}
+{
+auto fPhysicsScene_getActorLayer = &csharp_getProperty<int, PhysicsScene, &PhysicsScene::getActorLayer>;
+mono_add_internal_call("Lumix.RigidActor::getActorLayer", fPhysicsScene_getActorLayer);
+auto fPhysicsScene_setActorLayer = &csharp_setProperty<int, PhysicsScene, &PhysicsScene::setActorLayer>;
+mono_add_internal_call("Lumix.RigidActor::setActorLayer", fPhysicsScene_setActorLayer);
+
+}
+{
+auto fPhysicsScene_getDynamicType = &csharp_getProperty<Lumix::PhysicsScene::DynamicType, PhysicsScene, &PhysicsScene::getDynamicType>;
 mono_add_internal_call("Lumix.BoxRigidActor::getDynamicType", fPhysicsScene_getDynamicType);
 auto fPhysicsScene_setDynamicType = &csharp_setProperty<Lumix::PhysicsScene::DynamicType, PhysicsScene, &PhysicsScene::setDynamicType>;
 mono_add_internal_call("Lumix.BoxRigidActor::setDynamicType", fPhysicsScene_setDynamicType);
@@ -1253,124 +1274,4 @@ mono_add_internal_call("Lumix.Terrain::setTerrainYScale", fRenderScene_setTerrai
 		typedef void (PhysicsScene::*MethodType)(Lumix::ComponentHandle);
 		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&PhysicsScene::putToSleep>;
 		mono_add_internal_call("Lumix.RigidActor::putToSleep", f);
-	}
-	{
-		typedef Lumix::Animation* (AnimationScene::*MethodType)(Lumix::ComponentHandle);
-		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::getAnimableAnimation>;
-		mono_add_internal_call("Lumix.AnimationScene::getAnimableAnimation", f);
-	}
-	{
-		typedef Lumix::Path (AnimationScene::*MethodType)(Lumix::ComponentHandle);
-		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::getAnimation>;
-		mono_add_internal_call("Lumix.AnimationScene::getAnimation", f);
-	}
-	{
-		typedef void (AnimationScene::*MethodType)(Lumix::ComponentHandle, const Lumix::Path &);
-		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::setAnimation>;
-		mono_add_internal_call("Lumix.AnimationScene::setAnimation", f);
-	}
-	{
-		typedef float (AnimationScene::*MethodType)(Lumix::ComponentHandle);
-		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::getAnimableTime>;
-		mono_add_internal_call("Lumix.AnimationScene::getAnimableTime", f);
-	}
-	{
-		typedef void (AnimationScene::*MethodType)(Lumix::ComponentHandle, float);
-		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::setAnimableTime>;
-		mono_add_internal_call("Lumix.AnimationScene::setAnimableTime", f);
-	}
-	{
-		typedef float (AnimationScene::*MethodType)(Lumix::ComponentHandle);
-		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::getAnimableTimeScale>;
-		mono_add_internal_call("Lumix.AnimationScene::getAnimableTimeScale", f);
-	}
-	{
-		typedef void (AnimationScene::*MethodType)(Lumix::ComponentHandle, float);
-		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::setAnimableTimeScale>;
-		mono_add_internal_call("Lumix.AnimationScene::setAnimableTimeScale", f);
-	}
-	{
-		typedef float (AnimationScene::*MethodType)(Lumix::ComponentHandle);
-		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::getAnimableStartTime>;
-		mono_add_internal_call("Lumix.AnimationScene::getAnimableStartTime", f);
-	}
-	{
-		typedef void (AnimationScene::*MethodType)(Lumix::ComponentHandle, float);
-		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::setAnimableStartTime>;
-		mono_add_internal_call("Lumix.AnimationScene::setAnimableStartTime", f);
-	}
-	{
-		typedef unsigned* (AnimationScene::*MethodType)(Lumix::ComponentHandle);
-		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::getControllerInput>;
-		mono_add_internal_call("Lumix.AnimationScene::getControllerInput", f);
-	}
-	{
-		typedef void (AnimationScene::*MethodType)(Lumix::ComponentHandle, int, int);
-		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::setControllerInput>;
-		mono_add_internal_call("Lumix.AnimationScene::setControllerInput(intptr,int,int,int)", f);
-	}
-	{
-		typedef void (AnimationScene::*MethodType)(Lumix::ComponentHandle, int, float);
-		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::setControllerInput>;
-		mono_add_internal_call("Lumix.AnimationScene::setControllerInput(intptr,int,int,single)", f);
-	}
-	{
-		typedef void (AnimationScene::*MethodType)(Lumix::ComponentHandle, int, bool);
-		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::setControllerInput>;
-		mono_add_internal_call("Lumix.AnimationScene::setControllerInput(intptr,int,int,bool)", f);
-	}
-	{
-		typedef Lumix::RigidTransform (AnimationScene::*MethodType)(Lumix::ComponentHandle);
-		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::getControllerRootMotion>;
-		mono_add_internal_call("Lumix.AnimationScene::getControllerRootMotion", f);
-	}
-	{
-		typedef void (AnimationScene::*MethodType)(Lumix::ComponentHandle, const Lumix::Path &);
-		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::setControllerSource>;
-		mono_add_internal_call("Lumix.AnimationScene::setControllerSource", f);
-	}
-	{
-		typedef Lumix::Path (AnimationScene::*MethodType)(Lumix::ComponentHandle);
-		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::getControllerSource>;
-		mono_add_internal_call("Lumix.AnimationScene::getControllerSource", f);
-	}
-	{
-		typedef Lumix::Anim::ComponentInstance* (AnimationScene::*MethodType)(Lumix::ComponentHandle);
-		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::getControllerRoot>;
-		mono_add_internal_call("Lumix.AnimationScene::getControllerRoot", f);
-	}
-	{
-		typedef int (AnimationScene::*MethodType)(Lumix::ComponentHandle, const char *) const;
-		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::getControllerInputIndex>;
-		mono_add_internal_call("Lumix.AnimationScene::getControllerInputIndex", f);
-	}
-	{
-		typedef Lumix::Entity (AnimationScene::*MethodType)(Lumix::ComponentHandle);
-		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::getSharedControllerParent>;
-		mono_add_internal_call("Lumix.AnimationScene::getSharedControllerParent", f);
-	}
-	{
-		typedef void (AnimationScene::*MethodType)(Lumix::ComponentHandle, Lumix::Entity);
-		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::setSharedControllerParent>;
-		mono_add_internal_call("Lumix.AnimationScene::setSharedControllerParent", f);
-	}
-	{
-		typedef void (AnimationScene::*MethodType)(Lumix::ComponentHandle, const char *);
-		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::applyControllerSet>;
-		mono_add_internal_call("Lumix.AnimationScene::applyControllerSet", f);
-	}
-	{
-		typedef void (AnimationScene::*MethodType)(Lumix::ComponentHandle, int);
-		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::setControllerDefaultSet>;
-		mono_add_internal_call("Lumix.AnimationScene::setControllerDefaultSet", f);
-	}
-	{
-		typedef int (AnimationScene::*MethodType)(Lumix::ComponentHandle);
-		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::getControllerDefaultSet>;
-		mono_add_internal_call("Lumix.AnimationScene::getControllerDefaultSet", f);
-	}
-	{
-		typedef Lumix::Anim::ControllerResource* (AnimationScene::*MethodType)(Lumix::ComponentHandle);
-		auto f = &CSharpMethodProxy<MethodType>::call<(MethodType)&AnimationScene::getControllerResource>;
-		mono_add_internal_call("Lumix.AnimationScene::getControllerResource", f);
 	}
