@@ -8,6 +8,32 @@ using System.Collections.Generic;
 
 namespace Lumix
 {
+    public struct RectF
+    {
+        public float x;
+        public float y;
+        public float width;
+        public float height;
+
+        public bool Contains(Int2 _pos)
+        {
+            return Contains(_pos.x, _pos.y);
+        }
+        public RectF(float _x, float _y, float _width, float _height)
+        {
+            x = _x;
+            y = _y;
+            width = _width;
+            height = _height;
+        }
+        public bool Contains(float _x, float _y)
+        {
+            return x <= _x && _x < x + width &&
+                y <= _y && _y < y + height;
+        }
+
+        
+    }
     public static class Mathf
     {
         private static System.Random random_ = new Random();
@@ -159,11 +185,26 @@ namespace Lumix
             return System.Math.Max(_left, _right);
         }
 
+        public static Real Min(Real _left,  Real _right)
+        {
+            return (Real)System.Math.Min(_left, _right);
+        }
+
         public static T Max<T>(T x, T y)
         {
             return (Comparer<T>.Default.Compare(x, y) > 0) ? x : y;
         }
-
+        public static void Swap<T>(ref T _left, ref T _right)
+        {
+            T temp;
+            temp = _left;
+            _left = _right;
+            _right = temp;
+        }
+        public static T Min<T>(T x, T y)
+        {
+            return (Comparer<T>.Default.Compare(x, y) < 0) ? x : y;
+        }
         public static Real Saturate(Real _value)
         {
             return Clamp(_value, 0, 1);

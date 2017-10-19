@@ -49,6 +49,14 @@ namespace Lumix
             z = _z;
             w = _w;
         }
+
+        public Vec4(float[] _values)
+        {
+            x = _values[0];
+            y = _values[1];
+            z = _values[2];
+            w = _values[3];
+        }
         /// <summary>
         /// 
         /// </summary>
@@ -648,10 +656,53 @@ namespace Lumix
         public Real x;
         public Real y;
 
+        public Vec2(Real _constant)
+        {
+            x = _constant;
+            y = _constant;
+        }
+
         public Vec2(Real _x, Real _y)
         {
             x = _x;
             y = _y;
+        }
+
+        public static Vec2 Add(Vec2 _left, Vec2 _right)
+        {
+            return new Vec2(_left.x + _right.x, _left.y + _right.y);
+        }
+        public static Vec2 Divide(Vec2 _left, Vec2 _right)
+        {
+            return new Vec2(_left.x / _right.x, _left.y / _right.y);
+        }
+        public static Vec2 Divide(Vec2 _left, Real _right)
+        {
+            return new Vec2(_left.x / _right, _left.y / _right);
+        }
+        public static Vec2 Subtract(Vec2 _left, Vec2 _right)
+        {
+            return new Vec2(_left.x - _right.x, _left.y - _right.y);
+        }
+
+        public static Vec2 operator/(Vec2 _left, Vec2 _right)
+        {
+            return Divide(_left, _right);
+        }
+
+        public static Vec2 operator /(Vec2 _left, Real _right)
+        {
+            return Divide(_left, _right);
+        }
+
+        public static Int2 operator-(Vec2 _left, Int2 _right)
+        {
+            return new Int2(_left.x - _right.x, _left.y - _right.y);
+        }
+
+        public static Vec2 operator-(Vec2 _left, Vec2 _right)
+        {
+            return Subtract(_left, _right);
         }
     }
 
@@ -661,10 +712,136 @@ namespace Lumix
         public int x;
         public int y;
 
+        public static readonly Int2 Zero = new Int2(0, 0);
+
+        public int this[int _index]
+        {
+            get
+            {
+                switch (_index)
+                {
+                    case 0:
+                        return x;
+                    case 1:
+                        return y;
+                    default:
+                        throw new IndexOutOfRangeException("index");
+                }
+            }
+            set
+            {
+                switch (_index)
+                {
+                    case 0:
+                        x = value;
+                        break;
+                    case 1:
+                        y = value;
+                        break;
+                    default:
+                        throw new IndexOutOfRangeException("index");
+
+                }
+            }
+        }
+
+        public Int2(float _x, float _y)
+        {
+            x = (int)_x;
+            y = (int)_y;
+        }
+
         public Int2(int _x, int _y)
         {
             x = _x;
             y = _y;
+        }
+
+        public Int2(Int2 _other)
+        {
+            x = _other.x;
+            y = _other.y;
+        }
+
+        public Int2(int _constant)
+        {
+            x = _constant;
+            y = _constant;
+        }
+        public static Int2 Add(Int2 _left, Int2 _right)
+        {
+            return new Int2(_left.x + _right.x, _left.y + _right.y);
+        }
+
+        public static Int2 operator + (Int2 _left, Int2 _right)
+        {
+            return Add(_left, _right);
+        }
+
+        public static Int2 Subtract(Int2 _left, Int2 _right)
+        {
+            return new Int2(_left.x - _right.x, _left.y - _right.y);
+        }
+
+        public static Int2 operator -(Int2 _left, Int2 _right)
+        {
+            return Subtract(_left, _right);
+        }
+
+        public static bool operator==(Int2 _left,  Int2 _right)
+        {
+            return _left.x == _right.x && _left.y == _right.y;
+        }
+
+        public static bool operator !=(Int2 _left, Int2 _right)
+        {
+            return !(_left == _right);
+        }
+        public static Int2 Divide(Int2 _left, Int2 _right)
+        {
+            return new Int2(_left.x / _right.x, _left.y / _right.y);
+        }
+        public static Int2 Divide(Int2 _left, int _right)
+        {
+            return new Int2(_left.x / _right, _left.y / _right);
+        }
+
+        public static Int2 operator /(Int2 _left, Int2 _right)
+        {
+            return Divide(_left, _right);
+        }
+        public static Int2 operator /(Int2 _left, int _right)
+        {
+            return Divide(_left, _right);
+        }
+        public static Int2 operator -(Int2 _left, Vec2 _right)
+        {
+            return new Int2(_left.x - _right.x, _left.y - _right.y);
+        }
+
+        public static implicit operator Vec2(Int2 _value)
+        {
+            return new Vec2(_value.x, _value.y);
+        }
+
+        public static Int2 Multiply(Int2 _left, int _right)
+        {
+            return new Int2(_left.x * _right, _left.y * _right);
+        }
+
+        public static Int2 operator*(Int2 _left, int _right)
+        {
+            return Multiply(_left, _right);
+        }
+
+        public int[] ToArray()
+        {
+            return new int[] { x, y };
+        }
+
+        public override string ToString()
+        {
+            return string.Format("x:{0},y:{1}", x, y);
         }
     }
 }

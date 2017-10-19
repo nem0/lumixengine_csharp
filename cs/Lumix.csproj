@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>0667610d-468e-4d6d-98e7-9f12ecf3dd2e</ProjectGuid>
+    <ProjectGuid>{0667610D-468E-4D6D-98E7-9F12ECF3DD2E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Lumix</RootNamespace>
@@ -32,14 +32,14 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System"/>
-    <Reference Include="System.Core"/>
-    <Reference Include="System.Xml.Linq"/>
-    <Reference Include="System.Data.DataSetExtensions"/>
-    <Reference Include="Microsoft.CSharp"/>
-    <Reference Include="System.Data"/>
-    <Reference Include="System.Net.Http"/>
-    <Reference Include="System.Xml"/>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Manual\Actions.cs" />
@@ -47,6 +47,7 @@
     <Compile Include="Manual\EditorInfo.cs" />
     <Compile Include="Manual\Engine.cs" />
     <Compile Include="Manual\Entity.cs" />
+    <Compile Include="Manual\Enums.cs" />
     <Compile Include="Manual\Extensions.cs" />
     <Compile Include="Manual\Imgui.cs" />
     <Compile Include="Manual\IResourceType.cs" />
@@ -54,7 +55,6 @@
     <Compile Include="Manual\Mathf.cs" />
     <Compile Include="Manual\NativeComponent.cs" />
     <Compile Include="Manual\Quat.cs" />
-    <Compile Include="Manual\ReflectionHelper.cs" />
     <Compile Include="Manual\Resource.cs" />
     <Compile Include="Manual\Resources.cs" />
     <Compile Include="Manual\RigidActor.cs" />
@@ -110,4 +110,4 @@
     <Compile Include="RigidActor.Automatic.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
- </Project>
+</Project>
