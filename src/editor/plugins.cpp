@@ -13,7 +13,7 @@
 #include "engine/json_serializer.h"
 #include "engine/log.h"
 #include "engine/path_utils.h"
-#include "engine/property_register.h"
+#include "engine/properties.h"
 #include "engine/resource.h"
 #include "engine/universe/universe.h"
 #include "imgui/imgui.h"
@@ -30,7 +30,7 @@ namespace Lumix
 {
 
 
-static const ComponentType CSHARP_SCRIPT_TYPE = PropertyRegister::getComponentType("csharp_script");
+static const ComponentType CSHARP_SCRIPT_TYPE = Properties::getComponentType("csharp_script");
 static const ResourceType CSHARP_SCRIPT_RESOURCE_TYPE("csharp_script");
 
 
@@ -272,7 +272,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 			}
 		}
 
-		ImGui::FilterInput("Filter", m_filter, sizeof(m_filter));
+		ImGui::LabellessInputText("Filter", m_filter, sizeof(m_filter));
 
 		for (int i = 0, c = plugin.getNamesCount(); i < c; ++i)
 		{

@@ -14,7 +14,7 @@
 #include "engine/path.h"
 #include "engine/path_utils.h"
 #include "engine/prefab.h"
-#include "engine/property_register.h"
+#include "engine/properties.h"
 #include "engine/resource_manager.h"
 #include "engine/resource_manager_base.h"
 #include "engine/serializer.h"
@@ -41,7 +41,7 @@ namespace Lumix
 {
 
 
-static const ComponentType CSHARP_SCRIPT_TYPE = PropertyRegister::getComponentType("csharp_script");
+static const ComponentType CSHARP_SCRIPT_TYPE = Properties::getComponentType("csharp_script");
 
 
 struct CSharpPluginImpl : public CSharpPlugin
@@ -71,14 +71,14 @@ struct CSharpPluginImpl : public CSharpPlugin
 ComponentHandle csharp_Entity_getComponent(Universe* universe, Entity entity, MonoString* cmp_type)
 {
 	const char* type = mono_string_to_utf8(cmp_type);
-	return universe->getComponent(entity, PropertyRegister::getComponentType(type)).handle;
+	return universe->getComponent(entity, Properties::getComponentType(type)).handle;
 }
 
 
 IScene* csharp_Entity_getScene(Universe* universe, MonoString* type_str)
 {
 	const char* type = mono_string_to_utf8(type_str);
-	ComponentType cmp_type = PropertyRegister::getComponentType(type);
+	ComponentType cmp_type = Properties::getComponentType(type);
 	return universe->getScene(cmp_type);
 }
 
@@ -86,7 +86,7 @@ IScene* csharp_Entity_getScene(Universe* universe, MonoString* type_str)
 int csharp_Component_create(Universe* universe, int entity, MonoString* type_str)
 {
 	const char* type = mono_string_to_utf8(type_str);
-	ComponentType cmp_type = PropertyRegister::getComponentType(type);
+	ComponentType cmp_type = Properties::getComponentType(type);
 	IScene* scene = universe->getScene(cmp_type);
 	if (!scene) return INVALID_COMPONENT.index;
 	if (scene->getComponent({entity}, cmp_type) != INVALID_COMPONENT)
@@ -475,8 +475,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		mono_add_internal_call("ImGui::InputText", &CSharpFunctionProxy<decltype(ImGui::InputText)>::call<ImGui::InputText>);
 		#define REGISTER_FUNCTION(F) \
 			mono_add_internal_call("ImGui::" #F, &CSharpFunctionProxy<decltype(ImGui::F)>::call<ImGui::F>);
-
-		REGISTER_FUNCTION(AlignFirstTextHeightToWidgets);
+		REGISTER_FUNCTION(AlignTextToFramePadding);
 		REGISTER_FUNCTION(BeginChildFrame);
 		REGISTER_FUNCTION(BeginDock);
 		REGISTER_FUNCTION(BeginPopup);
@@ -503,15 +502,12 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		REGISTER_FUNCTION(OpenPopup);
 		REGISTER_FUNCTION(PopItemWidth);
 		REGISTER_FUNCTION(PopID);
-		REGISTER_FUNCTION(PopStyleColor);
 		REGISTER_FUNCTION(PushItemWidth);
-		REGISTER_FUNCTION(PushStyleColor);
 		REGISTER_FUNCTION(Rect);
 		REGISTER_FUNCTION(SameLine);
 		REGISTER_FUNCTION(Separator);
 		REGISTER_FUNCTION(SetCursorScreenPos);
 		REGISTER_FUNCTION(SetNextWindowPos);
-		REGISTER_FUNCTION(SetNextWindowPosCenter);
 		REGISTER_FUNCTION(SetNextWindowSize);
 		REGISTER_FUNCTION(ShowTestWindow);
 		REGISTER_FUNCTION(SliderFloat);
