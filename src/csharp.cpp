@@ -56,6 +56,7 @@ struct CSharpPluginImpl : public CSharpPlugin
 	int getNamesCount() const override { return m_names.size(); }
 	const char* getName(int idx) const override { return m_names.at(idx).c_str(); }
 	void setStaticField(const char* name_space, const char* class_name, const char* field_name, void* value);
+	void registerProperties();
 
 	Engine& m_engine;
 	IAllocator& m_allocator;
@@ -1402,6 +1403,8 @@ CSharpPluginImpl::CSharpPluginImpl(Engine& engine)
 	, m_on_assembly_load(m_allocator)
 	, m_on_assembly_unload(m_allocator)
 {
+	registerProperties();
+
 	auto printer = [](const char* msg, mono_bool is_stdout) {
 		g_log_error.log("Mono") << msg;
 	};
@@ -1422,6 +1425,15 @@ CSharpPluginImpl::CSharpPluginImpl(Engine& engine)
 	loadAssembly();
 }
 
+
+void CSharpPluginImpl::registerProperties()
+{
+	using namespace Properties;
+	static auto csharp_scene = scene("csharp",
+		component("csharp_script")
+	);
+	csharp_scene.registerScene();
+}
 
 
 void CSharpPluginImpl::setStaticField(const char* name_space, const char* class_name, const char* field_name, void* value)
