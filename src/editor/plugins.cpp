@@ -184,7 +184,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 			g_log_error.log("C#") << path << "already exists";
 			return;
 		}
-		if (!file.open(path, FS::Mode::CREATE_AND_WRITE, m_app.getWorldEditor().getAllocator()))
+		if (!file.open(path, FS::Mode::CREATE_AND_WRITE))
 		{
 			g_log_error.log("C#") << "Failed to create file " << path;
 			return;
