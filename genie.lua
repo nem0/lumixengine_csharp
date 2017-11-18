@@ -17,6 +17,9 @@ project "lumixengine_csharp"
 	links { "engine" }
 	useLua()
 	defaultConfigurations()
-	
+	postbuildcommands {
+		"xcopy /Y \"$(SolutionDir)..\\..\\..\\..\\lumixengine_csharp\\external\\bin\\mono-2.0-sgen.dll\" \"$(SolutionDir)bin\\Debug\"",
+	}
+
 table.insert(build_app_callbacks, linkMono)
 table.insert(build_studio_callbacks, linkMono)
