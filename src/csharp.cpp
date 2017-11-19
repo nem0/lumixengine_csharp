@@ -14,7 +14,7 @@
 #include "engine/path.h"
 #include "engine/path_utils.h"
 #include "engine/prefab.h"
-#include "engine/properties.h"
+#include "engine/reflection.h"
 #include "engine/resource_manager.h"
 #include "engine/resource_manager_base.h"
 #include "engine/serializer.h"
@@ -41,7 +41,46 @@ namespace Lumix
 {
 
 
-static const ComponentType CSHARP_SCRIPT_TYPE = Properties::getComponentType("csharp_script");
+static const ComponentType CSHARP_SCRIPT_TYPE = Reflection::getComponentType("csharp_script");
+
+
+void getCSharpName(const char* in_name, StaticString<128>& class_name)
+{
+	char* out = class_name.data;
+	const char* in = in_name;
+	bool to_upper = true;
+	while (*in && out - class_name.data < lengthOf(class_name.data) - 1)
+	{
+		if (*in == '_' || *in == ' ')
+		{
+			to_upper = true;
+			++in;
+			continue;
+		}
+
+		if (*in == '(')
+		{
+			to_upper = true;
+			while (*in && *in != ')') ++in;
+			if (*in == ')') ++in;
+			continue;
+		}
+
+		if (to_upper)
+		{
+			*out = makeUppercase(*in);
+			to_upper = false;
+		}
+		else
+		{
+			*out = *in;
+		}
+		++out;
+		++in;
+	}
+	*out = '\0';
+}
+
 
 
 struct CSharpPluginImpl : public CSharpPlugin
@@ -72,14 +111,14 @@ struct CSharpPluginImpl : public CSharpPlugin
 ComponentHandle csharp_Entity_getComponent(Universe* universe, Entity entity, MonoString* cmp_type)
 {
 	const char* type = mono_string_to_utf8(cmp_type);
-	return universe->getComponent(entity, Properties::getComponentType(type)).handle;
+	return universe->getComponent(entity, Reflection::getComponentType(type)).handle;
 }
 
 
 IScene* csharp_Entity_getScene(Universe* universe, MonoString* type_str)
 {
 	const char* type = mono_string_to_utf8(type_str);
-	ComponentType cmp_type = Properties::getComponentType(type);
+	ComponentType cmp_type = Reflection::getComponentType(type);
 	return universe->getScene(cmp_type);
 }
 
@@ -87,7 +126,7 @@ IScene* csharp_Entity_getScene(Universe* universe, MonoString* type_str)
 int csharp_Component_create(Universe* universe, int entity, MonoString* type_str)
 {
 	const char* type = mono_string_to_utf8(type_str);
-	ComponentType cmp_type = Properties::getComponentType(type);
+	ComponentType cmp_type = Reflection::getComponentType(type);
 	IScene* scene = universe->getScene(cmp_type);
 	if (!scene) return INVALID_COMPONENT.index;
 	if (scene->getComponent({entity}, cmp_type) != INVALID_COMPONENT)
@@ -294,10 +333,10 @@ struct CSharpMethodProxy<R(T::*)(Args...)>
 };
 
 
-template <typename R, typename C, R(C::*Function)(ComponentHandle)>
-typename ToCSharpType<R>::Type csharp_getProperty(C* scene, int cmp)
+template <typename Getter, Getter getter>
+auto csharp_getProperty(typename ClassOf<Getter>::Type* scene, int cmp) -> typename ToCSharpType<typename ResultOf<Getter>::Type>::Type
 {
-	R val = (scene->*Function)({ cmp });
+	decltype(auto) val = (scene->*getter)({ cmp });
 	return toCSharpValue(val);
 }
 
@@ -331,10 +370,10 @@ typename ToCSharpType<R>::Type csharp_getSubproperty(C* scene, int cmp, int inde
 }
 
 
-template <typename T, typename C, void (C::*Function)(ComponentHandle, T)>
-void csharp_setProperty(C* scene, int cmp, typename ToCSharpType<T>::Type value)
+template <typename Setter, Setter setter>
+void csharp_setProperty(typename ClassOf<Setter>::Type* scene, int cmp, typename ToCSharpType<typename ArgNType<1, Setter>::Type>::Type value)
 {
-	(scene->*Function)({ cmp }, fromCSharpValue(value));
+	(scene->*setter)({ cmp }, fromCSharpValue(value));
 }
 
 
@@ -1428,7 +1467,7 @@ CSharpPluginImpl::CSharpPluginImpl(Engine& engine)
 
 void CSharpPluginImpl::registerProperties()
 {
-	using namespace Properties;
+	using namespace Reflection;
 	static auto csharp_scene = scene("csharp",
 		component("csharp_script")
 	);

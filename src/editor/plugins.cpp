@@ -13,7 +13,7 @@
 #include "engine/json_serializer.h"
 #include "engine/log.h"
 #include "engine/path_utils.h"
-#include "engine/properties.h"
+#include "engine/reflection.h"
 #include "engine/resource.h"
 #include "engine/universe/universe.h"
 #include "imgui/imgui.h"
@@ -30,7 +30,7 @@ namespace Lumix
 {
 
 
-static const ComponentType CSHARP_SCRIPT_TYPE = Properties::getComponentType("csharp_script");
+static const ComponentType CSHARP_SCRIPT_TYPE = Reflection::getComponentType("csharp_script");
 static const ResourceType CSHARP_SCRIPT_RESOURCE_TYPE("csharp_script");
 
 
@@ -257,6 +257,8 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 
 			if (ImGui::Button("Compile")) compile();
 			ImGui::SameLine();
+			if (ImGui::Button("Bindings")) generateBindings();
+			ImGui::SameLine();
 			if (ImGui::Button("Open VS Code")) openVSCode(nullptr);
 			ImGui::SameLine();
 			if (ImGui::Button("New script")) ImGui::OpenPopup("new_csharp_script");
@@ -305,6 +307,211 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 	{
 		WorldEditor& editor = m_app.getWorldEditor();
 		return (CSharpScriptScene*)editor.getUniverse()->getScene(crc32("csharp_script"));
+	}
+
+
+	static void getCSType(const char* cpp_type, StaticString<64>& cs_type)
+	{
+		const char* c = cpp_type;
+		auto skip = [&c](const char* value) {
+			if (startsWith(c, value)) c += stringLength(value);
+		};
+		skip("struct ");
+		skip("Lumix::");
+		cs_type = c;
+		char* end = cs_type.data + stringLength(cs_type.data) - 1;
+		while (end >= cs_type.data && (*end == ' ' || *end == '&')) --end;
+		++end;
+		*end = 0;
+		if (endsWith(cs_type, " const")) cs_type.data[stringLength(cs_type.data) - sizeof(" const") + 1] = '\0';
+		if (cs_type == "const char*") cs_type = "string";
+		if (cs_type == "Path") cs_type = "string";
+	}
+
+
+	static void writeCSArgs(const Reflection::FunctionBase& func, FS::OsFile& file)
+	{
+		for (int i = 1, c = func.getArgCount(); i < c; ++i)
+		{
+			if (i != 1) file << ", ";
+			StaticString<64> cs_type;
+			getCSType(func.getArgType(i), cs_type);
+			file << cs_type << " a" << i - 1;
+		}
+	}
+
+
+	void generateBindings()
+	{
+		using namespace Reflection;
+		int cmps_count = getComponentTypesCount();
+		
+		FS::OsFile api_file;
+		const char* api_h_filepath = "../lumixengine_csharp/src/api.h";
+		if (!api_file.open(api_h_filepath, FS::Mode::CREATE_AND_WRITE))
+		{
+			g_log_error.log("C#") << "Failed to create " << api_h_filepath;
+			return;
+		}
+
+		for (int i = 0; i < cmps_count; ++i)
+		{
+			const char* cmp_name = getComponentTypeID(i);
+			ComponentType cmp_type = getComponentType(cmp_name);
+			const ComponentBase* cmp = Reflection::getComponent(cmp_type);
+
+			StaticString<128> class_name;
+			getCSharpName(cmp_name, class_name);
+
+			FS::OsFile cs_file;
+			StaticString<MAX_PATH_LENGTH> filepath("cs/", class_name, ".cs");
+			if (!cs_file.open(filepath, FS::Mode::CREATE_AND_WRITE))
+			{
+				g_log_error.log("C#") << "Failed to create " << filepath;
+				continue;
+			}
+
+			cs_file.writeText(
+				"using System;\n"
+				"using System.Runtime.InteropServices;\n"
+				"using System.Runtime.CompilerServices;\n"
+				"\n"
+				"namespace Lumix\n"
+				"{\n"
+			);
+			cs_file << "	[NativeComponent(Type = \"" << cmp_name << "\")]\n";
+			cs_file << "	public class " << class_name << " : Component\n";
+			cs_file << "	{\n";
+
+			cs_file <<
+				"		public static string GetCmpType{ get { return \"" << cmp_name << "\"; } }\n"
+				"\n";
+
+			cs_file <<
+				"		public " << class_name << "(Entity _entity, int _cmpId)\n"
+				"			: base(_entity, _cmpId, getScene(_entity.instance_, GetCmpType)) { }\n"
+				"\n\n";
+
+			struct : Reflection::IComponentVisitor
+			{
+				void write(const PropertyBase& prop, const char* cs_type, const char* cpp_type)
+				{
+					StaticString<128> csharp_name;
+					getCSharpName(prop.name, csharp_name);
+
+					*api_file <<
+						"{\n"
+						"	auto getter = &csharp_getProperty<decltype(&" << prop.getter_code << "), &" << prop.getter_code << ">;\n"
+						"	mono_add_internal_call(\"Lumix." << class_name << "::get" << csharp_name << "\", getter);\n"
+						"	auto setter = &csharp_setProperty<decltype(&" << prop.setter_code << "), &" << prop.setter_code << ">;\n"
+						"	mono_add_internal_call(\"Lumix." << class_name << "::set" << csharp_name << "\", setter);\n"
+						"}\n\n";
+
+					*file <<
+						"		[MethodImplAttribute(MethodImplOptions.InternalCall)]\n"
+						"		extern static " << cs_type << " get" << csharp_name << "(IntPtr scene, int cmp);\n"
+						"\n"
+						"		[MethodImplAttribute(MethodImplOptions.InternalCall)]\n"
+						"		extern static void set" << csharp_name << "(IntPtr scene, int cmp, " << cs_type << " value);\n"
+						"\n\n";
+
+					bool is_bool = equalStrings(cs_type, "bool");
+					*file <<
+						"		public " << cs_type << " " << (is_bool ? "Is" : "") << csharp_name << "\n"
+						"		{\n"
+						"			get { return get" << csharp_name << "(scene_, componentId_); }\n"
+						"			set { set" << csharp_name << "(scene_, componentId_, value); }\n"
+						"		}\n"
+						"\n";
+				}
+
+				void visit(const Property<float>& prop)  override { write(prop, "float", "float"); }
+				void visit(const Property<int>& prop)  override { write(prop, "int", "int"); }
+				void visit(const Property<Entity>& prop)  override {}
+				void visit(const Property<Int2>& prop)  override { write(prop, "Int2", "Int2"); }
+				void visit(const Property<Vec2>& prop)  override { write(prop, "Vec2", "Vec2"); }
+				void visit(const Property<Vec3>& prop)  override { write(prop, "Vec3", "Vec3"); }
+				void visit(const Property<Vec4>& prop)  override { write(prop, "Vec4", "Vec4"); }
+				void visit(const Property<Path>& prop)  override { write(prop, "string", "Path"); }
+				void visit(const Property<bool>& prop)  override { write(prop, "bool", "bool"); }
+				void visit(const Property<const char*>& prop)  override { write(prop, "string", "const char*"); }
+				void visit(const IArrayProperty& prop)  override {}
+				void visit(const IEnumProperty& prop)  override {}
+				void visit(const IBlobProperty& prop)  override {}
+				void visit(const ISampledFuncProperty& prop) override {}
+
+				const ComponentBase* cmp;
+				const char* class_name;
+				FS::OsFile* api_file;
+				FS::OsFile* file;
+			} visitor;
+
+			visitor.cmp = cmp;
+			visitor.class_name = class_name;
+			visitor.file = &cs_file;
+			visitor.api_file = &api_file;
+			cmp->visit(visitor);
+			
+			struct : IFunctionVisitor
+			{
+				void visit(const FunctionBase& func) override
+				{
+					StaticString<128> cs_method_name;
+					const char* cpp_method_name = func.decl_code + stringLength(func.decl_code);
+					while (cpp_method_name > func.decl_code && *cpp_method_name != ':') --cpp_method_name;
+					if (*cpp_method_name == ':') ++cpp_method_name;
+					getCSharpName(cpp_method_name, cs_method_name);
+					*api_file <<
+						"{\n"
+						"	auto f = &CSharpMethodProxy<decltype(&" << func.decl_code << ")>::call<&" << func.decl_code << ">;\n"
+						"	mono_add_internal_call(\"Lumix." << class_name << "::" << cpp_method_name << "\", f);\n"
+						"}\n"
+						"\n\n";
+
+					*cs_file <<
+						"		[MethodImplAttribute(MethodImplOptions.InternalCall)]\n"
+						"		extern static void " << cpp_method_name << "(IntPtr instance, int cmp, ";
+					
+					writeCSArgs(func, *cs_file);
+
+					*cs_file << ");\n"
+						"\n"
+						"		public void " << cs_method_name << "(";
+
+					writeCSArgs(func, *cs_file);
+
+					*cs_file <<
+						")\n"
+						"		{\n"
+						"			" << cpp_method_name << "(scene_, componentId_, ";
+					
+					for (int i = 1, c = func.getArgCount(); i < c; ++i)
+					{
+						if (i > 1) *cs_file << ", ";
+						*cs_file << "a" << i - 1;
+					}
+
+					*cs_file << ");\n"
+						"		}\n"
+						"\n";
+				}
+				const char* class_name;
+				FS::OsFile* cs_file;
+				FS::OsFile* api_file;
+			} fnc_visitor;
+
+			fnc_visitor.cs_file = &cs_file;
+			fnc_visitor.class_name = class_name;
+			fnc_visitor.api_file = &api_file;
+			cmp->visit(fnc_visitor);
+
+			cs_file <<
+				"\t} // class\n"
+				"} // namespace\n";
+
+			cs_file.close();
+		}
+		api_file.close();
 	}
 
 

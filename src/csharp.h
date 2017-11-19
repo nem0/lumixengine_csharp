@@ -12,6 +12,10 @@ enum { INVALID_GC_HANDLE = 0xffffFFFF };
 
 
 class Path;
+template <int N> struct StaticString;
+
+
+void getCSharpName(const char* cmp_name, StaticString<128>& class_name);
 
 
 struct CSharpPlugin : IPlugin
