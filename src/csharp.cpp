@@ -440,7 +440,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	{
 		universe.registerComponentType(CSHARP_SCRIPT_TYPE, this, &CSharpScriptSceneImpl::serializeCSharpScript, &CSharpScriptSceneImpl::deserializeCSharpScript);
 
-		#include "api.h"
+		#include "api.inl"
 
 		createImGuiAPI();
 		createEngineAPI();

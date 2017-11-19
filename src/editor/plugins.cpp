@@ -347,7 +347,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 		int cmps_count = getComponentTypesCount();
 		
 		FS::OsFile api_file;
-		const char* api_h_filepath = "../lumixengine_csharp/src/api.h";
+		const char* api_h_filepath = "../lumixengine_csharp/src/api.inl";
 		if (!api_file.open(api_h_filepath, FS::Mode::CREATE_AND_WRITE))
 		{
 			g_log_error.log("C#") << "Failed to create " << api_h_filepath;

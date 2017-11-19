@@ -9,6 +9,7 @@ project "lumixengine_csharp"
 		"src/api.txt",
 		"src/**.cpp",
 		"src/**.h",
+		"src/**.inl",
 		"genie.lua"
 	}
 	includedirs { "../lumixengine_csharp/src", [[external/include/mono-2.0]] }
