@@ -1,4 +1,10 @@
 {
+	auto f = &CSharpMethodProxy<decltype(&PhysicsScene::raycast)>::call<&PhysicsScene::raycast>;
+	mono_add_internal_call("Lumix.PhysicsScene::raycast", f);
+}
+
+
+{
 	auto getter = &csharp_getProperty<decltype(&RenderScene::getModelInstancePath), &RenderScene::getModelInstancePath>;
 	mono_add_internal_call("Lumix.Renderable::getSource", getter);
 	auto setter = &csharp_setProperty<decltype(&RenderScene::setModelInstancePath), &RenderScene::setModelInstancePath>;
@@ -625,6 +631,20 @@
 	mono_add_internal_call("Lumix.EchoZone::getDelay", getter);
 	auto setter = &csharp_setProperty<decltype(&AudioScene::setEchoZoneDelay), &AudioScene::setEchoZoneDelay>;
 	mono_add_internal_call("Lumix.EchoZone::setDelay", setter);
+}
+
+{
+	auto getter = &csharp_getProperty<decltype(&AudioScene::getChorusZoneRadius), &AudioScene::getChorusZoneRadius>;
+	mono_add_internal_call("Lumix.ChorusZone::getRadius", getter);
+	auto setter = &csharp_setProperty<decltype(&AudioScene::setChorusZoneRadius), &AudioScene::setChorusZoneRadius>;
+	mono_add_internal_call("Lumix.ChorusZone::setRadius", setter);
+}
+
+{
+	auto getter = &csharp_getProperty<decltype(&AudioScene::getChorusZoneDelay), &AudioScene::getChorusZoneDelay>;
+	mono_add_internal_call("Lumix.ChorusZone::getDelay", getter);
+	auto setter = &csharp_setProperty<decltype(&AudioScene::setChorusZoneDelay), &AudioScene::setChorusZoneDelay>;
+	mono_add_internal_call("Lumix.ChorusZone::setDelay", setter);
 }
 
 {

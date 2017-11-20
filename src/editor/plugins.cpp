@@ -329,14 +329,14 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 	}
 
 
-	static void writeCSArgs(const Reflection::FunctionBase& func, FS::OsFile& file)
+	static void writeCSArgs(const Reflection::FunctionBase& func, FS::OsFile& file, int skip_args)
 	{
-		for (int i = 1, c = func.getArgCount(); i < c; ++i)
+		for (int i = skip_args, c = func.getArgCount(); i < c; ++i)
 		{
-			if (i != 1) file << ", ";
+			if (i > skip_args) file << ", ";
 			StaticString<64> cs_type;
 			getCSType(func.getArgType(i), cs_type);
-			file << cs_type << " a" << i - 1;
+			file << cs_type << " a" << i - skip_args;
 		}
 	}
 
@@ -367,7 +367,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 				"\n"
 				"namespace Lumix\n"
 				"{\n"
-				"	public class " << class_name <<  " : IScene\n"
+				"	public class " << class_name << " : IScene\n"
 				"	{\n"
 				"		public " << class_name << "(IntPtr _instance)\n"
 				"			: base(_instance) { }\n"
@@ -376,6 +376,62 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 				"		{\n"
 				"			return _value.instance_;\n"
 				"		}\n"
+				"\n";
+
+			struct : IFunctionVisitor
+			{
+				void visit(const struct FunctionBase& func) override
+				{
+					StaticString<128> cs_method_name;
+					const char* cpp_method_name = func.decl_code + stringLength(func.decl_code);
+					while (cpp_method_name > func.decl_code && *cpp_method_name != ':') --cpp_method_name;
+					if (*cpp_method_name == ':') ++cpp_method_name;
+					getCSharpName(cpp_method_name, cs_method_name);
+					*api_file <<
+						"{\n"
+						"	auto f = &CSharpMethodProxy<decltype(&" << func.decl_code << ")>::call<&" << func.decl_code << ">;\n"
+						"	mono_add_internal_call(\"Lumix." << class_name << "::" << cpp_method_name << "\", f);\n"
+						"}\n"
+						"\n\n";
+
+					*cs_file <<
+						"		[MethodImplAttribute(MethodImplOptions.InternalCall)]\n"
+						"		extern static void " << cpp_method_name << "(IntPtr instance, ";
+
+					writeCSArgs(func, *cs_file, 0);
+
+					*cs_file << ");\n"
+						"\n"
+						"		public void " << cs_method_name << "(";
+
+					writeCSArgs(func, *cs_file, 0);
+
+					*cs_file <<
+						")\n"
+						"		{\n"
+						"			" << cpp_method_name << "(instance_, ";
+
+					for (int i = 0, c = func.getArgCount(); i < c; ++i)
+					{
+						if (i > 0) *cs_file << ", ";
+						*cs_file << "a" << i;
+					}
+
+					*cs_file << ");\n"
+						"		}\n"
+						"\n";
+				}
+
+				const char* class_name;
+				FS::OsFile* cs_file;
+				FS::OsFile* api_file;
+			} visitor;
+
+			visitor.class_name = class_name;
+			visitor.cs_file = &cs_file;
+			visitor.api_file = &api_file;
+			scene.visit(visitor);
+
 				/*				"		[MethodImplAttribute(MethodImplOptions.InternalCall)]\n"
 				"		extern static bool isNavmeshReady(IntPtr instance);\n"
 				"\n"
@@ -526,13 +582,13 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 						"		[MethodImplAttribute(MethodImplOptions.InternalCall)]\n"
 						"		extern static void " << cpp_method_name << "(IntPtr instance, int cmp, ";
 					
-					writeCSArgs(func, *cs_file);
+					writeCSArgs(func, *cs_file, 1);
 
 					*cs_file << ");\n"
 						"\n"
 						"		public void " << cs_method_name << "(";
 
-					writeCSArgs(func, *cs_file);
+					writeCSArgs(func, *cs_file, 1);
 
 					*cs_file <<
 						")\n"
