@@ -348,16 +348,17 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 		{
 			const SceneBase& scene = Reflection::getScene(i);
 
+			StaticString<128> class_name;
+			getCSharpName(scene.name, class_name);
+			class_name << "Scene";
+
 			FS::OsFile cs_file;
-			StaticString<MAX_PATH_LENGTH> filepath("cs/", scene.name, ".cs");
+			StaticString<MAX_PATH_LENGTH> filepath("cs/", class_name, ".cs");
 			if (!cs_file.open(filepath, FS::Mode::CREATE_AND_WRITE))
 			{
 				g_log_error.log("C#") << "Failed to create " << filepath;
 				continue;
 			}
-
-			StaticString<128> class_name;
-			getCSharpName(scene.name, class_name);
 
 			cs_file <<
 				"using System;\n"
@@ -368,25 +369,27 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 				"{\n"
 				"	public class " << class_name <<  " : IScene\n"
 				"	{\n"
-/*				"		[MethodImplAttribute(MethodImplOptions.InternalCall)]\n"
+				"		public " << class_name << "(IntPtr _instance)\n"
+				"			: base(_instance) { }\n"
+				"\n"
+				"		public static implicit operator System.IntPtr(" << class_name << " _value)\n"
+				"		{\n"
+				"			return _value.instance_;\n"
+				"		}\n"
+				/*				"		[MethodImplAttribute(MethodImplOptions.InternalCall)]\n"
 				"		extern static bool isNavmeshReady(IntPtr instance);\n"
 				"\n"
 				"\n"
-				"		public NavigationScene(IntPtr _instance)\n"
-				"			:base(_instance) { }\n"
 				"\n"
 				"		public bool IsNavmeshReady()\n"
 				"		{\n"
 				"			return isNavmeshReady(instance_);\n"
 				"		}\n"
-				"\n"
-				"		public static implicit operator System.IntPtr(NavigationScene _value)\n"
-				"		{\n"
-				"			return _value.instance_;\n"
-				"		}\n"*/
+				"\n"*/
 				"	}\n"
 				"\n"
 				"}\n";
+			cs_file.close();
 		}
 	}
 
