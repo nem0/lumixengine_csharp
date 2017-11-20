@@ -1471,7 +1471,7 @@ void CSharpPluginImpl::registerProperties()
 	static auto csharp_scene = scene("csharp",
 		component("csharp_script")
 	);
-	csharp_scene.registerScene();
+	registerScene(csharp_scene);
 }
 
 

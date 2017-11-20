@@ -341,11 +341,58 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 	}
 
 
-	void generateBindings()
+	static void generateScenesBindings(FS::OsFile& api_file)
 	{
 		using namespace Reflection;
-		int cmps_count = getComponentTypesCount();
-		
+		for (int i = 0, c = getScenesCount(); i < c; ++i)
+		{
+			const SceneBase& scene = Reflection::getScene(i);
+
+			FS::OsFile cs_file;
+			StaticString<MAX_PATH_LENGTH> filepath("cs/", scene.name, ".cs");
+			if (!cs_file.open(filepath, FS::Mode::CREATE_AND_WRITE))
+			{
+				g_log_error.log("C#") << "Failed to create " << filepath;
+				continue;
+			}
+
+			StaticString<128> class_name;
+			getCSharpName(scene.name, class_name);
+
+			cs_file <<
+				"using System;\n"
+				"using System.Runtime.InteropServices;\n"
+				"using System.Runtime.CompilerServices;\n"
+				"\n"
+				"namespace Lumix\n"
+				"{\n"
+				"	public class " << class_name <<  " : IScene\n"
+				"	{\n"
+/*				"		[MethodImplAttribute(MethodImplOptions.InternalCall)]\n"
+				"		extern static bool isNavmeshReady(IntPtr instance);\n"
+				"\n"
+				"\n"
+				"		public NavigationScene(IntPtr _instance)\n"
+				"			:base(_instance) { }\n"
+				"\n"
+				"		public bool IsNavmeshReady()\n"
+				"		{\n"
+				"			return isNavmeshReady(instance_);\n"
+				"		}\n"
+				"\n"
+				"		public static implicit operator System.IntPtr(NavigationScene _value)\n"
+				"		{\n"
+				"			return _value.instance_;\n"
+				"		}\n"*/
+				"	}\n"
+				"\n"
+				"}\n";
+		}
+	}
+
+
+	void generateBindings()
+	{
 		FS::OsFile api_file;
 		const char* api_h_filepath = "../lumixengine_csharp/src/api.inl";
 		if (!api_file.open(api_h_filepath, FS::Mode::CREATE_AND_WRITE))
@@ -354,6 +401,10 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 			return;
 		}
 
+		generateScenesBindings(api_file);
+
+		using namespace Reflection;
+		int cmps_count = getComponentTypesCount();
 		for (int i = 0; i < cmps_count; ++i)
 		{
 			const char* cmp_name = getComponentTypeID(i);
@@ -392,7 +443,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 				"			: base(_entity, _cmpId, getScene(_entity.instance_, GetCmpType)) { }\n"
 				"\n\n";
 
-			struct : Reflection::IComponentVisitor
+			struct : Reflection::IPropertyVisitor
 			{
 				void write(const PropertyBase& prop, const char* cs_type, const char* cpp_type)
 				{
