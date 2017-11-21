@@ -353,7 +353,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 			class_name << "Scene";
 
 			FS::OsFile cs_file;
-			StaticString<MAX_PATH_LENGTH> filepath("cs/", class_name, ".cs");
+			StaticString<MAX_PATH_LENGTH> filepath("cs/generated/", class_name, ".cs");
 			if (!cs_file.open(filepath, FS::Mode::CREATE_AND_WRITE))
 			{
 				g_log_error.log("C#") << "Failed to create " << filepath;
@@ -420,6 +420,12 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 					*cs_file << ");\n"
 						"		}\n"
 						"\n";
+
+					*api_file <<
+						"{\n"
+						"	auto f = &CSharpMethodProxy<decltype(&" << func.decl_code << ")>::call<&" << func.decl_code << ">;\n"
+						"	mono_add_internal_call(\"Lumix." << class_name << "::" << cs_method_name << "\", f);\n"
+						"}\n";
 				}
 
 				const char* class_name;
@@ -432,19 +438,6 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 			visitor.api_file = &api_file;
 			scene.visit(visitor);
 
-				/*				"		[MethodImplAttribute(MethodImplOptions.InternalCall)]\n"
-				"		extern static bool isNavmeshReady(IntPtr instance);\n"
-				"\n"
-				"\n"
-				"\n"
-				"		public bool IsNavmeshReady()\n"
-				"		{\n"
-				"			return isNavmeshReady(instance_);\n"
-				"		}\n"
-				"\n"*/
-				"	}\n"
-				"\n"
-				"}\n";
 			cs_file.close();
 		}
 	}
@@ -457,6 +450,14 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 		if (!api_file.open(api_h_filepath, FS::Mode::CREATE_AND_WRITE))
 		{
 			g_log_error.log("C#") << "Failed to create " << api_h_filepath;
+			return;
+		}
+
+		const char* base_path = m_app.getWorldEditor().getEngine().getDiskFileDevice()->getBasePath();
+		StaticString<MAX_PATH_LENGTH> path(base_path, "cs/generated");
+		if (!PlatformInterface::makePath(path) && !PlatformInterface::dirExists(path))
+		{
+			g_log_error.log("C#") << "Failed to create " << path;
 			return;
 		}
 
@@ -474,7 +475,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 			getCSharpName(cmp_name, class_name);
 
 			FS::OsFile cs_file;
-			StaticString<MAX_PATH_LENGTH> filepath("cs/", class_name, ".cs");
+			StaticString<MAX_PATH_LENGTH> filepath("cs/generated/", class_name, ".cs");
 			if (!cs_file.open(filepath, FS::Mode::CREATE_AND_WRITE))
 			{
 				g_log_error.log("C#") << "Failed to create " << filepath;
