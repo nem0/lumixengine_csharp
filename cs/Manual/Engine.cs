@@ -23,9 +23,9 @@ namespace Lumix
             }
         }
 
-        public static implicit operator System.IntPtr(Engine _value)
-        {
-            return instance_;
-        }
+	    public Engine(IntPtr _instance)
+		{
+			instance_ = _instance;
+		}
     }
 }

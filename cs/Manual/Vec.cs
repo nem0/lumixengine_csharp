@@ -788,15 +788,6 @@ namespace Lumix
             return Subtract(_left, _right);
         }
 
-        public static bool operator==(Int2 _left,  Int2 _right)
-        {
-            return _left.x == _right.x && _left.y == _right.y;
-        }
-
-        public static bool operator !=(Int2 _left, Int2 _right)
-        {
-            return !(_left == _right);
-        }
         public static Int2 Divide(Int2 _left, Int2 _right)
         {
             return new Int2(_left.x / _right.x, _left.y / _right.y);
