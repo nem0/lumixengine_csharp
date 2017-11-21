@@ -115,11 +115,32 @@ ComponentHandle csharp_Entity_getComponent(Universe* universe, Entity entity, Mo
 }
 
 
-IScene* csharp_Entity_getScene(Universe* universe, MonoString* type_str)
+Universe* csharp_getUniverse(IScene* scene)
+{
+	return &scene->getUniverse();
+}
+
+
+MonoObject* csharp_getEntity(Universe* universe, int entity_idx)
+{
+	auto* cs_scene = (CSharpScriptScene*)universe->getScene(CSHARP_SCRIPT_TYPE);
+	u32 gc_handle = cs_scene->getEntityGCHandle({entity_idx});
+	return mono_gchandle_get_target(gc_handle);
+}
+
+
+IScene* csharp_getScene(Universe* universe, MonoString* type_str)
 {
 	const char* type = mono_string_to_utf8(type_str);
 	ComponentType cmp_type = Reflection::getComponentType(type);
 	return universe->getScene(cmp_type);
+}
+
+
+IScene* csharp_getSceneByName(Universe* universe, MonoString* type_str)
+{
+	const char* name = mono_string_to_utf8(type_str);
+	return universe->getScene(crc32(name));
 }
 
 
@@ -561,7 +582,10 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	{
 		mono_add_internal_call("Lumix.Engine::logError", csharp_logError);
 		mono_add_internal_call("Lumix.Component::create", csharp_Component_create);
-		mono_add_internal_call("Lumix.Component::getScene", csharp_Entity_getScene);
+		mono_add_internal_call("Lumix.Component::getScene", csharp_getScene);
+		mono_add_internal_call("Lumix.Universe::getSceneByName", csharp_getSceneByName);
+		mono_add_internal_call("Lumix.Universe::getEntity", csharp_getEntity);
+		mono_add_internal_call("Lumix.IScene::getUniverse", csharp_getUniverse);
 		mono_add_internal_call("Lumix.Entity::getComponent", csharp_Entity_getComponent);
 		mono_add_internal_call("Lumix.Entity::destroy", csharp_Entity_destroy);
 		mono_add_internal_call("Lumix.Entity::setPosition", csharp_Entity_setPosition);
@@ -1576,7 +1600,7 @@ void CSharpPluginImpl::loadAssembly()
 		}
 	}
 	setStaticField("Lumix", "Engine", "instance_", &m_engine);
-	setStaticField("Lumix", "Input", "instance_", &m_engine.getInputSystem());
+	//setStaticField("Lumix", "Input", "instance_", &m_engine.getInputSystem());
 	m_on_assembly_load.invoke();
 }
 

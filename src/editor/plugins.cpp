@@ -329,13 +329,14 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 	}
 
 
-	static void writeCSArgs(const Reflection::FunctionBase& func, FS::OsFile& file, int skip_args)
+	static void writeCSArgs(const Reflection::FunctionBase& func, FS::OsFile& file, int skip_args, bool cs_internal_call)
 	{
 		for (int i = skip_args, c = func.getArgCount(); i < c; ++i)
 		{
 			if (i > skip_args) file << ", ";
 			StaticString<64> cs_type;
 			getCSType(func.getArgType(i), cs_type);
+			if (cs_internal_call && cs_type == "Entity") cs_type = "int";
 			file << cs_type << " a" << i - skip_args;
 		}
 	}
@@ -369,6 +370,8 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 				"{\n"
 				"	public class " << class_name << " : IScene\n"
 				"	{\n"
+				"		public static string Type { get { return \"" << scene.name << "\"; } }\n"
+				"\n"
 				"		public " << class_name << "(IntPtr _instance)\n"
 				"			: base(_instance) { }\n"
 				"\n"
@@ -400,15 +403,15 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 						"		[MethodImplAttribute(MethodImplOptions.InternalCall)]\n"
 						"		extern static "<< cs_return_type << " " << cpp_method_name << "(IntPtr instance, ";
 
-					writeCSArgs(func, *cs_file, 0);
+					writeCSArgs(func, *cs_file, 0, true);
 
 					*cs_file << ");\n"
 						"\n"
 						"		public " << cs_return_type <<  " " << cs_method_name << "(";
 
-					writeCSArgs(func, *cs_file, 0);
+					writeCSArgs(func, *cs_file, 0, false);
 
-					const char* return_expr = cs_return_type == "void" ? "" : "return";
+					const char* return_expr = cs_return_type == "void" ? "" : (cs_return_type == "Entity" ? "var ret =" : "return");
 
 					*cs_file <<
 						")\n"
@@ -419,9 +422,22 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 					{
 						if (i > 0) *cs_file << ", ";
 						*cs_file << "a" << i;
+						StaticString<64> cs_type;
+						getCSType(func.getArgType(i), cs_type);
+						if (equalStrings(cs_type, "Entity"))
+						{
+							*cs_file << ".entity_Id_";
+						}
 					}
 
-					*cs_file << ");\n"
+					*cs_file << ");\n";
+
+					if (cs_return_type == "Entity")
+					{
+						*cs_file << "			return Universe.getEntity(ret);\n";
+					}
+
+					*cs_file <<
 						"		}\n"
 						"\n";
 
@@ -501,12 +517,8 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 			cs_file << "	{\n";
 
 			cs_file <<
-				"		public static string GetCmpType{ get { return \"" << cmp_name << "\"; } }\n"
-				"\n";
-
-			cs_file <<
 				"		public " << class_name << "(Entity _entity, int _cmpId)\n"
-				"			: base(_entity, _cmpId, getScene(_entity.instance_, GetCmpType)) { }\n"
+				"			: base(_entity, _cmpId, getScene(_entity.instance_, \"" << cmp_name << "\" )) { }\n"
 				"\n\n";
 
 			struct : Reflection::IPropertyVisitor
@@ -589,13 +601,13 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 						"		[MethodImplAttribute(MethodImplOptions.InternalCall)]\n"
 						"		extern static void " << cpp_method_name << "(IntPtr instance, int cmp, ";
 					
-					writeCSArgs(func, *cs_file, 1);
+					writeCSArgs(func, *cs_file, 1, true);
 
 					*cs_file << ");\n"
 						"\n"
 						"		public void " << cs_method_name << "(";
 
-					writeCSArgs(func, *cs_file, 1);
+					writeCSArgs(func, *cs_file, 1, false);
 
 					*cs_file <<
 						")\n"
