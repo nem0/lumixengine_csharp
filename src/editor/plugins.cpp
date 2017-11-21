@@ -385,6 +385,8 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 					StaticString<128> cs_method_name;
 					const char* cpp_method_name = func.decl_code + stringLength(func.decl_code);
 					while (cpp_method_name > func.decl_code && *cpp_method_name != ':') --cpp_method_name;
+					StaticString<64> cs_return_type;
+					getCSType(func.getReturnType(), cs_return_type);
 					if (*cpp_method_name == ':') ++cpp_method_name;
 					getCSharpName(cpp_method_name, cs_method_name);
 					*api_file <<
@@ -396,20 +398,22 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 
 					*cs_file <<
 						"		[MethodImplAttribute(MethodImplOptions.InternalCall)]\n"
-						"		extern static void " << cpp_method_name << "(IntPtr instance, ";
+						"		extern static "<< cs_return_type << " " << cpp_method_name << "(IntPtr instance, ";
 
 					writeCSArgs(func, *cs_file, 0);
 
 					*cs_file << ");\n"
 						"\n"
-						"		public void " << cs_method_name << "(";
+						"		public " << cs_return_type <<  " " << cs_method_name << "(";
 
 					writeCSArgs(func, *cs_file, 0);
+
+					const char* return_expr = cs_return_type == "void" ? "" : "return";
 
 					*cs_file <<
 						")\n"
 						"		{\n"
-						"			" << cpp_method_name << "(instance_, ";
+						"			" << return_expr << " " << cpp_method_name << "(instance_, ";
 
 					for (int i = 0, c = func.getArgCount(); i < c; ++i)
 					{
@@ -437,6 +441,8 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 			visitor.cs_file = &cs_file;
 			visitor.api_file = &api_file;
 			scene.visit(visitor);
+			
+			cs_file << "	}\n}\n";
 
 			cs_file.close();
 		}
