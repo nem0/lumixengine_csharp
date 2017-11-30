@@ -791,8 +791,8 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 				MonoObject* obj = mono_gchandle_get_target(inst.gc_handle);
 				MonoClass* mono_class = mono_object_get_class(obj);
 				MonoClassField* field = mono_class_get_field_from_name(mono_class, name);
-				MonoType* mono_type = mono_field_get_type(field);
-				bool is_matching = mono_type_get_type(mono_type) == type;
+				MonoType* mono_type = field ? mono_field_get_type(field) : nullptr;
+				bool is_matching = mono_type ? mono_type_get_type(mono_type) == type : false;
 
 				switch (type)
 				{
