@@ -5,6 +5,7 @@
 #include "engine/blob.h"
 #include "engine/crc32.h"
 #include "engine/engine.h"
+#include "engine/flags.h"
 #include "engine/geometry.h"
 #include "engine/hash_map.h"
 #include "engine/iallocator.h"
@@ -436,9 +437,14 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 {
 	struct Script
 	{
+		enum Flags : u32
+		{
+			HAS_UPDATE = 1 << 0,
+			HAS_ON_INPUT = 1 << 2
+		};
 		u32 script_name_hash;
 		u32 gc_handle = INVALID_GC_HANDLE;
-		bool has_update = false;
+		::Lumix::Flags<Flags, u32> flags;
 	};
 
 
@@ -457,6 +463,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		, m_scripts(plugin.m_allocator)
 		, m_entities_gc_handles(plugin.m_allocator)
 		, m_updates(plugin.m_allocator)
+		, m_on_inputs(plugin.m_allocator)
 		, m_is_game_running(false)
 	{
 		universe.registerComponentType(CSHARP_SCRIPT_TYPE, this, &CSharpScriptSceneImpl::serializeCSharpScript, &CSharpScriptSceneImpl::deserializeCSharpScript);
@@ -496,6 +503,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	void onAssemblyUnload()
 	{
 		m_updates.clear();
+		m_on_inputs.clear();
 		for(u32 handle : m_entities_gc_handles)
 		{
 			mono_gchandle_free(handle);
@@ -930,10 +938,15 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		{
 			ASSERT(m_system.m_assembly);
 			mono_gchandle_free(script.gc_handle);
-			if (script.has_update)
+			if (script.flags.isSet(Script::HAS_UPDATE))
 			{
-				script.has_update = false;
+				script.flags.unset(Script::HAS_UPDATE);
 				m_updates.eraseItems([&script](u32 iter) { return iter == script.gc_handle; });
+			}
+			if (script.flags.isSet(Script::HAS_ON_INPUT))
+			{
+				script.flags.unset(Script::HAS_ON_INPUT);
+				m_on_inputs.eraseItems([&script](u32 iter) { return iter == script.gc_handle; });
 			}
 			script.script_name_hash = 0;
 			script.gc_handle = INVALID_GC_HANDLE;
@@ -972,7 +985,12 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		if (mono_class_get_method_from_name(mono_class, "Update", 1))
 		{
 			m_updates.push(script.gc_handle);
-			script.has_update = true;
+			script.flags.set(Script::HAS_UPDATE);
+		}
+		if (mono_class_get_method_from_name(mono_class, "OnInput", 1))
+		{
+			m_on_inputs.push(script.gc_handle);
+			script.flags.set(Script::HAS_ON_INPUT);
 		}
 	}
 
@@ -1246,11 +1264,38 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 	IPlugin& getPlugin() const override { return m_system; }
 	
+
+	void processInput()
+	{
+		InputSystem& input = m_system.m_engine.getInputSystem();
+		const InputSystem::Event* events = input.getEvents();
+		for (u32 gc_handle : m_on_inputs)
+		{
+			MonoObject* cs_event = nullptr;
+			for (int i = 0, n = input.getEventsCount(); i < n; ++i)
+			{
+				const InputSystem::Event& event = events[i];
+				switch (event.type)
+				{
+					case InputSystem::Event::BUTTON:
+					{
+						u32 event_gc_handle = createObject("Lumix", "InputEvent");
+						cs_event = mono_gchandle_get_target(event_gc_handle);
+						break;
+					}
+				}
+			}
+			tryCallMethodInternal(gc_handle, "OnInput", cs_event);
+		}
+	}
+
 	
 	void update(float time_delta, bool paused) override
 	{
 		if (paused) return;
 		if (!m_is_game_running) return;
+
+		processInput();
 
 		for (u32 gc_handle : m_updates)
 		{
@@ -1442,6 +1487,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	AssociativeArray<Entity, ScriptComponent*> m_scripts;
 	HashMap<Entity, u32> m_entities_gc_handles;
 	Array<u32> m_updates;
+	Array<u32> m_on_inputs;
 	CSharpPluginImpl& m_system;
 	Universe& m_universe;
 	bool m_is_game_running;
