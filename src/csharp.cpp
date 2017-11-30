@@ -184,6 +184,12 @@ void csharp_Entity_setRotation(Universe* universe, int entity, const Quat& pos)
 	universe->setRotation({entity}, pos);
 }
 
+	
+void csharp_Entity_setLocalRotation(Universe* universe, int entity, const Quat& pos)
+{
+	universe->setLocalRotation({ entity }, pos);
+}
+
 
 Quat csharp_Entity_getRotation(Universe* universe, int entity)
 {
@@ -599,6 +605,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		mono_add_internal_call("Lumix.Entity::setPosition", csharp_Entity_setPosition);
 		mono_add_internal_call("Lumix.Entity::getPosition", csharp_Entity_getPosition);
 		mono_add_internal_call("Lumix.Entity::setRotation", csharp_Entity_setRotation);
+		mono_add_internal_call("Lumix.Entity::setLocalRotation", csharp_Entity_setLocalRotation);
 		mono_add_internal_call("Lumix.Entity::getRotation", csharp_Entity_getRotation);
 		mono_add_internal_call("Lumix.Entity::setName", csharp_Entity_setName);
 		mono_add_internal_call("Lumix.Entity::getName", csharp_Entity_getName);
@@ -1279,6 +1286,10 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 			field = mono_class_get_field_from_name(mono_class, "key_id");
 			mono_field_set_value(obj, field, (void*)&event.data.button.key_id);
 
+			field = mono_class_get_field_from_name(mono_class, "is_down");
+			bool is_down = event.data.button.state == InputSystem::ButtonEvent::DOWN;
+			mono_field_set_value(obj, field, (void*)&is_down);
+
 			return obj;
 		}
 
@@ -1540,6 +1551,18 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 	MonoObject* createObject(const char* name_space, const char* class_name)
 	{
+		MonoClass* pc = mono_class_from_name(mono_assembly_get_image(m_system.m_assembly), "Lumix", "PhysicalController");
+		void* iter = nullptr;
+		int count = 0;
+		while (MonoMethod* method = mono_class_get_methods(pc, &iter))
+		{
+			const char* c = mono_method_get_name(method);
+			c = c;
+			/*bool is_public = (mono_field_get_flags(field) & 0x6) != 0;
+			if (is_public) ++count;*/
+		}
+
+
 		MonoClass* mono_class = mono_class_from_name(mono_assembly_get_image(m_system.m_assembly), name_space, class_name);
 		if (!mono_class) return nullptr;
 
@@ -1728,7 +1751,6 @@ void CSharpPluginImpl::loadAssembly()
 		}
 	}
 	setStaticField("Lumix", "Engine", "instance_", &m_engine);
-	//setStaticField("Lumix", "Input", "instance_", &m_engine.getInputSystem());
 	m_on_assembly_load.invoke();
 }
 
