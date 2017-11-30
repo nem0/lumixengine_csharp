@@ -958,7 +958,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 			{
 				char class_name[256];
 				getClassName(name_hash, class_name);
-				script.gc_handle = createObject("Lumix", class_name);
+				script.gc_handle = createObjectGC("Lumix", class_name);
 				if(script.gc_handle != INVALID_GC_HANDLE) setCSharpComponent(script, cmp);
 			}
 
@@ -1006,7 +1006,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 	u32 createCSharpEntity(Entity entity)
 	{
-		u32 handle = createObject("Lumix", "Entity", &m_universe);
+		u32 handle = createObjectGC("Lumix", "Entity", &m_universe);
 		m_entities_gc_handles.insert(entity, handle);
 
 		MonoObject* obj = mono_gchandle_get_target(handle);
@@ -1263,7 +1263,77 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 
 	IPlugin& getPlugin() const override { return m_system; }
-	
+
+
+	MonoObject* createKeyboardEvent(const InputSystem::Event& event)
+	{
+		if (event.type == InputSystem::Event::BUTTON)
+		{
+			u32 event_gc_handle = createObjectGC("Lumix", "KeyboardInputEvent");
+			MonoObject* obj = mono_gchandle_get_target(event_gc_handle);
+
+			MonoClass* mono_class = mono_object_get_class(obj);
+			MonoClassField* field = mono_class_get_field_from_name(mono_class, "scancode");
+			mono_field_set_value(obj, field, (void*)&event.data.button.scancode);
+
+			field = mono_class_get_field_from_name(mono_class, "key_id");
+			mono_field_set_value(obj, field, (void*)&event.data.button.key_id);
+
+			return obj;
+		}
+
+		return nullptr;
+	}
+
+
+	MonoObject* createMouseEvent(const InputSystem::Event& event)
+	{
+		switch (event.type)
+		{
+			case InputSystem::Event::AXIS:
+			{
+				u32 event_gc_handle = createObjectGC("Lumix", "MouseAxisInputEvent");
+				MonoObject* obj = mono_gchandle_get_target(event_gc_handle);
+
+				MonoClass* mono_class = mono_object_get_class(obj);
+
+				MonoClassField* field = mono_class_get_field_from_name(mono_class, "x");
+				mono_field_set_value(obj, field, (void*)&event.data.axis.x);
+
+				field = mono_class_get_field_from_name(mono_class, "y");
+				mono_field_set_value(obj, field, (void*)&event.data.axis.y);
+
+				field = mono_class_get_field_from_name(mono_class, "x_abs");
+				mono_field_set_value(obj, field, (void*)&event.data.axis.x_abs);
+
+				field = mono_class_get_field_from_name(mono_class, "y_abs");
+				mono_field_set_value(obj, field, (void*)&event.data.axis.y_abs);
+
+				return obj;
+			}
+			case InputSystem::Event::BUTTON:
+			{
+				u32 event_gc_handle = createObjectGC("Lumix", "MouseButtonInputEvent");
+				MonoObject* obj = mono_gchandle_get_target(event_gc_handle);
+
+				MonoClass* mono_class = mono_object_get_class(obj);
+
+				MonoClassField* field = mono_class_get_field_from_name(mono_class, "key_id");
+				mono_field_set_value(obj, field, (void*)&event.data.button.key_id);
+
+				field = mono_class_get_field_from_name(mono_class, "x_abs");
+				mono_field_set_value(obj, field, (void*)&event.data.button.x_abs);
+
+				field = mono_class_get_field_from_name(mono_class, "y_abs");
+				mono_field_set_value(obj, field, (void*)&event.data.button.x_abs);
+
+				return obj;
+			}
+			default: ASSERT(false); break;
+		}
+		return nullptr;
+	}
+
 
 	void processInput()
 	{
@@ -1275,17 +1345,21 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 			for (int i = 0, n = input.getEventsCount(); i < n; ++i)
 			{
 				const InputSystem::Event& event = events[i];
-				switch (event.type)
+				switch (event.device->type)
 				{
-					case InputSystem::Event::BUTTON:
+					case InputSystem::Device::KEYBOARD:
 					{
-						u32 event_gc_handle = createObject("Lumix", "InputEvent");
-						cs_event = mono_gchandle_get_target(event_gc_handle);
+						cs_event = createKeyboardEvent(event);
+						break;
+					}
+					case InputSystem::Device::MOUSE:
+					{
+						cs_event = createMouseEvent(event);
 						break;
 					}
 				}
+				tryCallMethodInternal(gc_handle, "OnInput", cs_event);
 			}
-			tryCallMethodInternal(gc_handle, "OnInput", cs_event);
 		}
 	}
 
@@ -1456,20 +1530,28 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	}
 
 
-	u32 createObject(const char* name_space, const char* class_name)
+	u32 createObjectGC(const char* name_space, const char* class_name)
 	{
-		MonoClass* mono_class = mono_class_from_name(mono_assembly_get_image(m_system.m_assembly), name_space, class_name);
-		if (!mono_class) return INVALID_GC_HANDLE;
-
-		MonoObject* obj = mono_object_new(m_system.m_domain, mono_class);
+		MonoObject* obj = createObject(name_space, class_name);
 		if (!obj) return INVALID_GC_HANDLE;
-
-		mono_runtime_object_init(obj);
 		return mono_gchandle_new(obj, false);
 	}
 
 
-	u32 createObject(const char* name_space, const char* class_name, void* arg)
+	MonoObject* createObject(const char* name_space, const char* class_name)
+	{
+		MonoClass* mono_class = mono_class_from_name(mono_assembly_get_image(m_system.m_assembly), name_space, class_name);
+		if (!mono_class) return nullptr;
+
+		MonoObject* obj = mono_object_new(m_system.m_domain, mono_class);
+		if (!obj) return nullptr;
+
+		mono_runtime_object_init(obj);
+		return obj;
+	}
+
+
+	u32 createObjectGC(const char* name_space, const char* class_name, void* arg)
 	{
 		MonoClass* mono_class = mono_class_from_name(mono_assembly_get_image(m_system.m_assembly), name_space, class_name);
 		if (!mono_class) return INVALID_GC_HANDLE;
