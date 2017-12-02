@@ -1338,6 +1338,10 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 				field = mono_class_get_field_from_name(mono_class, "y_abs");
 				mono_field_set_value(obj, field, (void*)&event.data.button.x_abs);
 
+				field = mono_class_get_field_from_name(mono_class, "is_down");
+				bool is_down = event.data.button.state == InputSystem::ButtonEvent::DOWN;
+				mono_field_set_value(obj, field, (void*)&is_down);
+
 				return obj;
 			}
 			default: ASSERT(false); break;
@@ -1633,8 +1637,9 @@ CSharpPluginImpl::CSharpPluginImpl(Engine& engine)
 	mono_trace_set_log_handler(logger, nullptr);
 
 	mono_set_dirs("C:\\Program Files\\Mono\\lib", "C:\\Program Files\\Mono\\etc");
+	//mono_set_dirs("C:\\projects\\cs_demo\\mono3\\", "C:\\Program Files\\Mono\\etc");
+	//mono_set_assemblies_path("mono\\");
 	initDebug();
-	mono_config_parse(nullptr);
 	m_domain = mono_jit_init("lumix");
 	loadAssembly();
 }

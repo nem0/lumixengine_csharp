@@ -329,6 +329,26 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 	}
 
 
+	static void getInteropType(const char* cpp_type, StaticString<64>& cs_type)
+	{
+		const char* c = cpp_type;
+		auto skip = [&c](const char* value) {
+			if (startsWith(c, value)) c += stringLength(value);
+		};
+		skip("struct ");
+		skip("Lumix::");
+		cs_type = c;
+		char* end = cs_type.data + stringLength(cs_type.data) - 1;
+		while (end >= cs_type.data && (*end == ' ' || *end == '&')) --end;
+		++end;
+		*end = 0;
+		if (endsWith(cs_type, " const")) cs_type.data[stringLength(cs_type.data) - sizeof(" const") + 1] = '\0';
+		if (cs_type == "const char*") cs_type = "string";
+		if (cs_type == "Path") cs_type = "string";
+		if (cs_type == "Entity") cs_type = "int";
+	}
+
+
 	static void writeCSArgs(const Reflection::FunctionBase& func, FS::OsFile& file, int skip_args, bool cs_internal_call)
 	{
 		for (int i = skip_args, c = func.getArgCount(); i < c; ++i)
@@ -368,7 +388,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 				"\n"
 				"namespace Lumix\n"
 				"{\n"
-				"	public class " << class_name << " : IScene\n"
+				"	public unsafe partial class " << class_name << " : IScene\n"
 				"	{\n"
 				"		public static string Type { get { return \"" << scene.name << "\"; } }\n"
 				"\n"
@@ -390,6 +410,9 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 					while (cpp_method_name > func.decl_code && *cpp_method_name != ':') --cpp_method_name;
 					StaticString<64> cs_return_type;
 					getCSType(func.getReturnType(), cs_return_type);
+					StaticString<64> interop_return_type;
+					getInteropType(func.getReturnType(), interop_return_type);
+
 					if (*cpp_method_name == ':') ++cpp_method_name;
 					getCSharpName(cpp_method_name, cs_method_name);
 					*api_file <<
@@ -401,7 +424,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 
 					*cs_file <<
 						"		[MethodImplAttribute(MethodImplOptions.InternalCall)]\n"
-						"		extern static "<< cs_return_type << " " << cpp_method_name << "(IntPtr instance, ";
+						"		extern static "<< interop_return_type << " " << cpp_method_name << "(IntPtr instance, ";
 
 					writeCSArgs(func, *cs_file, 0, true);
 

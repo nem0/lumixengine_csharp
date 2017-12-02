@@ -9,6 +9,16 @@
 	mono_add_internal_call("Lumix.PhysicsScene::Raycast", f);
 }
 {
+	auto f = &CSharpMethodProxy<decltype(&PhysicsScene::raycastEx)>::call<&PhysicsScene::raycastEx>;
+	mono_add_internal_call("Lumix.PhysicsScene::raycastEx", f);
+}
+
+
+{
+	auto f = &CSharpMethodProxy<decltype(&PhysicsScene::raycastEx)>::call<&PhysicsScene::raycastEx>;
+	mono_add_internal_call("Lumix.PhysicsScene::RaycastEx", f);
+}
+{
 	auto getter = &csharp_getProperty<decltype(&RenderScene::getModelInstancePath), &RenderScene::getModelInstancePath>;
 	mono_add_internal_call("Lumix.Renderable::getSource", getter);
 	auto setter = &csharp_setProperty<decltype(&RenderScene::setModelInstancePath), &RenderScene::setModelInstancePath>;
@@ -365,6 +375,20 @@
 }
 
 {
+	auto getter = &csharp_getProperty<decltype(&PhysicsScene::getActorLayer), &PhysicsScene::getActorLayer>;
+	mono_add_internal_call("Lumix.MeshRigidActor::getLayer", getter);
+	auto setter = &csharp_setProperty<decltype(&PhysicsScene::setActorLayer), &PhysicsScene::setActorLayer>;
+	mono_add_internal_call("Lumix.MeshRigidActor::setLayer", setter);
+}
+
+{
+	auto getter = &csharp_getProperty<decltype(&PhysicsScene::getShapeSource), &PhysicsScene::getShapeSource>;
+	mono_add_internal_call("Lumix.MeshRigidActor::getSource", getter);
+	auto setter = &csharp_setProperty<decltype(&PhysicsScene::setShapeSource), &PhysicsScene::setShapeSource>;
+	mono_add_internal_call("Lumix.MeshRigidActor::setSource", setter);
+}
+
+{
 	auto getter = &csharp_getProperty<decltype(&PhysicsScene::getHeightfieldLayer), &PhysicsScene::getHeightfieldLayer>;
 	mono_add_internal_call("Lumix.PhysicalHeightfield::getLayer", getter);
 	auto setter = &csharp_setProperty<decltype(&PhysicsScene::setHeightfieldLayer), &PhysicsScene::setHeightfieldLayer>;
@@ -600,20 +624,6 @@
 	mono_add_internal_call("Lumix.RigidActor::getTrigger", getter);
 	auto setter = &csharp_setProperty<decltype(&PhysicsScene::setIsTrigger), &PhysicsScene::setIsTrigger>;
 	mono_add_internal_call("Lumix.RigidActor::setTrigger", setter);
-}
-
-{
-	auto getter = &csharp_getProperty<decltype(&PhysicsScene::getActorLayer), &PhysicsScene::getActorLayer>;
-	mono_add_internal_call("Lumix.MeshRigidActor::getLayer", getter);
-	auto setter = &csharp_setProperty<decltype(&PhysicsScene::setActorLayer), &PhysicsScene::setActorLayer>;
-	mono_add_internal_call("Lumix.MeshRigidActor::setLayer", setter);
-}
-
-{
-	auto getter = &csharp_getProperty<decltype(&PhysicsScene::getShapeSource), &PhysicsScene::getShapeSource>;
-	mono_add_internal_call("Lumix.MeshRigidActor::getSource", getter);
-	auto setter = &csharp_setProperty<decltype(&PhysicsScene::setShapeSource), &PhysicsScene::setShapeSource>;
-	mono_add_internal_call("Lumix.MeshRigidActor::setSource", setter);
 }
 
 {
