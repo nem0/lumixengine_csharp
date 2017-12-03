@@ -20,6 +20,8 @@ void getCSharpName(const char* cmp_name, StaticString<128>& class_name);
 
 struct CSharpPlugin : IPlugin
 {
+	virtual void* getDomain() const = 0;
+	virtual void* getAssembly() const = 0;
 	virtual void unloadAssembly() = 0;
 	virtual void loadAssembly() = 0;
 	virtual int getNamesCount() const = 0;

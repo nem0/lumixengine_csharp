@@ -45,6 +45,50 @@ namespace Lumix
 static const ComponentType CSHARP_SCRIPT_TYPE = Reflection::getComponentType("csharp_script");
 
 
+static bool inherits(MonoClass* mono_class, const char* base)
+{
+	MonoClass* parent = mono_class_get_parent(mono_class);
+	while (parent)
+	{
+		const char* n = mono_class_get_name(parent);
+		if (equalIStrings(n, base)) return true;
+		parent = mono_class_get_parent(parent);
+	}
+	return false;
+}
+
+
+static const char *GetStringProperty(const char *propertyName, MonoClass *classType, MonoObject *classObject)
+{
+	MonoProperty *messageProperty;
+	MonoMethod *messageGetter;
+	MonoString *messageString;
+
+	messageProperty = mono_class_get_property_from_name(classType, propertyName);
+	messageGetter = mono_property_get_get_method(messageProperty);
+	messageString = (MonoString *)mono_runtime_invoke(messageGetter, classObject, NULL, NULL);
+	return mono_string_to_utf8(messageString);
+}
+
+
+static void handleException(MonoObject* exc)
+{
+	if (!exc) return;
+
+	MonoClass *exception_class = mono_object_get_class(exc);
+	MonoType* exception_type = mono_class_get_type(exception_class);
+	const char* type_name = mono_type_get_name(exception_type);
+	const char* message = GetStringProperty("Message", exception_class, exc);
+	const char* source = GetStringProperty("Source", exception_class, exc);
+	const char* stack_trace = GetStringProperty("StackTrace", exception_class, exc);
+	const char* target_site = GetStringProperty("TargetSite", exception_class, exc);
+	if (message) g_log_error.log("C#") << message;
+	if (source) g_log_error.log("C#") << source;
+	if (stack_trace) g_log_error.log("C#") << stack_trace;
+	if (target_site) g_log_error.log("C#") << target_site;
+}
+
+
 void getCSharpName(const char* in_name, StaticString<128>& class_name)
 {
 	char* out = class_name.data;
@@ -91,6 +135,8 @@ struct CSharpPluginImpl : public CSharpPlugin
 	const char* getName() const override { return "csharp_script"; }
 	void createScenes(Universe& universe) override;
 	void destroyScene(IScene* scene) override { LUMIX_DELETE(m_engine.getAllocator(), scene); }
+	void* getAssembly() const override;
+	void* getDomain() const override;
 	void unloadAssembly() override;
 	void loadAssembly() override;
 	int getNamesCount() const override { return m_names.size(); }
@@ -107,6 +153,12 @@ struct CSharpPluginImpl : public CSharpPlugin
 	DelegateList<void()> m_on_assembly_unload;
 	DelegateList<void()> m_on_assembly_load;
 };
+
+
+MonoString* csharp_Resource_getPath(Resource* resource)
+{
+	return mono_string_new(mono_domain_get(), resource->getPath().c_str());
+}
 
 
 ComponentHandle csharp_Entity_getComponent(Universe* universe, Entity entity, MonoString* cmp_type)
@@ -135,6 +187,12 @@ IScene* csharp_getScene(Universe* universe, MonoString* type_str)
 	const char* type = mono_string_to_utf8(type_str);
 	ComponentType cmp_type = Reflection::getComponentType(type);
 	return universe->getScene(cmp_type);
+}
+
+
+Entity csharp_instantiatePrefab(Universe* universe, PrefabResource* prefab, const Vec3& pos, const Quat& rot, float scale)
+{
+	return universe->instantiatePrefab(*prefab, pos, rot, scale);
 }
 
 
@@ -433,6 +491,18 @@ void csharp_Animable_setSource(AnimationScene* scene, int cmp, MonoString* src)
 }
 
 
+Resource* csharp_loadResource(Engine* engine, MonoString* path, MonoString* type)
+{
+	const char* type_str = mono_string_to_utf8(type);
+	ResourceType res_type(type_str);
+	ResourceManagerBase* manager = engine->getResourceManager().get(res_type);
+	if (!manager) return nullptr;
+
+	const char* path_str = mono_string_to_utf8(path);
+	return manager->load(Path(path_str));
+}
+
+
 void csharp_logError(MonoString* message)
 {
 	g_log_error.log("C#") << mono_string_to_utf8(message);
@@ -595,8 +665,10 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	void createEngineAPI()
 	{
 		mono_add_internal_call("Lumix.Engine::logError", csharp_logError);
+		mono_add_internal_call("Lumix.Engine::loadResource", csharp_loadResource);
 		mono_add_internal_call("Lumix.Component::create", csharp_Component_create);
 		mono_add_internal_call("Lumix.Component::getScene", csharp_getScene);
+		mono_add_internal_call("Lumix.Universe::instantiatePrefab", csharp_instantiatePrefab);
 		mono_add_internal_call("Lumix.Universe::getSceneByName", csharp_getSceneByName);
 		mono_add_internal_call("Lumix.Universe::getEntity", csharp_getEntity);
 		mono_add_internal_call("Lumix.IScene::getUniverse", csharp_getUniverse);
@@ -609,6 +681,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		mono_add_internal_call("Lumix.Entity::getRotation", csharp_Entity_getRotation);
 		mono_add_internal_call("Lumix.Entity::setName", csharp_Entity_setName);
 		mono_add_internal_call("Lumix.Entity::getName", csharp_Entity_getName);
+		mono_add_internal_call("Lumix.Resource::getPath", csharp_Resource_getPath);
 	}
 
 
@@ -757,6 +830,17 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 							}
 							serializer.write("entity", entity.index);
 						}
+						else if (inherits(mono_class, "Resource"))
+						{
+							MonoObject* field_obj = mono_field_get_value_object(mono_domain_get(), field, obj);
+							Resource* res = nullptr;
+							MonoClassField* resource_field = mono_class_get_field_from_name(mono_class, "__Instance");
+							if (resource_field && field_obj)
+							{
+								mono_field_get_value(field_obj, resource_field, &res);
+							}
+							serializer.write("resource_path", res ? res->getPath().c_str() : "");
+						}
 						break;
 					}
 					default: ASSERT(false);
@@ -839,19 +923,44 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 					{
 						char saved_class_name[64];
 						serializer.read(saved_class_name, lengthOf(saved_class_name));
+						MonoType* type = mono_field_get_type(field);
+						MonoClass* mono_class = mono_type_get_class(type);
+						const char* class_name = mono_class_get_name(mono_class);
 						if (equalStrings(saved_class_name, "Entity"))
 						{
 							Entity entity;
 							serializer.read(&entity.index);
 
-							MonoType* type = mono_field_get_type(field);
-							MonoClass* mono_class = mono_type_get_class(type);
-							const char* script_class_name = mono_class_get_name(mono_class);
-							if (is_matching && equalStrings(script_class_name, "Entity"))
+							if (is_matching)
 							{
-								u32 handle = getEntityGCHandle(entity);
-								MonoObject* entity_obj = mono_gchandle_get_target(handle);
-								mono_field_set_value(obj, field, entity_obj);
+								MonoType* type = mono_field_get_type(field);
+								MonoClass* mono_class = mono_type_get_class(type);
+								const char* script_class_name = mono_class_get_name(mono_class);
+								if (is_matching && equalStrings(script_class_name, "Entity"))
+								{
+									u32 handle = getEntityGCHandle(entity);
+									MonoObject* entity_obj = mono_gchandle_get_target(handle);
+									mono_field_set_value(obj, field, entity_obj);
+								}
+							}
+						}
+						else if (inherits(mono_class, "Resource"))
+						{
+							char buf[MAX_PATH_LENGTH];
+							serializer.read(buf, lengthOf(buf));
+
+							if (is_matching)
+							{
+								// TODO
+								/*MonoType* type = mono_field_get_type(field);
+								MonoClass* mono_class = mono_type_get_class(type);
+								const char* script_class_name = mono_class_get_name(mono_class);
+								if (is_matching && equalStrings(script_class_name, "Entity"))
+								{
+									u32 handle = getEntityGCHandle(entity);
+									MonoObject* entity_obj = mono_gchandle_get_target(handle);
+									mono_field_set_value(obj, field, entity_obj);
+								}*/
 							}
 						}
 						break;
@@ -1426,37 +1535,6 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	}
 
 
-	static const char *GetStringProperty(const char *propertyName, MonoClass *classType, MonoObject *classObject)
-	{
-		MonoProperty *messageProperty;
-		MonoMethod *messageGetter;
-		MonoString *messageString;
-
-		messageProperty = mono_class_get_property_from_name(classType, propertyName);
-		messageGetter = mono_property_get_get_method(messageProperty);
-		messageString = (MonoString *)mono_runtime_invoke(messageGetter, classObject, NULL, NULL);
-		return mono_string_to_utf8(messageString);
-	}
-
-
-	void handleException(MonoObject* exc)
-	{
-		if (!exc) return;
-
-		MonoClass *exception_class = mono_object_get_class(exc);
-		MonoType* exception_type = mono_class_get_type(exception_class);
-		const char* type_name = mono_type_get_name(exception_type);
-		const char* message = GetStringProperty("Message", exception_class, exc);
-		const char* source = GetStringProperty("Source", exception_class, exc);
-		const char* stack_trace = GetStringProperty("StackTrace", exception_class, exc);
-		const char* target_site = GetStringProperty("TargetSite", exception_class, exc);
-		if(message) g_log_error.log("C#") << message;
-		if(source) g_log_error.log("C#") << source;
-		if (stack_trace) g_log_error.log("C#") << stack_trace;
-		if(target_site) g_log_error.log("C#") << target_site;
-	}
-
-
 	template <typename T>
 	void* toCSharpArg(T* arg)
 	{
@@ -1558,14 +1636,6 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		MonoClass* pc = mono_class_from_name(mono_assembly_get_image(m_system.m_assembly), "Lumix", "PhysicalController");
 		void* iter = nullptr;
 		int count = 0;
-		while (MonoMethod* method = mono_class_get_methods(pc, &iter))
-		{
-			const char* c = mono_method_get_name(method);
-			c = c;
-			/*bool is_public = (mono_field_get_flags(field) & 0x6) != 0;
-			if (is_public) ++count;*/
-		}
-
 
 		MonoClass* mono_class = mono_class_from_name(mono_assembly_get_image(m_system.m_assembly), name_space, class_name);
 		if (!mono_class) return nullptr;
@@ -1680,6 +1750,18 @@ CSharpPluginImpl::~CSharpPluginImpl()
 }
 
 
+void* CSharpPluginImpl::getAssembly() const
+{
+	return m_assembly;
+}
+
+
+void* CSharpPluginImpl::getDomain() const
+{
+	return m_domain;
+}
+
+
 void CSharpPluginImpl::unloadAssembly()
 {
 	if (!m_assembly) return;
@@ -1692,8 +1774,9 @@ void CSharpPluginImpl::unloadAssembly()
 	mono_domain_finalize(m_assembly_domain, 2000);
 	mono_domain_try_unload(m_assembly_domain, &exc);
 
-	if (exc) {
-		
+	if (exc)
+	{
+		handleException(exc);
 		return;
 	}
 	m_assembly = nullptr;
@@ -1711,19 +1794,6 @@ static bool isNativeComponent(MonoClass* cl)
 	if (!attr_class) return false;
 	const char* attr_name = mono_class_get_name(attr_class);
 	return equalStrings(attr_name, "NativeComponent");
-}
-
-
-static bool isComponent(MonoClass* mono_class)
-{
-	MonoClass* parent = mono_class_get_parent(mono_class);
-	while (parent)
-	{
-		const char* n = mono_class_get_name(parent);
-		if (equalIStrings(n, "Component")) return true;
-		parent = mono_class_get_parent(parent);
-	}
-	return false;
 }
 
 
@@ -1750,7 +1820,7 @@ void CSharpPluginImpl::loadAssembly()
 		const char* n = mono_class_get_name(cl);
 		MonoClass* parent = mono_class_get_parent(cl);
 		
-		if (!isNativeComponent(cl) && isComponent(cl))
+		if (!isNativeComponent(cl) && inherits(cl, "Component"))
 		{
 			m_names.insert(crc32(n), string(n, allocator));
 		}

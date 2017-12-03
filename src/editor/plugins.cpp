@@ -15,12 +15,15 @@
 #include "engine/path_utils.h"
 #include "engine/reflection.h"
 #include "engine/resource.h"
+#include "engine/resource_manager.h"
+#include "engine/resource_manager_base.h"
 #include "engine/universe/universe.h"
 #include "imgui/imgui.h"
 #include "csharp.h"
 #include <cstdlib>
 
 #include <mono/jit/jit.h>
+#include <mono/metadata/assembly.h>
 #include <mono/metadata/debug-helpers.h>
 #include <mono/metadata/metadata.h>
 #include <mono/metadata/mono-debug.h>
@@ -791,6 +794,20 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 							fromCString(val, stringLength(val), &index);
 							value.write(index);
 						}
+						else if (inherits(mono_class, "Resource"))
+						{
+							MonoObject* field_obj = mono_field_get_value_object(mono_domain_get(), field, obj);
+							MonoClassField* entity_id_field = mono_class_get_field_from_name(mono_class, "__Instance");
+							const char* old = "";
+							if (field_obj)
+							{
+								Resource* res = nullptr;
+								mono_field_get_value(field_obj, entity_id_field, &res);
+								old = res ? res->getPath().c_str() : "";
+							}
+							old_value.writeString(old);
+							value.writeString(val);
+						}
 						else
 						{
 							ASSERT(false);
@@ -803,10 +820,61 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 		}
 
 
+		static bool inherits(MonoClass* mono_class, const char* base)
+		{
+			MonoClass* parent = mono_class_get_parent(mono_class);
+			while (parent)
+			{
+				const char* n = mono_class_get_name(parent);
+				if (equalIStrings(n, base)) return true;
+				parent = mono_class_get_parent(parent);
+			}
+			return false;
+		}
+
+
 		bool execute() override
 		{
 			set(value);
 			return true;
+		}
+
+
+		MonoObject* createObject(const char* name_space, const char* class_name)
+		{
+			CSharpScriptScene* scene = static_cast<CSharpScriptScene*>(editor.getUniverse()->getScene(crc32("csharp_script")));
+			CSharpPlugin& plugin = ((CSharpPlugin&)scene->getPlugin());
+			MonoAssembly* assembly = (MonoAssembly*)plugin.getAssembly();
+			MonoImage* image = mono_assembly_get_image(assembly);
+			MonoClass* pc = mono_class_from_name(image, "Lumix", "PhysicalController");
+			void* iter = nullptr;
+			int count = 0;
+
+			MonoClass* mono_class = mono_class_from_name(image, name_space, class_name);
+			if (!mono_class) return nullptr;
+
+			MonoDomain* domain = (MonoDomain*)plugin.getDomain();
+			MonoObject* obj = mono_object_new(domain, mono_class);
+			if (!obj) return nullptr;
+
+			mono_runtime_object_init(obj);
+			return obj;
+		}
+
+
+		MonoObject* createResource(const char* path)
+		{
+			ResourceType res_type("prefab"); // TODO
+			ResourceManagerBase* manager = editor.getEngine().getResourceManager().get(res_type);
+			Resource* res = path[0] == '\0' ? nullptr : manager->load(Path(path));
+			MonoObject* ret = createObject("Lumix", "PrefabResource"); // TODO
+
+			MonoClass* mono_class = mono_object_get_class(ret);
+			MonoClassField* field = mono_class_get_field_from_name(mono_class, "__Instance");
+
+			mono_field_set_value(ret, field, &res);
+
+			return ret;
 		}
 
 
@@ -869,6 +937,13 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 							u32 gc_handle = scene->getEntityGCHandle(entity);
 							MonoObject* entity_obj = mono_gchandle_get_target(gc_handle);
 							mono_field_set_value(obj, field, entity_obj);
+						}
+						else if (inherits(mono_class, "Resource"))
+						{
+							char buf[MAX_PATH_LENGTH];
+							InputBlob(value).readString(buf, lengthOf(buf));
+							MonoObject* res = createResource(buf);
+							mono_field_set_value(obj, field, res);
 						}
 						break;
 					}
@@ -1035,6 +1110,27 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 	};
 
 
+	static Resource* csharp_resourceInput(PropertyGridCSharpPlugin* that, MonoString* label, MonoString* type, Resource* resource)
+	{
+		const char* label_str = mono_string_to_utf8(label);
+		const char* type_str = mono_string_to_utf8(type);
+		ResourceType res_type(type_str);
+		AssetBrowser& browser = that->m_app.getAssetBrowser();
+		char buf[MAX_PATH_LENGTH];
+		copyString(buf, resource ? resource->getPath().c_str() : "");
+		if (browser.resourceInput(label_str, label_str, buf, sizeof(buf), res_type))
+		{
+			if (buf[0] == '\0') return nullptr;
+			ResourceManagerBase* manager = that->m_app.getWorldEditor().getEngine().getResourceManager().get(res_type);
+			if (manager)
+			{
+				return manager->load(Path(buf));
+			}
+		}
+		return resource;
+	}
+
+
 	static Entity csharp_entityInput(PropertyGridCSharpPlugin* that, Universe* universe, MonoString* label_mono, Entity entity)
 	{
 		StudioApp& app = that->m_app;
@@ -1077,6 +1173,7 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 	{
 		mono_add_internal_call("Lumix.Component::setCSharpProperty", &csharp_Component_setProperty);
 		mono_add_internal_call("Lumix.Component::entityInput", &csharp_entityInput);
+		mono_add_internal_call("Lumix.Component::resourceInput", &csharp_resourceInput);
 	}
 
 
