@@ -392,9 +392,7 @@ namespace Lumix
             NativeComponentBase ncb;
 			if (IsNativeComponent<T>(out prop))
             {
-                //Engine.logError("test");
-                // var prop = typeof(T).GetProperty("GetCmpType", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
-                string cmp_type = prop.Type;//(string)prop.GetValue(null, null);
+                string cmp_type = prop.Type;
 
                 int cmp_id = getComponent(instance_, entity_Id_, cmp_type);
                 if (cmp_id < 0) return null;
@@ -434,6 +432,12 @@ namespace Lumix
             get { return getPosition(instance_, entity_Id_); }
             set { setPosition(instance_, entity_Id_, value); }
         }
+
+
+		public Vec3 Direction
+		{
+			get { return Rotation.Rotate(new Vec3(0, 0, 1)); }
+		}
 
 
         public Quat Rotation

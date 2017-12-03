@@ -6,7 +6,7 @@ namespace Lumix
 {
     public class IScene
     {
-        internal IntPtr instance_;
+        public IntPtr instance_;
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         protected extern static IntPtr getUniverse(IntPtr instance);
 

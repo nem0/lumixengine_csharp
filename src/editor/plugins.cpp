@@ -18,15 +18,12 @@
 #include "engine/resource_manager.h"
 #include "engine/resource_manager_base.h"
 #include "engine/universe/universe.h"
+#include "helpers.h"
 #include "imgui/imgui.h"
 #include "csharp.h"
 #include <cstdlib>
 
-#include <mono/jit/jit.h>
-#include <mono/metadata/assembly.h>
-#include <mono/metadata/debug-helpers.h>
-#include <mono/metadata/metadata.h>
-#include <mono/metadata/mono-debug.h>
+
 
 
 namespace Lumix
@@ -700,7 +697,7 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 	{
 		explicit SetPropertyCommand(WorldEditor& _editor)
 			: property_name(_editor.getAllocator())
-			, value(_editor.getAllocator())
+			, new_value(_editor.getAllocator())
 			, old_value(_editor.getAllocator())
 			, editor(_editor)
 		{
@@ -711,245 +708,35 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 			ComponentHandle cmp,
 			int scr_index,
 			const char* property_name,
-			const char* val,
+			const char* old_value,
+			const char* new_value,
 			IAllocator& allocator)
 			: property_name(property_name, allocator)
-			, value(allocator)
-			, old_value(allocator)
+			, new_value(new_value, allocator)
+			, old_value(old_value, allocator)
 			, component(cmp)
 			, script_index(scr_index)
 			, editor(_editor)
 		{
-			CSharpScriptScene* scene = static_cast<CSharpScriptScene*>(editor.getUniverse()->getScene(crc32("csharp_script")));
-			if (property_name[0] == '-')
-			{
-				u32 hash = scene->getScriptNameHash(component, script_index);
-				old_value.write(hash);
-				u32 new_hash;
-				fromCString(val, stringLength(val), &new_hash);
-				value.write(new_hash);
-			}
-			else
-			{
-				u32 gc_handle = scene->getGCHandle(component, script_index);
-				MonoObject* obj = mono_gchandle_get_target(gc_handle);
-				MonoClass* mono_class = mono_object_get_class(obj);
-				MonoClassField* field = mono_class_get_field_from_name(mono_class, property_name);
-
-				value_type = mono_type_get_type(mono_field_get_type(field));
-				const char* field_name = mono_field_get_name(field);
-				switch (value_type)
-				{
-					case MONO_TYPE_BOOLEAN:
-					{
-						bool b;
-						mono_field_get_value(obj, field, &b);
-						old_value.write(b);
-						value.write(val[0] == 'T' || val[0] == 't' ? true : false);
-						break;
-					}
-					case MONO_TYPE_R4:
-					{
-						float f;
-						mono_field_get_value(obj, field, &f);
-						old_value.write(f);
-						f = (float)atof(val);
-						value.write(f);
-						break;
-					}
-					case MONO_TYPE_I4:
-					{
-						int i;
-						mono_field_get_value(obj, field, &i);
-						old_value.write(i);
-						fromCString(val, stringLength(val), &i);
-						value.write(i);
-						break;
-					}
-					case MONO_TYPE_STRING:
-					{
-						MonoString* str;
-						mono_field_get_value(obj, field, &str);
-						char* tmp = mono_string_to_utf8(str);
-						old_value.write(tmp, stringLength(tmp) + 1);
-						mono_free(tmp);
-						value.write(val, stringLength(val) + 1);
-						break;
-					}
-					case MONO_TYPE_CLASS:
-					{
-						MonoType* mono_type = mono_field_get_type(field);
-						MonoClass* mono_class = mono_type_get_class(mono_type);
-						if (equalStrings(mono_class_get_name(mono_class), "Entity"))
-						{
-							MonoObject* field_obj = mono_field_get_value_object(mono_domain_get(), field, obj);
-							Entity entity = INVALID_ENTITY;
-							MonoClassField* entity_id_field = mono_class_get_field_from_name(mono_class, "entity_Id_");
-							if (field_obj)
-							{
-								mono_field_get_value(field_obj, entity_id_field, &entity.index);
-							}
-							old_value.write(entity.index);
-							int index;
-							fromCString(val, stringLength(val), &index);
-							value.write(index);
-						}
-						else if (inherits(mono_class, "Resource"))
-						{
-							MonoObject* field_obj = mono_field_get_value_object(mono_domain_get(), field, obj);
-							MonoClassField* entity_id_field = mono_class_get_field_from_name(mono_class, "__Instance");
-							const char* old = "";
-							if (field_obj)
-							{
-								Resource* res = nullptr;
-								mono_field_get_value(field_obj, entity_id_field, &res);
-								old = res ? res->getPath().c_str() : "";
-							}
-							old_value.writeString(old);
-							value.writeString(val);
-						}
-						else
-						{
-							ASSERT(false);
-						}
-						break;
-					}
-					default: ASSERT(false); break;
-				}
-			}
-		}
-
-
-		static bool inherits(MonoClass* mono_class, const char* base)
-		{
-			MonoClass* parent = mono_class_get_parent(mono_class);
-			while (parent)
-			{
-				const char* n = mono_class_get_name(parent);
-				if (equalIStrings(n, base)) return true;
-				parent = mono_class_get_parent(parent);
-			}
-			return false;
 		}
 
 
 		bool execute() override
 		{
-			set(value);
+			set(new_value);
 			return true;
 		}
 
 
-		MonoObject* createObject(const char* name_space, const char* class_name)
+		void set(const string& value)
 		{
 			CSharpScriptScene* scene = static_cast<CSharpScriptScene*>(editor.getUniverse()->getScene(crc32("csharp_script")));
-			CSharpPlugin& plugin = ((CSharpPlugin&)scene->getPlugin());
-			MonoAssembly* assembly = (MonoAssembly*)plugin.getAssembly();
-			MonoImage* image = mono_assembly_get_image(assembly);
-			MonoClass* pc = mono_class_from_name(image, "Lumix", "PhysicalController");
-			void* iter = nullptr;
-			int count = 0;
-
-			MonoClass* mono_class = mono_class_from_name(image, name_space, class_name);
-			if (!mono_class) return nullptr;
-
-			MonoDomain* domain = (MonoDomain*)plugin.getDomain();
-			MonoObject* obj = mono_object_new(domain, mono_class);
-			if (!obj) return nullptr;
-
-			mono_runtime_object_init(obj);
-			return obj;
-		}
-
-
-		MonoObject* createResource(const char* path)
-		{
-			ResourceType res_type("prefab"); // TODO
-			ResourceManagerBase* manager = editor.getEngine().getResourceManager().get(res_type);
-			Resource* res = path[0] == '\0' ? nullptr : manager->load(Path(path));
-			MonoObject* ret = createObject("Lumix", "PrefabResource"); // TODO
-
-			MonoClass* mono_class = mono_object_get_class(ret);
-			MonoClassField* field = mono_class_get_field_from_name(mono_class, "__Instance");
-
-			mono_field_set_value(ret, field, &res);
-
-			return ret;
-		}
-
-
-		void set(const OutputBlob& value)
-		{
-			CSharpScriptScene* scene = static_cast<CSharpScriptScene*>(editor.getUniverse()->getScene(crc32("csharp_script")));
-			if (property_name[0] == '-')
-			{
-				u32 hash = InputBlob(value).read<u32>();
-				scene->setScriptNameHash(component, script_index, hash);
-			}
-			else
-			{
-				u32 gc_handle = scene->getGCHandle(component, script_index);
-				MonoObject* obj = mono_gchandle_get_target(gc_handle);
-				if (!obj) return;
-
-				MonoClass* mono_class = mono_object_get_class(obj);
-				MonoClassField* field = mono_class_get_field_from_name(mono_class, property_name.c_str());
-				if (!field) return;
-
-				int type = mono_type_get_type(mono_field_get_type(field));
-				if (type != value_type) return;
-
-				const char* field_name = mono_field_get_name(field);
-				switch (type)
-				{
-					case MONO_TYPE_BOOLEAN:
-					{
-						bool b = InputBlob(value).read<bool>();
-						mono_field_set_value(obj, field, &b);
-						break;
-					}
-					case MONO_TYPE_R4:
-					{
-						float f = InputBlob(value).read<float>();
-						mono_field_set_value(obj, field, &f);
-						break;
-					}
-					case MONO_TYPE_I4:
-					{
-						int i = InputBlob(value).read<int>();;
-						mono_field_set_value(obj, field, &i);
-						break;
-					}
-					case MONO_TYPE_STRING:
-					{
-						MonoString* str = mono_string_new(mono_domain_get(), (const char*)value.getData());
-						mono_field_set_value(obj, field, str);
-						break;
-					}
-					case MONO_TYPE_CLASS:
-					{
-						MonoType* mono_type = mono_field_get_type(field);
-						MonoClass* mono_class = mono_type_get_class(mono_type);
-						if (equalStrings(mono_class_get_name(mono_class), "Entity"))
-						{
-							Entity entity;
-							entity.index = InputBlob(value).read<int>();;
-							u32 gc_handle = scene->getEntityGCHandle(entity);
-							MonoObject* entity_obj = mono_gchandle_get_target(gc_handle);
-							mono_field_set_value(obj, field, entity_obj);
-						}
-						else if (inherits(mono_class, "Resource"))
-						{
-							char buf[MAX_PATH_LENGTH];
-							InputBlob(value).readString(buf, lengthOf(buf));
-							MonoObject* res = createResource(buf);
-							mono_field_set_value(obj, field, res);
-						}
-						break;
-					}
-					default: ASSERT(false); break;
-				}
-			}
+			u32 gc_handle = scene->getGCHandle(component, script_index);
+			MonoString* prop_mono_str = mono_string_new(mono_domain_get(), property_name.c_str());
+			MonoString* value_str = mono_string_new(mono_domain_get(), value.c_str());
+			auto that = this;
+			void* args[] = { &that, prop_mono_str, value_str };
+			scene->tryCallMethod(gc_handle, "OnUndo", args, lengthOf(args), true);
 		}
 
 
@@ -977,10 +764,9 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 		bool merge(IEditorCommand& command) override
 		{
 			auto& cmd = static_cast<SetPropertyCommand&>(command);
-			if (cmd.script_index == script_index && cmd.property_name == property_name)
+			if (cmd.component == component && cmd.script_index == script_index && cmd.property_name == property_name)
 			{
-				//cmd.scene = scene;
-				cmd.value = value;
+				cmd.new_value = new_value;
 				return true;
 			}
 			return false;
@@ -989,9 +775,9 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 
 		WorldEditor& editor;
 		string property_name;
-		OutputBlob value;
+		string old_value;
+		string new_value;
 		int value_type;
-		OutputBlob old_value;
 		ComponentHandle component;
 		int script_index;
 	};
@@ -1141,12 +927,19 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 	}
 
 
-	static void csharp_Component_setProperty(PropertyGridCSharpPlugin* that, Universe* universe, Entity entity, MonoObject* cmp_obj, MonoString* prop, MonoString* value)
+	static void csharp_Component_pushUndoCommand(PropertyGridCSharpPlugin* that
+		, Universe* universe
+		, Entity entity
+		, MonoObject* cmp_obj
+		, MonoString* prop
+		, MonoString* old_value
+		, MonoString* new_value)
 	{
 		CSharpScriptScene* scene = (CSharpScriptScene*)universe->getScene(CSHARP_SCRIPT_TYPE);
 		ComponentHandle cmp = scene->getComponent(entity, CSHARP_SCRIPT_TYPE);
 		char* prop_str = mono_string_to_utf8(prop);
-		char* value_str = mono_string_to_utf8(value);
+		char* new_value_str = mono_string_to_utf8(new_value);
+		char* old_value_str = mono_string_to_utf8(old_value);
 		WorldEditor& editor = that->m_app.getWorldEditor();
 		IAllocator& allocator = editor.getAllocator();
 		int script_count = scene->getScriptCount(cmp);
@@ -1156,14 +949,15 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 			if (mono_gchandle_get_target(gc_handle) == cmp_obj)
 			{
 				auto* set_source_cmd = LUMIX_NEW(allocator, PropertyGridCSharpPlugin::SetPropertyCommand)(
-					editor, cmp, i, prop_str, value_str, allocator);
+					editor, cmp, i, prop_str, old_value_str, new_value_str, allocator);
 				editor.executeCommand(set_source_cmd);
 				break;
 			}
 		}
 		// TODO free all mono_string_to_utf8
 		mono_free(prop_str);
-		mono_free(value_str);
+		mono_free(new_value_str);
+		mono_free(old_value_str);
 	}
 
 
@@ -1171,7 +965,7 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 		: m_app(studio_plugin.m_app)
 		, m_studio_plugin(studio_plugin)
 	{
-		mono_add_internal_call("Lumix.Component::setCSharpProperty", &csharp_Component_setProperty);
+		mono_add_internal_call("Lumix.Component::pushUndoCommand", &csharp_Component_pushUndoCommand);
 		mono_add_internal_call("Lumix.Component::entityInput", &csharp_entityInput);
 		mono_add_internal_call("Lumix.Component::resourceInput", &csharp_resourceInput);
 	}
@@ -1218,7 +1012,9 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 				u32 gc_handle = scene->getGCHandle(cmp.handle, j);
 				if (gc_handle == INVALID_GC_HANDLE) continue;
 				ImGui::PushID(j);
-				scene->tryCallMethod(gc_handle, "OnInspector", this, true);
+				auto* that = this;
+				void* args[] = { &that };
+				scene->tryCallMethod(gc_handle, "OnInspector", args, 1, true);
 				if (ImGui::Button("Edit"))
 				{
 					StaticString<MAX_PATH_LENGTH> filename(script_name, ".cs");
@@ -1287,13 +1083,6 @@ struct AddCSharpComponentPlugin LUMIX_FINAL : public StudioApp::IAddComponentPlu
 				cmd->cmp = cmp;
 				cmd->name_hash = crc32(name);
 				editor.executeCommand(cmd);
-
-				int scr_count = script_scene->getScriptCount(cmp);
-				char hash_str[64];
-				toCString(crc32(name), hash_str, lengthOf(hash_str));
-				auto* set_source_cmd = LUMIX_NEW(allocator, PropertyGridCSharpPlugin::SetPropertyCommand)(
-					editor, cmp, scr_count - 1, "-source", hash_str, allocator);
-				editor.executeCommand(set_source_cmd);
 
 				ImGui::CloseCurrentPopup();
 			}

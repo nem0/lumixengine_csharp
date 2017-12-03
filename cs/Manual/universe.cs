@@ -14,12 +14,21 @@ namespace Lumix
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static IntPtr getSceneByName(IntPtr universe, string name);
 
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		extern static int instantiatePrefab(IntPtr universe, IntPtr resource, Vec3 pos, Quat rot, float scale);
+
 		public Universe(IntPtr _instance)
 		{
 			instance_ = _instance;
 		}
 
         public IntPtr instance_;
+
+        public Entity InstantiatePrefab(PrefabResource prefab, Vec3 pos, Quat rot, float scale)
+        {
+            int entity_id = instantiatePrefab(instance_, prefab.__Instance, pos, rot, scale);
+            return getEntity(instance_, entity_id);
+        }
 
         public Entity GetEntity(int entity_id)
         {

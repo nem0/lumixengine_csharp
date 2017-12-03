@@ -20,7 +20,52 @@ namespace Lumix
 		protected extern static int entityInput(IntPtr editor, IntPtr universe, string label, int entity);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		protected extern static void setCSharpProperty(IntPtr editor, IntPtr universe, int entity, Component cmp, string property, string value);
+		protected extern static IntPtr resourceInput(IntPtr editor, string label, string type, IntPtr resource);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		protected extern static void pushUndoCommand(IntPtr editor, IntPtr universe, int entity, Component cmp, string property, string old_value, string value);
+
+		public void OnUndo(IntPtr editor, string property, string value)
+		{
+			var field = this.GetType().GetField(property);
+			if (field == null) return;
+
+			Type field_type = field.FieldType;
+			if(field_type == typeof(int))
+			{
+				field.SetValue(this, int.Parse(value));
+			}
+			else if(field_type == typeof(float))
+			{
+				field.SetValue(this, float.Parse(value));
+			}
+			else if(field_type == typeof(bool))
+			{
+				field.SetValue(this, bool.Parse(value));
+			}
+			else if(field_type == typeof(string))
+			{
+				field.SetValue(this, value);
+			}
+			else if(field_type == typeof(Lumix.Entity))
+			{
+				int entity_id = int.Parse(value);
+				Entity e = Universe.GetEntity(entity_id);
+				field.SetValue(this, e);
+			}
+			else if(field_type.BaseType == typeof(Lumix.Resource))
+			{
+				var resource = Activator.CreateInstance(field_type, new object[] { value });
+				field.SetValue(this, resource);
+			}
+			else
+			{
+				string msg = "Unsupported type " + field_type.FullName + " = " + value;
+				Engine.logError(msg);
+				throw new Exception(msg);
+			}
+		}
+
         public int componentId_;
         public IntPtr scene_;
         public Entity entity_;
@@ -56,10 +101,7 @@ namespace Lumix
         {
             return entity.CreateComponent<T>();
         }
-        public virtual void Create()
-        {
 
-        }
         public virtual void OnInspector(IntPtr editor)
 		{
 			var type = this.GetType();
@@ -67,6 +109,7 @@ namespace Lumix
 			{
 				if (!f.IsPublic) continue;
 				if(f.Name == "entity_") continue;
+				if(f.Name == "componentId_") continue;
 				if(f.Name == "scene_") continue;
 				
 				var val = f.GetValue(this);
@@ -74,47 +117,67 @@ namespace Lumix
 				
 				if (val_type == typeof(float))
 				{
-					float f_val = (float)val;
-					if(ImGui.DragFloat(f.Name, ref f_val, 0.1f, float.MaxValue, float.MaxValue, "%f", 1))
+					float old_value = (float)val;
+					float new_value = old_value;
+					if(ImGui.DragFloat(f.Name, ref new_value, 0.1f, float.MaxValue, float.MaxValue, "%f", 1))
 					{
-						setCSharpProperty(editor, entity.instance_, entity.entity_Id_, this, f.Name, f_val.ToString());
+						pushUndoCommand(editor, entity.instance_, entity.entity_Id_, this, f.Name, old_value.ToString(), new_value.ToString());
 					}
 				}
 				else if (val_type == typeof(bool))
 				{
-					bool b_val = (bool)val;
-					if(ImGui.Checkbox(f.Name, ref b_val))
+					bool old_value = (bool)val;
+					bool new_value = old_value;
+					if(ImGui.Checkbox(f.Name, ref new_value))
 					{
-						setCSharpProperty(editor, entity.instance_, entity.entity_Id_, this, f.Name, b_val.ToString());
+						pushUndoCommand(editor, entity.instance_, entity.entity_Id_, this, f.Name, old_value.ToString(), new_value.ToString());
 					}
 				}
 				else if (val_type == typeof(int))
 				{
-					int i_val = (int)val;
-					if(ImGui.InputInt(f.Name, ref i_val, 1, 10, 0))
+					int old_value = (int)val;
+					int new_value = old_value;
+					if(ImGui.InputInt(f.Name, ref new_value, 1, 10, 0))
 					{
-						setCSharpProperty(editor, entity.instance_, entity.entity_Id_, this, f.Name, i_val.ToString());
+						pushUndoCommand(editor, entity.instance_, entity.entity_Id_, this, f.Name, old_value.ToString(), new_value.ToString());
 					}
 				}
 				else if (val_type == typeof(string))
 				{
-					string s_val = (string)val;
-					byte[] str_bytes = System.Text.Encoding.ASCII.GetBytes(s_val);
+					string old_value = (string)val;
+					byte[] str_bytes = System.Text.Encoding.ASCII.GetBytes(old_value);
 					str_bytes.CopyTo(s_imgui_text_buffer, 0);
 					s_imgui_text_buffer[str_bytes.Length] = 0;
 					if (ImGui.InputText(f.Name, s_imgui_text_buffer, 0, IntPtr.Zero, IntPtr.Zero))
 					{
-						string new_val = System.Text.Encoding.ASCII.GetString(s_imgui_text_buffer);
-						setCSharpProperty(editor, entity.instance_, entity.entity_Id_, this, f.Name, new_val);
+						string new_value = System.Text.Encoding.ASCII.GetString(s_imgui_text_buffer);
+						pushUndoCommand(editor, entity.instance_, entity.entity_Id_, this, f.Name, old_value, new_value);
 					}
 				}
 				else if(f.FieldType == typeof(Entity))
 				{
-					int entity_id = val == null ? -1 : ((Entity)val).entity_Id_;
-					int new_entity_id = entityInput(editor, entity.instance_, f.Name, entity_id);
-					if(new_entity_id != entity_id)
+					int old_entity_id = val == null ? -1 : ((Entity)val).entity_Id_;
+					int new_entity_id = entityInput(editor, entity.instance_, f.Name, old_entity_id);
+					if(new_entity_id != old_entity_id)
 					{
-						setCSharpProperty(editor, entity.instance_, entity.entity_Id_, this, f.Name, new_entity_id.ToString());
+						pushUndoCommand(editor, entity.instance_, entity.entity_Id_, this, f.Name, old_entity_id.ToString(), new_entity_id.ToString());
+					}
+				}
+				else if(f.FieldType.BaseType == typeof(Resource))
+				{
+					IntPtr old_res = val == null ? IntPtr.Zero : ((Resource)val).__Instance;
+					IntPtr new_res = resourceInput(editor, f.Name, "prefab", old_res);
+					if (new_res != old_res)
+					{
+						string old_path = old_res == IntPtr.Zero ? "" : Resource.getPath(old_res);
+						if (new_res == IntPtr.Zero)
+						{
+							pushUndoCommand(editor, entity.instance_, entity.entity_Id_, this, f.Name, old_path, "");
+						}
+						else
+						{
+							pushUndoCommand(editor, entity.instance_, entity.entity_Id_, this, f.Name, old_path, Resource.getPath(new_res));
+						}
 					}
 				}
 				else

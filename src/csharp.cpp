@@ -21,18 +21,12 @@
 #include "engine/serializer.h"
 #include "engine/universe/component.h"
 #include "engine/universe/universe.h"
+#include "helpers.h"
 #include "imgui/imgui.h"
 #include "navigation/navigation_scene.h"
 #include "physics/physics_scene.h"
 #include "renderer/render_scene.h"
 #include "renderer/renderer.h"
-#include <mono/jit/jit.h>
-#include <mono/metadata/assembly.h>
-#include <mono/metadata/debug-helpers.h>
-#include <mono/metadata/mono-config.h>
-#include <mono/metadata/mono-debug.h>
-#include <mono/metadata/tokentype.h>
-#include <mono/utils/mono-logger.h>
 
 
 #pragma comment(lib, "mono-2.0-sgen.lib")
@@ -43,19 +37,6 @@ namespace Lumix
 
 
 static const ComponentType CSHARP_SCRIPT_TYPE = Reflection::getComponentType("csharp_script");
-
-
-static bool inherits(MonoClass* mono_class, const char* base)
-{
-	MonoClass* parent = mono_class_get_parent(mono_class);
-	while (parent)
-	{
-		const char* n = mono_class_get_name(parent);
-		if (equalIStrings(n, base)) return true;
-		parent = mono_class_get_parent(parent);
-	}
-	return false;
-}
 
 
 static const char *GetStringProperty(const char *propertyName, MonoClass *classType, MonoObject *classObject)
@@ -157,7 +138,17 @@ struct CSharpPluginImpl : public CSharpPlugin
 
 MonoString* csharp_Resource_getPath(Resource* resource)
 {
+	if(resource == nullptr) return mono_string_new(mono_domain_get(), "");
 	return mono_string_new(mono_domain_get(), resource->getPath().c_str());
+}
+
+
+Resource* csharp_Resource_load(Engine& engine, MonoString* path, MonoString* type)
+{
+	ResourceType res_type(mono_string_to_utf8(type));
+	const char* path_str = mono_string_to_utf8(path);
+	ResourceManagerBase* manager = engine.getResourceManager().get(res_type);
+	return manager ? manager->load(Path(path_str)) : nullptr;
 }
 
 
@@ -682,6 +673,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		mono_add_internal_call("Lumix.Entity::setName", csharp_Entity_setName);
 		mono_add_internal_call("Lumix.Entity::getName", csharp_Entity_getName);
 		mono_add_internal_call("Lumix.Resource::getPath", csharp_Resource_getPath);
+		mono_add_internal_call("Lumix.Resource::load", csharp_Resource_load);
 	}
 
 
@@ -716,7 +708,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 			Array<Script>& scripts = cmp->scripts;
 			for (Script& script : scripts)
 			{
-				tryCallMethod(script.gc_handle, "OnStartGame", false);
+				tryCallMethod(script.gc_handle, "OnStartGame", nullptr, 0, false);
 			}
 		}
 		m_is_game_running = true;
@@ -951,16 +943,26 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 							if (is_matching)
 							{
-								// TODO
-								/*MonoType* type = mono_field_get_type(field);
-								MonoClass* mono_class = mono_type_get_class(type);
-								const char* script_class_name = mono_class_get_name(mono_class);
-								if (is_matching && equalStrings(script_class_name, "Entity"))
+								MonoObject* res_obj = mono_object_new(m_system.m_domain, mono_class);
+								MonoObject* result = nullptr;
+								MonoClassField* inst_field = mono_class_get_field_from_name(mono_class, "__Instance");
+								if (inst_field && tryCallMethod(res_obj, &result, "GetResourceType"))
 								{
-									u32 handle = getEntityGCHandle(entity);
-									MonoObject* entity_obj = mono_gchandle_get_target(handle);
-									mono_field_set_value(obj, field, entity_obj);
-								}*/
+									MonoObject* exc;
+									MonoString* str = mono_object_to_string(result, &exc);
+									if (exc)
+									{
+										handleException(exc);
+									}
+									else
+									{
+										ResourceType res_type(mono_string_to_utf8(str));
+										ResourceManagerBase* manager = m_system.m_engine.getResourceManager().get(res_type);
+										Resource* res = manager->load(Path(buf));
+										mono_field_set_value(res_obj, inst_field, &res);
+										mono_field_set_value(obj, field, res_obj);
+									}
+								}
 							}
 						}
 						break;
@@ -1547,6 +1549,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		return *arg;
 	}
 
+
 	template <typename... T>
 	bool tryCallMethodInternal(u32 gc_handle, const char* method_name, T... args)
 	{
@@ -1566,35 +1569,44 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	}
 
 
-	bool tryCallMethod(u32 gc_handle, const char* method_name, bool try_parents) override
+	template <typename... T>
+	bool tryCallMethod(MonoObject* obj, MonoObject** result, const char* method_name, T... args)
 	{
-		if (gc_handle == INVALID_GC_HANDLE) return false;
-		MonoObject* obj = mono_gchandle_get_target(gc_handle);
 		ASSERT(obj);
 		MonoClass* mono_class = mono_object_get_class(obj);
-
 		ASSERT(mono_class);
-		MonoMethod* method = mono_class_get_method_from_name(mono_class, method_name, 0);
-		if (!method && try_parents)
-		{
-			while (!method)
-			{
-				mono_class = mono_class_get_parent(mono_class);
-				if (!mono_class) return false;
-				method = mono_class_get_method_from_name(mono_class, method_name, 0);
-			}
-		}
+		MonoMethod* method = mono_class_get_method_from_name(mono_class, method_name, sizeof...(args));
 		if (!method) return false;
 
 		MonoObject* exc = nullptr;
-		mono_runtime_invoke(method, obj, nullptr, &exc);
-		
+		void* mono_args[] = { toCSharpArg(&args)... };
+		MonoObject* res = mono_runtime_invoke(method, obj, mono_args, &exc);
 		handleException(exc);
+		if (result && !exc) *result = res;
+
 		return exc == nullptr;
 	}
 
 
-	bool tryCallMethod(u32 gc_handle, const char* method_name, void* arg, bool try_parents) override
+	template <typename... T>
+	bool tryCallMethod(MonoObject* obj, MonoObject** result, const char* method_name)
+	{
+		ASSERT(obj);
+		MonoClass* mono_class = mono_object_get_class(obj);
+		ASSERT(mono_class);
+		MonoMethod* method = mono_class_get_method_from_name(mono_class, method_name, 0);
+		if (!method) return false;
+
+		MonoObject* exc = nullptr;
+		MonoObject* res = mono_runtime_invoke(method, obj, nullptr, &exc);
+		handleException(exc);
+		if (result && !exc) *result = res;
+
+		return exc == nullptr;
+	}
+
+
+	bool tryCallMethod(u32 gc_handle, const char* method_name, void** args, int args_count, bool try_parents) override
 	{
 		if (gc_handle == INVALID_GC_HANDLE) return false;
 		MonoObject* obj = mono_gchandle_get_target(gc_handle);
@@ -1602,20 +1614,19 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		MonoClass* mono_class = mono_object_get_class(obj);
 
 		ASSERT(mono_class);
-		MonoMethod* method = mono_class_get_method_from_name(mono_class, method_name, 1);
+		MonoMethod* method = mono_class_get_method_from_name(mono_class, method_name, args_count);
 		if (!method && try_parents)
 		{
 			while (!method)
 			{
 				mono_class = mono_class_get_parent(mono_class);
 				if (!mono_class) return false;
-				method = mono_class_get_method_from_name(mono_class, method_name, 1);
+				method = mono_class_get_method_from_name(mono_class, method_name, args_count);
 			}
 		}
 		if (!method) return false;
 
 		MonoObject* exc = nullptr;
-		void* args[] = { &arg };
 		mono_runtime_invoke(method, obj, args, &exc);
 
 		handleException(exc);
@@ -1658,7 +1669,8 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 		u32 gc_handle = mono_gchandle_new(obj, false);
 
-		tryCallMethod(gc_handle, ".ctor", arg, false);
+		void* args[] = { &arg };
+		tryCallMethod(gc_handle, ".ctor", args, 1, false);
 		return gc_handle;
 	}
 

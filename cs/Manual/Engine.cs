@@ -6,10 +6,13 @@ namespace Lumix
 {
     public partial class Engine
     {
-        static IntPtr instance_;
+        static public IntPtr instance_;
         static Engine managedInstance_;
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         public extern static void logError(string msg);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        public extern static IntPtr loadResource(IntPtr engine, string path, string type);
 
         public static Engine Instance
         {
@@ -21,6 +24,13 @@ namespace Lumix
                 }
                 return managedInstance_;
             }
+        }
+
+        public T LoadResource<T>(string path) where T : Resource, new()
+        {
+            var ret = new T();
+            ret.__Instance = loadResource(instance_, path, ret.GetResourceType());
+            return ret;
         }
 
 	    public Engine(IntPtr _instance)
