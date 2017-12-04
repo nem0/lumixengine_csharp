@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
+using System.ComponentModel;
 
 
 namespace Lumix
@@ -24,6 +25,76 @@ namespace Lumix
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		protected extern static void pushUndoCommand(IntPtr editor, IntPtr universe, int entity, Component cmp, string property, string old_value, string value);
+
+		public string Serialize()
+		{
+			var type = this.GetType();
+			var string_builder = new System.Text.StringBuilder();
+			foreach (var f in type.GetFields())
+			{
+				if (!f.IsPublic) continue;
+				if(f.Name == "entity_") continue;
+				if(f.Name == "componentId_") continue;
+				if(f.Name == "scene_") continue;
+				
+				var val = f.GetValue(this);
+				Type val_type = f.FieldType;
+				string_builder.Append(val_type.Name);
+				string_builder.Append("|");
+				string_builder.Append(f.Name);
+				string_builder.Append("|");
+				
+				if(f.FieldType == typeof(Entity))
+				{
+					string_builder.Append(((Entity)val).entity_Id_);
+				}
+				else if(f.FieldType.BaseType == typeof(Resource))
+				{
+					IntPtr native_res = val == null ? IntPtr.Zero : ((Resource)val).__Instance;
+					string path = Resource.getPath(native_res);
+					string_builder.Append(path);
+				}
+				else
+				{
+					string_builder.Append(val);
+				}
+				string_builder.Append("|");
+			}
+			return string_builder.ToString();
+		}
+
+		public void Deserialize(string data)
+		{
+			var this_type = this.GetType();
+			string[] values = data.Split('|');
+			for (int i = 0; i < values.Length - 1; i += 3)
+			{
+				string type = values[i];
+				string name = values[i+1];
+				string value = values[i+2];
+
+				var field = this_type.GetField(name);
+				Type field_type = field.FieldType;
+				if (field_type.Name != type) continue;
+
+				if (field_type == typeof(Entity))
+				{
+					int entity_id = int.Parse(value);
+					Entity e = Universe.GetEntity(entity_id);
+					field.SetValue(this, e);
+				}
+				else if(field_type.BaseType == typeof(Resource))
+				{
+					var resource = Activator.CreateInstance(field_type, new object[] { value });
+					field.SetValue(this, resource);
+				}
+				else
+				{
+					var converter = TypeDescriptor.GetConverter(field_type);
+					field.SetValue(this, converter.ConvertFrom(value));
+				}
+			}
+		}
 
 		public void OnUndo(IntPtr editor, string property, string value)
 		{
@@ -87,11 +158,7 @@ namespace Lumix
             componentId_ = _componentId;
             scene_ = _scene;
         }
-        /// <summary>
-        /// gets any component which is attache to the underlying entity
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns>T or null if not exists</returns>
+
         public T GetComponent<T>() where T : Component
         {
             return entity.GetComponent<T>();
@@ -191,14 +258,4 @@ namespace Lumix
 			}
 		}
 	}
-    //public interface INativeComponent
-    //{
-
-    //}
-    //public class NativeComponent : Component
-    //{
-    //    public NativeComponent(Entity _entity, int _cmpId, IntPtr _scene)
-    //        : base(_entity, _cmpId, _scene) { }
-
-    //}
 }
