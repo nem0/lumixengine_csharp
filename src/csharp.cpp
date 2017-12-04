@@ -684,7 +684,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		auto call = [this, &data](const ScriptComponent* cmp, MonoObject* entity) {
 			for (const Script& scr : cmp->scripts)
 			{
-				tryCallMethodInternal(scr.gc_handle, "OnContact", entity, data.position);
+				tryCallMethod(true, scr.gc_handle, nullptr, "OnContact", entity, data.position);
 			}
 		};
 
@@ -946,7 +946,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 								MonoObject* res_obj = mono_object_new(m_system.m_domain, mono_class);
 								MonoObject* result = nullptr;
 								MonoClassField* inst_field = mono_class_get_field_from_name(mono_class, "__Instance");
-								if (inst_field && tryCallMethod(res_obj, &result, "GetResourceType"))
+								if (inst_field && tryCallMethod(false, res_obj, &result, "GetResourceType"))
 								{
 									MonoObject* exc;
 									MonoString* str = mono_object_to_string(result, &exc);
@@ -1195,88 +1195,26 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 			ScriptComponent* script_cmp = *iter;
 			serializer.write(script_cmp->entity);
 			serializer.write(script_cmp->scripts.size());
-			for (Script& scr : script_cmp->scripts)
+			for (int i = 0, n = script_cmp->scripts.size(); i < n; ++i)
 			{
+				Script& scr = script_cmp->scripts[i];
 				serializer.write(scr.script_name_hash);
 
 				MonoObject* obj = mono_gchandle_get_target(scr.gc_handle);
-				int count = 0;
-				if (!obj)
+				MonoObject* cs_serialized;
+				if (tryCallMethod(true, obj, &cs_serialized, "Serialize"))
 				{
-					serializer.write(count);
-					continue;
-				}
-				MonoClass* mono_class = mono_object_get_class(obj);
-
-				void* iter = nullptr;
-				while (MonoClassField* field = mono_class_get_fields(mono_class, &iter))
-				{
-					bool is_public = (mono_field_get_flags(field) & 0x6) != 0;
-					if (is_public) ++count;
-				}
-
-				serializer.write(count);
-
-				iter = nullptr;
-				while (MonoClassField* field = mono_class_get_fields(mono_class, &iter))
-				{
-					bool is_public = (mono_field_get_flags(field) & 0x6) != 0;
-					if (!is_public) continue;
-					int type = mono_type_get_type(mono_field_get_type(field));
-
-					const char* field_name = mono_field_get_name(field);
-					serializer.writeString(field_name);
-					serializer.write(type);
-					switch (type)
+					MonoObject* exc;
+					const char* str = mono_string_to_utf8(mono_object_to_string(cs_serialized, &exc));
+					if (exc)
 					{
-						case MONO_TYPE_BOOLEAN:
-						{
-							bool value;
-							mono_field_get_value(obj, field, &value);
-							serializer.write(value);
-							break;
-						}
-						case MONO_TYPE_I4:
-						{
-							i32 value;
-							mono_field_get_value(obj, field, &value);
-							serializer.write(value);
-							break;
-						}
-						case MONO_TYPE_R4:
-						{
-							float value;
-							mono_field_get_value(obj, field, &value);
-							serializer.write(value);
-							break;
-						}
-						case MONO_TYPE_STRING:
-						{
-							MonoString* str_val;
-							mono_field_get_value(obj, field, &str_val);
-							serializer.writeString(mono_string_to_utf8(str_val));
-							break;
-						}
-						case 17:
-						case MONO_TYPE_CLASS:
-						{
-							MonoType* type = mono_field_get_type(field);
-							MonoClass* mono_class = mono_type_get_class(type);
-							if (equalStrings(mono_class_get_name(mono_class), "Entity"))
-							{
-								MonoObject* field_obj = mono_field_get_value_object(mono_domain_get(), field, obj);
-								Entity entity = INVALID_ENTITY;
-								MonoClassField* entity_id_field = mono_class_get_field_from_name(mono_class, "entity_Id_");
-								if (entity_id_field && field_obj)
-								{
-									mono_field_get_value(field_obj, entity_id_field, &entity.index);
-								}
-								serializer.write(entity.index);
-							}
-							break;
-						}
-						default: ASSERT(false);
+						handleException(exc);
 					}
+					else
+					{
+						serializer.writeString(str);
+					}
+					continue;
 				}
 			}
 		}
@@ -1287,9 +1225,10 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	{
 		int len = serializer.read<int>();
 		m_scripts.reserve(len);
+		IAllocator& allocator = m_system.m_allocator;
+		Array<u8> buf(allocator);
 		for (int i = 0; i < len; ++i)
 		{
-			IAllocator& allocator = m_system.m_allocator;
 			ScriptComponent* script = LUMIX_NEW(allocator, ScriptComponent)(allocator);
 
 			serializer.read(script->entity);
@@ -1304,75 +1243,12 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 				scr.script_name_hash = serializer.read<u32>();
 				setScriptNameHash(*script, scr, scr.script_name_hash);
 
-				int prop_count;
-				serializer.read(prop_count);
-
+				u32 size = serializer.read<u32>();
+				buf.resize(size);
+				serializer.read(&buf[0], size);
 				MonoObject* obj = mono_gchandle_get_target(scr.gc_handle);
-				if (!obj)
-				{
-					ASSERT(prop_count == 0);
-					continue;
-				}
-				MonoClass* mono_class = mono_object_get_class(obj);
-
-				for (int i = 0; i < prop_count; ++i)
-				{
-					char name[128];
-					int type;
-					serializer.readString(name, lengthOf(name));
-					serializer.read(type);
-
-					MonoClassField* field = mono_class_get_field_from_name(mono_class, name);
-
-					switch (type)
-					{
-						case MONO_TYPE_BOOLEAN:
-						{
-							bool value;
-							serializer.read(value);
-							mono_field_set_value(obj, field, &value);
-							break;
-						}
-						case MONO_TYPE_I4:
-						{
-							i32 value;
-							serializer.read(value);
-							mono_field_set_value(obj, field, &value);
-							break;
-						}
-						case MONO_TYPE_R4:
-						{
-							float value;
-							serializer.read(value);
-							mono_field_set_value(obj, field, &value);
-							break;
-						}
-						case MONO_TYPE_STRING:
-						{
-							char tmp[1024];
-							serializer.readString(tmp, lengthOf(tmp));
-							MonoString* str = mono_string_new(mono_domain_get(), tmp);
-							mono_field_set_value(obj, field, str);
-							break;
-						}
-						case 17:
-						case MONO_TYPE_CLASS:
-						{
-							MonoType* type = mono_field_get_type(field);
-							MonoClass* mono_class = mono_type_get_class(type);
-							if (equalStrings(mono_class_get_name(mono_class), "Entity"))
-							{
-								Entity entity;
-								serializer.read(entity.index);
-								u32 handle = getEntityGCHandle(entity);
-								MonoObject* entity_obj = mono_gchandle_get_target(handle);
-								mono_field_set_value(obj, field, entity_obj);
-							}
-							break;
-						}
-						default: ASSERT(false);
-					}
-				}
+				MonoString* str = mono_string_new(mono_domain_get(), (const char*)&buf[0]);
+				tryCallMethod(true, obj, nullptr, "Deserialize", str);
 			}
 			ComponentHandle cmp = {script->entity.index};
 			m_universe.addComponent(script->entity, CSHARP_SCRIPT_TYPE, this, cmp);
@@ -1484,7 +1360,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 						break;
 					}
 				}
-				tryCallMethodInternal(gc_handle, "OnInput", cs_event);
+				tryCallMethod(true, gc_handle, nullptr, "OnInput", cs_event);
 			}
 		}
 	}
@@ -1499,7 +1375,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 		for (u32 gc_handle : m_updates)
 		{
-			tryCallMethodInternal(gc_handle, "Update", time_delta);
+			tryCallMethod(true, gc_handle, nullptr, "Update", time_delta);
 		}
 	}
 	
@@ -1544,6 +1420,12 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	}
 
 	template <>
+	void* toCSharpArg<MonoString*>(MonoString** arg)
+	{
+		return *arg;
+	}
+
+	template <>
 	void* toCSharpArg<MonoObject*>(MonoObject** arg)
 	{
 		return *arg;
@@ -1551,31 +1433,29 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 
 	template <typename... T>
-	bool tryCallMethodInternal(u32 gc_handle, const char* method_name, T... args)
+	bool tryCallMethod(bool try_parents, u32 gc_handle, MonoObject** result, const char* method_name, T... args)
 	{
 		MonoObject* obj = mono_gchandle_get_target(gc_handle);
-		ASSERT(obj);
-		MonoClass* mono_class = mono_object_get_class(obj);
-		ASSERT(mono_class);
-		MonoMethod* method = mono_class_get_method_from_name(mono_class, method_name, sizeof...(args));
-		if (!method) return false;
-
-		MonoObject* exc = nullptr;
-		void* mono_args[] = { toCSharpArg(&args)... };
-		mono_runtime_invoke(method, obj, mono_args, &exc);
-		handleException(exc);
-
-		return exc == nullptr;
+		if (!obj) return false;
+		return tryCallMethod(try_parents, obj, result, method_name, args...);
 	}
 
-
 	template <typename... T>
-	bool tryCallMethod(MonoObject* obj, MonoObject** result, const char* method_name, T... args)
+	bool tryCallMethod(bool try_parents, MonoObject* obj, MonoObject** result, const char* method_name, T... args)
 	{
 		ASSERT(obj);
 		MonoClass* mono_class = mono_object_get_class(obj);
 		ASSERT(mono_class);
 		MonoMethod* method = mono_class_get_method_from_name(mono_class, method_name, sizeof...(args));
+		if (!method && try_parents)
+		{
+			while (!method)
+			{
+				mono_class = mono_class_get_parent(mono_class);
+				if (!mono_class) return false;
+				method = mono_class_get_method_from_name(mono_class, method_name, sizeof...(args));
+			}
+		}
 		if (!method) return false;
 
 		MonoObject* exc = nullptr;
@@ -1588,13 +1468,21 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	}
 
 
-	template <typename... T>
-	bool tryCallMethod(MonoObject* obj, MonoObject** result, const char* method_name)
+	bool tryCallMethod(bool try_parents, MonoObject* obj, MonoObject** result, const char* method_name)
 	{
 		ASSERT(obj);
 		MonoClass* mono_class = mono_object_get_class(obj);
 		ASSERT(mono_class);
 		MonoMethod* method = mono_class_get_method_from_name(mono_class, method_name, 0);
+		if (!method && try_parents)
+		{
+			while (!method)
+			{
+				mono_class = mono_class_get_parent(mono_class);
+				if (!mono_class) return false;
+				method = mono_class_get_method_from_name(mono_class, method_name, 0);
+			}
+		}
 		if (!method) return false;
 
 		MonoObject* exc = nullptr;
