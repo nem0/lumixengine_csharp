@@ -898,13 +898,13 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 
 	static Resource* csharp_resourceInput(PropertyGridCSharpPlugin* that, MonoString* label, MonoString* type, Resource* resource)
 	{
-		const char* label_str = mono_string_to_utf8(label);
-		const char* type_str = mono_string_to_utf8(type);
-		ResourceType res_type(type_str);
+		MonoStringHolder label_str = label;
+		MonoStringHolder type_str = type;
+		ResourceType res_type((const char*)type_str);
 		AssetBrowser& browser = that->m_app.getAssetBrowser();
 		char buf[MAX_PATH_LENGTH];
 		copyString(buf, resource ? resource->getPath().c_str() : "");
-		if (browser.resourceInput(label_str, label_str, buf, sizeof(buf), res_type))
+		if (browser.resourceInput((const char*)label_str, (const char*)label_str, buf, sizeof(buf), res_type))
 		{
 			if (buf[0] == '\0') return nullptr;
 			ResourceManagerBase* manager = that->m_app.getWorldEditor().getEngine().getResourceManager().get(res_type);
@@ -921,8 +921,8 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 	{
 		StudioApp& app = that->m_app;
 		PropertyGrid& prop_grid = app.getPropertyGrid();
-		const char* label = mono_string_to_utf8(label_mono);
-		prop_grid.entityInput(label, label, entity);
+		MonoStringHolder label = label_mono;
+		prop_grid.entityInput((const char*)label, (const char*)label, entity);
 		return entity;
 	}
 
@@ -937,9 +937,9 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 	{
 		CSharpScriptScene* scene = (CSharpScriptScene*)universe->getScene(CSHARP_SCRIPT_TYPE);
 		ComponentHandle cmp = scene->getComponent(entity, CSHARP_SCRIPT_TYPE);
-		char* prop_str = mono_string_to_utf8(prop);
-		char* new_value_str = mono_string_to_utf8(new_value);
-		char* old_value_str = mono_string_to_utf8(old_value);
+		MonoStringHolder prop_str = prop;
+		MonoStringHolder new_value_str = new_value;
+		MonoStringHolder old_value_str = old_value;
 		WorldEditor& editor = that->m_app.getWorldEditor();
 		IAllocator& allocator = editor.getAllocator();
 		int script_count = scene->getScriptCount(cmp);
@@ -949,15 +949,11 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 			if (mono_gchandle_get_target(gc_handle) == cmp_obj)
 			{
 				auto* set_source_cmd = LUMIX_NEW(allocator, PropertyGridCSharpPlugin::SetPropertyCommand)(
-					editor, cmp, i, prop_str, old_value_str, new_value_str, allocator);
+					editor, cmp, i, (const char*)prop_str, (const char*)old_value_str, (const char*)new_value_str, allocator);
 				editor.executeCommand(set_source_cmd);
 				break;
 			}
 		}
-		// TODO free all mono_string_to_utf8
-		mono_free(prop_str);
-		mono_free(new_value_str);
-		mono_free(old_value_str);
 	}
 
 
