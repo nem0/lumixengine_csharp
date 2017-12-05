@@ -915,9 +915,6 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 					{
 						char saved_class_name[64];
 						serializer.read(saved_class_name, lengthOf(saved_class_name));
-						MonoType* type = mono_field_get_type(field);
-						MonoClass* mono_class = mono_type_get_class(type);
-						const char* class_name = mono_class_get_name(mono_class);
 						if (equalStrings(saved_class_name, "Entity"))
 						{
 							Entity entity;
