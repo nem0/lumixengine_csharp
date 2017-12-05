@@ -36,10 +36,24 @@ namespace Lumix
 {
 
 
+struct MonoStringHolder
+{
+	MonoStringHolder(char* ptr) : str(ptr) {}
+	MonoStringHolder(MonoStringHolder&& rhs) { str = rhs.str; rhs.str = nullptr; }
+	~MonoStringHolder() { mono_free(str); }
+	explicit operator const char*() const { return str; }
+	bool isValid() const { return str != nullptr; }
+	char* str;
+
+	MonoStringHolder(const MonoStringHolder& rhs) = delete;
+	void operator =(const MonoStringHolder& rhs) = delete;
+};
+
+
 static const ComponentType CSHARP_SCRIPT_TYPE = Reflection::getComponentType("csharp_script");
 
 
-static const char *GetStringProperty(const char *propertyName, MonoClass *classType, MonoObject *classObject)
+static MonoStringHolder GetStringProperty(const char *propertyName, MonoClass *classType, MonoObject *classObject)
 {
 	MonoProperty *messageProperty;
 	MonoMethod *messageGetter;
@@ -58,15 +72,15 @@ static void handleException(MonoObject* exc)
 
 	MonoClass *exception_class = mono_object_get_class(exc);
 	MonoType* exception_type = mono_class_get_type(exception_class);
-	const char* type_name = mono_type_get_name(exception_type);
-	const char* message = GetStringProperty("Message", exception_class, exc);
-	const char* source = GetStringProperty("Source", exception_class, exc);
-	const char* stack_trace = GetStringProperty("StackTrace", exception_class, exc);
-	const char* target_site = GetStringProperty("TargetSite", exception_class, exc);
-	if (message) g_log_error.log("C#") << message;
-	if (source) g_log_error.log("C#") << source;
-	if (stack_trace) g_log_error.log("C#") << stack_trace;
-	if (target_site) g_log_error.log("C#") << target_site;
+	MonoStringHolder type_name = mono_type_get_name(exception_type);
+	MonoStringHolder message = GetStringProperty("Message", exception_class, exc);
+	MonoStringHolder source = GetStringProperty("Source", exception_class, exc);
+	MonoStringHolder stack_trace = GetStringProperty("StackTrace", exception_class, exc);
+	MonoStringHolder target_site = GetStringProperty("TargetSite", exception_class, exc);
+	if (message.isValid()) g_log_error.log("C#") << (const char*)message;
+	if (source.isValid()) g_log_error.log("C#") << (const char*)source;
+	if (stack_trace.isValid()) g_log_error.log("C#") << (const char*)stack_trace;
+	if (target_site.isValid()) g_log_error.log("C#") << (const char*)target_site;
 }
 
 
@@ -145,17 +159,19 @@ MonoString* csharp_Resource_getPath(Resource* resource)
 
 Resource* csharp_Resource_load(Engine& engine, MonoString* path, MonoString* type)
 {
-	ResourceType res_type(mono_string_to_utf8(type));
-	const char* path_str = mono_string_to_utf8(path);
+	MonoStringHolder type_str = mono_string_to_utf8(type);
+	ResourceType res_type((const char*)type_str);
+	MonoStringHolder path_str = mono_string_to_utf8(path);
 	ResourceManagerBase* manager = engine.getResourceManager().get(res_type);
-	return manager ? manager->load(Path(path_str)) : nullptr;
+	return manager ? manager->load(Path((const char*)path_str)) : nullptr;
 }
 
 
 ComponentHandle csharp_Entity_getComponent(Universe* universe, Entity entity, MonoString* cmp_type)
 {
-	const char* type = mono_string_to_utf8(cmp_type);
-	return universe->getComponent(entity, Reflection::getComponentType(type)).handle;
+	MonoStringHolder type_str = mono_string_to_utf8(cmp_type);
+	ComponentType type = Reflection::getComponentType((const char*)type_str);
+	return universe->getComponent(entity, type).handle;
 }
 
 
@@ -175,8 +191,8 @@ MonoObject* csharp_getEntity(Universe* universe, int entity_idx)
 
 IScene* csharp_getScene(Universe* universe, MonoString* type_str)
 {
-	const char* type = mono_string_to_utf8(type_str);
-	ComponentType cmp_type = Reflection::getComponentType(type);
+	MonoStringHolder type = mono_string_to_utf8(type_str);
+	ComponentType cmp_type = Reflection::getComponentType((const char*)type);
 	return universe->getScene(cmp_type);
 }
 
@@ -189,20 +205,20 @@ Entity csharp_instantiatePrefab(Universe* universe, PrefabResource* prefab, cons
 
 IScene* csharp_getSceneByName(Universe* universe, MonoString* type_str)
 {
-	const char* name = mono_string_to_utf8(type_str);
-	return universe->getScene(crc32(name));
+	MonoStringHolder name = mono_string_to_utf8(type_str);
+	return universe->getScene(crc32((const char*)name));
 }
 
 
 int csharp_Component_create(Universe* universe, int entity, MonoString* type_str)
 {
-	const char* type = mono_string_to_utf8(type_str);
-	ComponentType cmp_type = Reflection::getComponentType(type);
+	MonoStringHolder type = mono_string_to_utf8(type_str);
+	ComponentType cmp_type = Reflection::getComponentType((const char*)type);
 	IScene* scene = universe->getScene(cmp_type);
 	if (!scene) return INVALID_COMPONENT.index;
 	if (scene->getComponent({entity}, cmp_type) != INVALID_COMPONENT)
 	{
-		g_log_error.log("C# Script") << "Component " << type << " already exists in entity " << entity;
+		g_log_error.log("C# Script") << "Component " << (const char*)type << " already exists in entity " << entity;
 		return INVALID_COMPONENT.index;
 	}
 
@@ -248,7 +264,8 @@ Quat csharp_Entity_getRotation(Universe* universe, int entity)
 
 void csharp_Entity_setName(Universe* universe, int entity, MonoString* name)
 {
-	universe->setEntityName({ entity }, mono_string_to_utf8(name));
+	MonoStringHolder str = mono_string_to_utf8(name);
+	universe->setEntityName({ entity }, (const char*)str);
 }
 
 
@@ -477,26 +494,27 @@ MonoString* csharp_Animable_getSource(AnimationScene* scene, int cmp)
 
 void csharp_Animable_setSource(AnimationScene* scene, int cmp, MonoString* src)
 {
-	const char* str = mono_string_to_utf8(src);
-	scene->setAnimation({cmp}, Path(str));
+	MonoStringHolder str = mono_string_to_utf8(src);
+	scene->setAnimation({cmp}, Path((const char*)str));
 }
 
 
 Resource* csharp_loadResource(Engine* engine, MonoString* path, MonoString* type)
 {
-	const char* type_str = mono_string_to_utf8(type);
-	ResourceType res_type(type_str);
+	MonoStringHolder type_str = mono_string_to_utf8(type);
+	ResourceType res_type((const char*)type_str);
 	ResourceManagerBase* manager = engine->getResourceManager().get(res_type);
 	if (!manager) return nullptr;
 
-	const char* path_str = mono_string_to_utf8(path);
-	return manager->load(Path(path_str));
+	MonoStringHolder path_str = mono_string_to_utf8(path);
+	return manager->load(Path((const char*)path_str));
 }
 
 
 void csharp_logError(MonoString* message)
 {
-	g_log_error.log("C#") << mono_string_to_utf8(message);
+	MonoStringHolder tmp = mono_string_to_utf8(message);
+	g_log_error.log("C#") << (const char*)tmp;
 }
 
 
@@ -802,7 +820,8 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 					{
 						MonoString* str;
 						mono_field_get_value(obj, field, &str);
-						serializer.write("value", mono_string_to_utf8(str));
+						MonoStringHolder tmp = mono_string_to_utf8(str);
+						serializer.write("value", (const char*)tmp);
 						break;
 					}
 					case MONO_TYPE_CLASS:
@@ -953,7 +972,8 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 									}
 									else
 									{
-										ResourceType res_type(mono_string_to_utf8(str));
+										MonoStringHolder tmp = mono_string_to_utf8(str);
+										ResourceType res_type((const char*)tmp);
 										ResourceManagerBase* manager = m_system.m_engine.getResourceManager().get(res_type);
 										Resource* res = manager->load(Path(buf));
 										mono_field_set_value(res_obj, inst_field, &res);
@@ -1202,14 +1222,14 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 				if (tryCallMethod(true, obj, &cs_serialized, "Serialize"))
 				{
 					MonoObject* exc;
-					const char* str = mono_string_to_utf8(mono_object_to_string(cs_serialized, &exc));
+					MonoStringHolder str = mono_string_to_utf8(mono_object_to_string(cs_serialized, &exc));
 					if (exc)
 					{
 						handleException(exc);
 					}
 					else
 					{
-						serializer.writeString(str);
+						serializer.writeString((const char*)str);
 					}
 					continue;
 				}
@@ -1242,10 +1262,17 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 				u32 size = serializer.read<u32>();
 				buf.resize(size);
-				serializer.read(&buf[0], size);
 				MonoObject* obj = mono_gchandle_get_target(scr.gc_handle);
-				MonoString* str = mono_string_new(mono_domain_get(), (const char*)&buf[0]);
-				tryCallMethod(true, obj, nullptr, "Deserialize", str);
+				if (size > 0)
+				{
+					serializer.read(&buf[0], size);
+					MonoString* str = mono_string_new(mono_domain_get(), (const char*)&buf[0]);
+					tryCallMethod(true, obj, nullptr, "Deserialize", str);
+				}
+				else
+				{
+					tryCallMethod(true, obj, nullptr, "Deserialize", "");
+				}
 			}
 			ComponentHandle cmp = {script->entity.index};
 			m_universe.addComponent(script->entity, CSHARP_SCRIPT_TYPE, this, cmp);
