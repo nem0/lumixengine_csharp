@@ -1257,7 +1257,8 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 				}
 				else
 				{
-					tryCallMethod(true, obj, nullptr, "Deserialize", "");
+					MonoString* str = mono_string_new(mono_domain_get(), "");
+					tryCallMethod(true, obj, nullptr, "Deserialize", str);
 				}
 			}
 			ComponentHandle cmp = {script->entity.index};
