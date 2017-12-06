@@ -27,7 +27,9 @@
 #include "physics/physics_scene.h"
 #include "renderer/render_scene.h"
 #include "renderer/renderer.h"
-
+#include <mono/metadata/exception.h>
+#include <mono/metadata/mono-gc.h>
+#include <mono/metadata/threads.h>
 
 #pragma comment(lib, "mono-2.0-sgen.lib")
 
@@ -1543,10 +1545,6 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 	MonoObject* createObject(const char* name_space, const char* class_name)
 	{
-		MonoClass* pc = mono_class_from_name(mono_assembly_get_image(m_system.m_assembly), "Lumix", "PhysicalController");
-		void* iter = nullptr;
-		int count = 0;
-
 		MonoClass* mono_class = mono_class_from_name(mono_assembly_get_image(m_system.m_assembly), name_space, class_name);
 		if (!mono_class) return nullptr;
 
@@ -1604,6 +1602,7 @@ CSharpPluginImpl::CSharpPluginImpl(Engine& engine)
 {
 	registerProperties();
 
+	mono_trace_set_level_string("debug");
 	auto printer = [](const char* msg, mono_bool is_stdout) {
 		g_log_error.log("Mono") << msg;
 	};
@@ -1618,11 +1617,17 @@ CSharpPluginImpl::CSharpPluginImpl(Engine& engine)
 	mono_trace_set_log_handler(logger, nullptr);
 
 	mono_set_dirs("C:\\Program Files\\Mono\\lib", "C:\\Program Files\\Mono\\etc");
+	mono_config_parse(nullptr);
 	//mono_set_dirs("C:\\projects\\cs_demo\\mono3\\", "C:\\Program Files\\Mono\\etc");
 	//mono_set_assemblies_path("mono\\");
 	initDebug();
 	m_domain = mono_jit_init("lumix");
+	mono_thread_set_main(mono_thread_current());
 	loadAssembly();
+	mono_install_unhandled_exception_hook([](MonoObject *exc, void *user_data) {
+		handleException(exc);
+	
+	}, nullptr);
 }
 
 
@@ -1682,9 +1687,10 @@ void CSharpPluginImpl::unloadAssembly()
 	m_names.clear();
 	if(mono_domain_get() != m_domain) mono_domain_set(m_domain, true);
 	MonoObject *exc = NULL;
+	mono_gc_collect(mono_gc_max_generation());
 	mono_domain_finalize(m_assembly_domain, 2000);
+	mono_gc_collect(mono_gc_max_generation());
 	mono_domain_try_unload(m_assembly_domain, &exc);
-
 	if (exc)
 	{
 		handleException(exc);
@@ -1716,12 +1722,13 @@ void CSharpPluginImpl::loadAssembly()
 
 	IAllocator& allocator = m_engine.getAllocator();
 	m_assembly_domain = mono_domain_create_appdomain("lumix_runtime", nullptr);
-	mono_domain_set(m_assembly_domain, false);
+	mono_domain_set_config(m_assembly_domain, ".", "");
+	mono_domain_set(m_assembly_domain, true);
 	m_assembly = mono_domain_assembly_open(m_assembly_domain, path);
 	if (!m_assembly) return;
+	mono_assembly_set_main(m_assembly);
 
 	MonoImage* img = mono_assembly_get_image(m_assembly);
-	MonoClass* component_class = mono_class_from_name(img, "Lumix", "Component");
 
 	m_names.clear();
 	int num_types = mono_image_get_table_rows(img, MONO_TABLE_TYPEDEF);
