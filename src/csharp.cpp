@@ -947,7 +947,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 							if (is_matching)
 							{
-								MonoObject* res_obj = mono_object_new(m_system.m_domain, mono_class);
+								MonoObject* res_obj = mono_object_new(mono_domain_get(), mono_class);
 								MonoObject* result = nullptr;
 								MonoClassField* inst_field = mono_class_get_field_from_name(mono_class, "__Instance");
 								if (inst_field && tryCallMethod(false, res_obj, &result, "GetResourceType"))
@@ -1548,7 +1548,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		MonoClass* mono_class = mono_class_from_name(mono_assembly_get_image(m_system.m_assembly), name_space, class_name);
 		if (!mono_class) return nullptr;
 
-		MonoObject* obj = mono_object_new(m_system.m_domain, mono_class);
+		MonoObject* obj = mono_object_new(mono_domain_get(), mono_class);
 		if (!obj) return nullptr;
 
 		mono_runtime_object_init(obj);
@@ -1561,7 +1561,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		MonoClass* mono_class = mono_class_from_name(mono_assembly_get_image(m_system.m_assembly), name_space, class_name);
 		if (!mono_class) return INVALID_GC_HANDLE;
 
-		MonoObject* obj = mono_object_new(m_system.m_domain, mono_class);
+		MonoObject* obj = mono_object_new(mono_domain_get(), mono_class);
 		if (!obj) return INVALID_GC_HANDLE;
 
 		u32 gc_handle = mono_gchandle_new(obj, false);
@@ -1602,7 +1602,7 @@ CSharpPluginImpl::CSharpPluginImpl(Engine& engine)
 {
 	registerProperties();
 
-	mono_trace_set_level_string("debug");
+	//mono_trace_set_level_string("debug");
 	auto printer = [](const char* msg, mono_bool is_stdout) {
 		g_log_error.log("Mono") << msg;
 	};
@@ -1626,7 +1626,6 @@ CSharpPluginImpl::CSharpPluginImpl(Engine& engine)
 	loadAssembly();
 	mono_install_unhandled_exception_hook([](MonoObject *exc, void *user_data) {
 		handleException(exc);
-	
 	}, nullptr);
 }
 
