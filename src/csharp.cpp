@@ -881,8 +881,8 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 				MonoObject* obj = mono_gchandle_get_target(inst.gc_handle);
 				MonoClass* mono_class = mono_object_get_class(obj);
 				MonoClassField* field = mono_class_get_field_from_name(mono_class, name);
-				MonoType* mono_type = field ? mono_field_get_type(field) : nullptr;
-				bool is_matching = mono_type ? mono_type_get_type(mono_type) == type : false;
+				MonoType* field_type = field ? mono_field_get_type(field) : nullptr;
+				bool is_matching = field_type ? mono_type_get_type(field_type) == type : false;
 
 				switch (type)
 				{
@@ -922,6 +922,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 					{
 						char saved_class_name[64];
 						serializer.read(saved_class_name, lengthOf(saved_class_name));
+						MonoClass* field_class = mono_type_get_class(field_type);
 						if (equalStrings(saved_class_name, "Entity"))
 						{
 							Entity entity;
@@ -940,16 +941,16 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 								}
 							}
 						}
-						else if (inherits(mono_class, "Resource"))
+						else if (inherits(field_class, "Resource"))
 						{
 							char buf[MAX_PATH_LENGTH];
 							serializer.read(buf, lengthOf(buf));
 
 							if (is_matching)
 							{
-								MonoObject* res_obj = mono_object_new(mono_domain_get(), mono_class);
+								MonoObject* res_obj = mono_object_new(mono_domain_get(), field_class);
 								MonoObject* result = nullptr;
-								MonoClassField* inst_field = mono_class_get_field_from_name(mono_class, "__Instance");
+								MonoClassField* inst_field = mono_class_get_field_from_name(field_class, "__Instance");
 								if (inst_field && tryCallMethod(false, res_obj, &result, "GetResourceType"))
 								{
 									MonoObject* exc;
