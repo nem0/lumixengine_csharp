@@ -5,6 +5,6 @@
 [![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)
 [![Twitter](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/mikulasflorek)
 
-**Work in progress, not really usable at the moment.**
+110% usable :trollface:
 
 [Getting Started](https://www.youtube.com/watch?v=ZtiRcqAc2Xs)
