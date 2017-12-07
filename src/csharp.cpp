@@ -5,7 +5,7 @@
 #include "engine/blob.h"
 #include "engine/crc32.h"
 #include "engine/engine.h"
-#include "engine/flags.h"
+#include "engine/flag_set.h"
 #include "engine/geometry.h"
 #include "engine/hash_map.h"
 #include "engine/iallocator.h"
@@ -517,7 +517,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		};
 		u32 script_name_hash;
 		u32 gc_handle = INVALID_GC_HANDLE;
-		::Lumix::Flags<Flags, u32> flags;
+		FlagSet<Flags, u32> flags;
 	};
 
 
@@ -745,6 +745,14 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	}
 
 
+	enum class ScriptClass : u32
+	{
+		UNKNOWN,
+		ENTITY,
+		RESOURCE
+	};
+
+
 	void serializeCSharpScript(ISerializer& serializer, ComponentHandle cmp)
 	{
 		ScriptComponent* script = m_scripts[{cmp.index}];
@@ -817,9 +825,9 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 						MonoType* type = mono_field_get_type(field);
 						MonoClass* mono_class = mono_type_get_class(type);
 						const char* class_name = mono_class_get_name(mono_class);
-						serializer.write("class", class_name);
 						if (equalStrings(class_name, "Entity"))
 						{
+							serializer.write("script_class", (u32)ScriptClass::ENTITY);
 							MonoObject* field_obj = mono_field_get_value_object(mono_domain_get(), field, obj);
 							Entity entity = INVALID_ENTITY;
 							MonoClassField* entity_id_field = mono_class_get_field_from_name(mono_class, "entity_Id_");
@@ -831,6 +839,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 						}
 						else if (inherits(mono_class, "Resource"))
 						{
+							serializer.write("script_class", (u32)ScriptClass::RESOURCE);
 							MonoObject* field_obj = mono_field_get_value_object(mono_domain_get(), field, obj);
 							Resource* res = nullptr;
 							MonoClassField* resource_field = mono_class_get_field_from_name(mono_class, "__Instance");
@@ -839,6 +848,10 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 								mono_field_get_value(field_obj, resource_field, &res);
 							}
 							serializer.write("resource_path", res ? res->getPath().c_str() : "");
+						}
+						else
+						{
+							serializer.write("script_class", (u32)ScriptClass::UNKNOWN);
 						}
 						break;
 					}
@@ -920,56 +933,62 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 					}
 					case MONO_TYPE_CLASS:
 					{
-						char saved_class_name[64];
-						serializer.read(saved_class_name, lengthOf(saved_class_name));
-						MonoClass* field_class = mono_type_get_class(field_type);
-						if (equalStrings(saved_class_name, "Entity"))
+						ScriptClass script_class;
+						serializer.read((u32*)&script_class);
+						switch(script_class)
 						{
-							Entity entity;
-							serializer.read(&entity.index);
-
-							if (is_matching)
+							case ScriptClass::ENTITY:
 							{
-								MonoType* type = mono_field_get_type(field);
-								MonoClass* mono_class = mono_type_get_class(type);
-								const char* script_class_name = mono_class_get_name(mono_class);
-								if (is_matching && equalStrings(script_class_name, "Entity"))
-								{
-									u32 handle = getEntityGCHandle(entity);
-									MonoObject* entity_obj = mono_gchandle_get_target(handle);
-									mono_field_set_value(obj, field, entity_obj);
-								}
-							}
-						}
-						else if (inherits(field_class, "Resource"))
-						{
-							char buf[MAX_PATH_LENGTH];
-							serializer.read(buf, lengthOf(buf));
+								Entity entity;
+								serializer.read(&entity.index);
 
-							if (is_matching)
-							{
-								MonoObject* res_obj = mono_object_new(mono_domain_get(), field_class);
-								MonoObject* result = nullptr;
-								MonoClassField* inst_field = mono_class_get_field_from_name(field_class, "__Instance");
-								if (inst_field && tryCallMethod(false, res_obj, &result, "GetResourceType"))
+								if (is_matching)
 								{
-									MonoObject* exc;
-									MonoString* str = mono_object_to_string(result, &exc);
-									if (exc)
+									MonoType* type = mono_field_get_type(field);
+									MonoClass* mono_class = mono_type_get_class(type);
+									const char* script_class_name = mono_class_get_name(mono_class);
+									if (is_matching && equalStrings(script_class_name, "Entity"))
 									{
-										handleException(exc);
-									}
-									else
-									{
-										MonoStringHolder tmp = str;
-										ResourceType res_type((const char*)tmp);
-										ResourceManagerBase* manager = m_system.m_engine.getResourceManager().get(res_type);
-										Resource* res = manager->load(Path(buf));
-										mono_field_set_value(res_obj, inst_field, &res);
-										mono_field_set_value(obj, field, res_obj);
+										u32 handle = getEntityGCHandle(entity);
+										MonoObject* entity_obj = mono_gchandle_get_target(handle);
+										mono_field_set_value(obj, field, entity_obj);
 									}
 								}
+								break;
 							}
+							case ScriptClass::RESOURCE:
+							{
+								char buf[MAX_PATH_LENGTH];
+								serializer.read(buf, lengthOf(buf));
+
+								if (is_matching)
+								{
+									MonoClass* field_class = mono_type_get_class(field_type);
+									MonoObject* res_obj = mono_object_new(mono_domain_get(), field_class);
+									MonoObject* result = nullptr;
+									MonoClassField* inst_field = mono_class_get_field_from_name(field_class, "__Instance");
+									if (inst_field && tryCallMethod(false, res_obj, &result, "GetResourceType"))
+									{
+										MonoObject* exc;
+										MonoString* str = mono_object_to_string(result, &exc);
+										if (exc)
+										{
+											handleException(exc);
+										}
+										else
+										{
+											MonoStringHolder tmp = str;
+											ResourceType res_type((const char*)tmp);
+											ResourceManagerBase* manager = m_system.m_engine.getResourceManager().get(res_type);
+											Resource* res = manager->load(Path(buf));
+											mono_field_set_value(res_obj, inst_field, &res);
+											mono_field_set_value(obj, field, res_obj);
+										}
+									}
+								}
+								break;
+							}
+							case ScriptClass::UNKNOWN: break;
 						}
 						break;
 					}
