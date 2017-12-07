@@ -5,6 +5,4 @@
 [![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)
 [![Twitter](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/mikulasflorek)
 
-110% usable :trollface: no alan-code included
-
 [Getting Started](https://www.youtube.com/watch?v=ZtiRcqAc2Xs)
