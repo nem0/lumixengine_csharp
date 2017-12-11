@@ -36,4 +36,91 @@ public class PrefabResource : Resource
 }
 
 
+public class ModelResource : Resource
+{
+    public ModelResource(string path) 
+    {
+        __Instance = load(Engine.instance_, path, GetResourceType());
+    }
+
+    public override string GetResourceType() { return "model"; }
+}
+
+
+public class MaterialResource : Resource
+{
+    public MaterialResource(string path) 
+    {
+        __Instance = load(Engine.instance_, path, GetResourceType());
+    }
+
+    public override string GetResourceType() { return "material"; }
+}
+
+
+public class TextureResource : Resource
+{
+    public TextureResource(string path) 
+    {
+        __Instance = load(Engine.instance_, path, GetResourceType());
+    }
+
+    public override string GetResourceType() { return "texture"; }
+}
+
+
+public class AnimationResource : Resource
+{
+    public AnimationResource(string path) 
+    {
+        __Instance = load(Engine.instance_, path, GetResourceType());
+    }
+
+    public override string GetResourceType() { return "animation"; }
+}
+
+
+public class PhysicsResource : Resource
+{
+    public PhysicsResource(string path) 
+    {
+        __Instance = load(Engine.instance_, path, GetResourceType());
+    }
+
+    public override string GetResourceType() { return "physics"; }
+}
+
+
+public class ShaderResource : Resource
+{
+    public ShaderResource(string path) 
+    {
+        __Instance = load(Engine.instance_, path, GetResourceType());
+    }
+
+    public override string GetResourceType() { return "shader"; }
+}
+
+
+public class AnimControllerResource : Resource
+{
+    public AnimControllerResource(string path) 
+    {
+        __Instance = load(Engine.instance_, path, GetResourceType());
+    }
+
+    public override string GetResourceType() { return "anim_controller"; }
+}
+
+
+public class ClipResource : Resource
+{
+    public ClipResource(string path) 
+    {
+        __Instance = load(Engine.instance_, path, GetResourceType());
+    }
+
+    public override string GetResourceType() { return "clip"; }
+}
+
 }
