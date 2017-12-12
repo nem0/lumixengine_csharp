@@ -835,7 +835,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 							{
 								mono_field_get_value(field_obj, entity_id_field, &entity.index);
 							}
-							serializer.write("entity", entity.index);
+							serializer.write("entity", entity);
 						}
 						else if (inherits(mono_class, "Resource"))
 						{
@@ -940,7 +940,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 							case ScriptClass::ENTITY:
 							{
 								Entity entity;
-								serializer.read(&entity.index);
+								serializer.read(&entity);
 
 								if (is_matching)
 								{
