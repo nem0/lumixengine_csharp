@@ -324,8 +324,12 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 		++end;
 		*end = 0;
 		if (endsWith(cs_type, " const")) cs_type.data[stringLength(cs_type.data) - sizeof(" const") + 1] = '\0';
-		if (cs_type == "const char*") cs_type = "string";
-		if (cs_type == "Path") cs_type = "string";
+		if(endsWith(cs_type, "*"))
+		{
+			if (startsWith(cs_type, "const char")) cs_type = "string";
+			else if (startsWith(cs_type, "char const")) cs_type = "string";
+		}
+		else if (cs_type == "Path") cs_type = "string";
 	}
 
 
