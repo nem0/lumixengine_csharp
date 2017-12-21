@@ -110,7 +110,6 @@ void getCSharpName(const char* in_name, StaticString<128>& class_name)
 }
 
 
-
 struct CSharpPluginImpl : public CSharpPlugin
 {
 	CSharpPluginImpl(Engine& engine);
@@ -510,14 +509,18 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 {
 	struct Script
 	{
+		Script(IAllocator& allocator) : properties(allocator) {}
+
 		enum Flags : u32
 		{
 			HAS_UPDATE = 1 << 0,
 			HAS_ON_INPUT = 1 << 2
 		};
+
 		u32 script_name_hash;
 		u32 gc_handle = INVALID_GC_HANDLE;
 		FlagSet<Flags, u32> flags;
+		string properties;
 	};
 
 
@@ -569,6 +572,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 			{
 				setScriptNameHash(*cmp, script, script.script_name_hash);
 			}
+			applyProperties(*cmp);
 		}
 	}
 
@@ -762,102 +766,43 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 			serializer.write("script_name_hash", inst.script_name_hash);
 			if (inst.gc_handle == INVALID_GC_HANDLE)
 			{
-				serializer.write("prop_count", (int)0);
+				serializer.write("properties", "");
 				continue;
 			}
-			
+
 			MonoObject* obj = mono_gchandle_get_target(inst.gc_handle);
-			MonoClass* mono_class = mono_object_get_class(obj);
-
-			void* iter = nullptr;
-			int count = 0;
-			while (MonoClassField* field = mono_class_get_fields(mono_class, &iter))
+			MonoObject* res;
+			if (tryCallMethod(true, obj, &res, "Serialize"))
 			{
-				bool is_public = (mono_field_get_flags(field) & 0x6) != 0;
-				if (is_public) ++count;
-			}
-
-			serializer.write("prop_count", count);
-
-			iter = nullptr;
-			while (MonoClassField* field = mono_class_get_fields(mono_class, &iter))
-			{
-				bool is_public = (mono_field_get_flags(field) & 0x6) != 0;
-				if (!is_public) continue;
-				int type = mono_type_get_type(mono_field_get_type(field));
-
-				const char* field_name = mono_field_get_name(field);
-				serializer.write("name", field_name);
-				serializer.write("type", type);
-				switch (type)
+				MonoObject* exc;
+				MonoStringHolder str = mono_object_to_string(res, &exc);
+				if (exc)
 				{
-					case MONO_TYPE_BOOLEAN:
-					{
-						bool value;
-						mono_field_get_value(obj, field, &value);
-						serializer.write("value", value);
-						break;
-					}
-					case MONO_TYPE_R4:
-					{
-						float value;
-						mono_field_get_value(obj, field, &value);
-						serializer.write("value", value);
-						break;
-					}
-					case MONO_TYPE_I4:
-					{
-						i32 value;
-						mono_field_get_value(obj, field, &value);
-						serializer.write("value", value);
-						break;
-					}
-					case MONO_TYPE_STRING:
-					{
-						MonoString* str;
-						mono_field_get_value(obj, field, &str);
-						MonoStringHolder tmp = str;
-						serializer.write("value", (const char*)tmp);
-						break;
-					}
-					case MONO_TYPE_CLASS:
-					{
-						MonoType* type = mono_field_get_type(field);
-						MonoClass* mono_class = mono_type_get_class(type);
-						const char* class_name = mono_class_get_name(mono_class);
-						if (equalStrings(class_name, "Entity"))
-						{
-							serializer.write("script_class", (u32)ScriptClass::ENTITY);
-							MonoObject* field_obj = mono_field_get_value_object(mono_domain_get(), field, obj);
-							Entity entity = INVALID_ENTITY;
-							MonoClassField* entity_id_field = mono_class_get_field_from_name(mono_class, "entity_Id_");
-							if (entity_id_field && field_obj)
-							{
-								mono_field_get_value(field_obj, entity_id_field, &entity.index);
-							}
-							serializer.write("entity", entity);
-						}
-						else if (inherits(mono_class, "Resource"))
-						{
-							serializer.write("script_class", (u32)ScriptClass::RESOURCE);
-							MonoObject* field_obj = mono_field_get_value_object(mono_domain_get(), field, obj);
-							Resource* res = nullptr;
-							MonoClassField* resource_field = mono_class_get_field_from_name(mono_class, "__Instance");
-							if (resource_field && field_obj)
-							{
-								mono_field_get_value(field_obj, resource_field, &res);
-							}
-							serializer.write("resource_path", res ? res->getPath().c_str() : "");
-						}
-						else
-						{
-							serializer.write("script_class", (u32)ScriptClass::UNKNOWN);
-						}
-						break;
-					}
-					default: ASSERT(false);
+					handleException(exc);
+				}
+				else
+				{
+					serializer.write("properties", (const char*)str);
 				}
 			}
+			else
+			{
+				serializer.write("properties", "");
+			}
+		}
+	}
+
+
+	void applyProperties(ScriptComponent& script)
+	{
+		for (Script& inst : script.scripts)
+		{
+			if (inst.gc_handle == INVALID_GC_HANDLE) continue;
+			if (inst.properties.length() == 0) continue;
+
+			MonoObject* obj = mono_gchandle_get_target(inst.gc_handle);
+			MonoString* str = mono_string_new(mono_domain_get(), inst.properties.getData());
+			tryCallMethod(true, obj, nullptr, "Deserialize", str);
 		}
 	}
 
@@ -876,126 +821,15 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		script->scripts.reserve(count);
 		for (int i = 0; i < count; ++i)
 		{
-			Script& inst = script->scripts.emplace();
+			Script& inst = script->scripts.emplace(allocator);
 			u32 hash;
 			serializer.read(&hash);
 			setScriptNameHash(cmp, i, hash);
-
-			int prop_count;
-			serializer.read(&prop_count);
-
-			for (int i = 0; i < prop_count; ++i)
-			{
-				char name[128];
-				int type;
-				serializer.read(name, lengthOf(name));
-				serializer.read(&type);
-
-				MonoObject* obj = mono_gchandle_get_target(inst.gc_handle);
-				MonoClass* mono_class = mono_object_get_class(obj);
-				MonoClassField* field = mono_class_get_field_from_name(mono_class, name);
-				MonoType* field_type = field ? mono_field_get_type(field) : nullptr;
-				bool is_matching = field_type ? mono_type_get_type(field_type) == type : false;
-
-				switch (type)
-				{
-					case MONO_TYPE_BOOLEAN:
-					{
-						bool value;
-						serializer.read(&value);
-						if(is_matching) mono_field_set_value(obj, field, &value);
-						break;
-					}
-					case MONO_TYPE_I4:
-					{
-						i32 value;
-						serializer.read(&value);
-						if(is_matching) mono_field_set_value(obj, field, &value);
-						break;
-					}
-					case MONO_TYPE_R4:
-					{
-						float value;
-						serializer.read(&value);
-						if (is_matching) mono_field_set_value(obj, field, &value);
-						break;
-					}
-					case MONO_TYPE_STRING:
-					{
-						char tmp[1024];
-						serializer.read(tmp, lengthOf(tmp));
-						if (is_matching)
-						{
-							MonoString* str = mono_string_new(mono_domain_get(), tmp);
-							mono_field_set_value(obj, field, str);
-						}
-						break;
-					}
-					case MONO_TYPE_CLASS:
-					{
-						ScriptClass script_class;
-						serializer.read((u32*)&script_class);
-						switch(script_class)
-						{
-							case ScriptClass::ENTITY:
-							{
-								Entity entity;
-								serializer.read(&entity);
-
-								if (is_matching)
-								{
-									MonoType* type = mono_field_get_type(field);
-									MonoClass* mono_class = mono_type_get_class(type);
-									const char* script_class_name = mono_class_get_name(mono_class);
-									if (is_matching && equalStrings(script_class_name, "Entity"))
-									{
-										u32 handle = getEntityGCHandle(entity);
-										MonoObject* entity_obj = mono_gchandle_get_target(handle);
-										mono_field_set_value(obj, field, entity_obj);
-									}
-								}
-								break;
-							}
-							case ScriptClass::RESOURCE:
-							{
-								char buf[MAX_PATH_LENGTH];
-								serializer.read(buf, lengthOf(buf));
-
-								if (is_matching)
-								{
-									MonoClass* field_class = mono_type_get_class(field_type);
-									MonoObject* res_obj = mono_object_new(mono_domain_get(), field_class);
-									MonoObject* result = nullptr;
-									MonoClassField* inst_field = mono_class_get_field_from_name(field_class, "__Instance");
-									if (inst_field && tryCallMethod(false, res_obj, &result, "GetResourceType"))
-									{
-										MonoObject* exc;
-										MonoString* str = mono_object_to_string(result, &exc);
-										if (exc)
-										{
-											handleException(exc);
-										}
-										else
-										{
-											MonoStringHolder tmp = str;
-											ResourceType res_type((const char*)tmp);
-											ResourceManagerBase* manager = m_system.m_engine.getResourceManager().get(res_type);
-											Resource* res = manager->load(Path(buf));
-											mono_field_set_value(res_obj, inst_field, &res);
-											mono_field_set_value(obj, field, res_obj);
-										}
-									}
-								}
-								break;
-							}
-							case ScriptClass::UNKNOWN: break;
-						}
-						break;
-					}
-					default: ASSERT(false);
-				}
-			}
+			
+			serializer.read(&inst.properties);
 		}
+
+		if (m_system.m_assembly) applyProperties(*script);
 
 		m_universe.addComponent(entity, CSHARP_SCRIPT_TYPE, this, cmp);
 	}
@@ -1018,14 +852,14 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 	void insertScript(ComponentHandle cmp, int idx) override
 	{
-		m_scripts[{cmp.index}]->scripts.emplaceAt(idx);
+		m_scripts[{cmp.index}]->scripts.emplaceAt(idx, m_system.m_allocator);
 	}
 
 
 	int addScript(ComponentHandle cmp) override
 	{
 		ScriptComponent* script_cmp = m_scripts[{cmp.index}];
-		script_cmp->scripts.emplace();
+		script_cmp->scripts.emplace(m_system.m_allocator);
 		return script_cmp->scripts.size() - 1;
 	}
 
@@ -1149,6 +983,8 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 	u32 createCSharpEntity(Entity entity)
 	{
+		if (!m_system.m_assembly) return INVALID_GC_HANDLE;
+
 		u32 handle = createObjectGC("Lumix", "Entity", &m_universe);
 		m_entities_gc_handles.insert(entity, handle);
 
@@ -1239,7 +1075,6 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 					{
 						serializer.writeString((const char*)str);
 					}
-					continue;
 				}
 			}
 		}
@@ -1263,7 +1098,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 			serializer.read(scr_count);
 			for (int j = 0; j < scr_count; ++j)
 			{
-				Script& scr = script->scripts.emplace();
+				Script& scr = script->scripts.emplace(m_system.m_allocator);
 				scr.gc_handle = INVALID_GC_HANDLE;
 				scr.script_name_hash = serializer.read<u32>();
 				setScriptNameHash(*script, scr, scr.script_name_hash);
