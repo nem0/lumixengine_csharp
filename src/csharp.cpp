@@ -950,14 +950,17 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		ASSERT(obj);
 		MonoClass* mono_class = mono_object_get_class(obj);
 
-		MonoClassField* field = mono_class_get_field_from_name(mono_class, "entity_");
-		ASSERT(field);
+		MonoProperty* prop = mono_class_get_property_from_name(mono_class, "entity");
+		ASSERT(prop);
 
 		u32 handle = m_entities_gc_handles[cmp.entity];
 		MonoObject* entity_obj = mono_gchandle_get_target(handle);
 		ASSERT(entity_obj);
 
-		mono_field_set_value(obj, field, entity_obj);
+		MonoMethod* method = mono_property_get_set_method(prop);
+		MonoObject* exc;
+		void* mono_args[] = { entity_obj };
+		MonoObject* res = mono_runtime_invoke(method, obj, mono_args, &exc);
 
 		if (mono_class_get_method_from_name(mono_class, "Update", 1))
 		{

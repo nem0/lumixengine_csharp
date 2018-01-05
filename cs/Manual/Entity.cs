@@ -13,7 +13,7 @@ namespace Lumix
         internal int entity_Id_;
         internal IntPtr instance_;
 
-        private List<Component> components = new List<Component>();
+        public List<Component> components_ = new List<Component>();
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         private extern static string getName(IntPtr universe, int entity);
@@ -383,9 +383,9 @@ namespace Lumix
         }
 		public T GetComponent<T>() where T : Component
         {
-            for (int i = 0, c = components.Count; i < c; ++i)
+            for (int i = 0, c = components_.Count; i < c; ++i)
             {
-                var cmp = components[i];
+                var cmp = components_[i];
                 if (cmp is T) return cmp as T;
             }
             NativeComponent prop;
@@ -398,7 +398,7 @@ namespace Lumix
                 if (cmp_id < 0) return null;
 
                 var cmp = (T)System.Activator.CreateInstance(typeof(T), new object[] { this, cmp_id });
-                components.Add(cmp);
+                components_.Add(cmp);
                 return cmp;
             }
             else if(IsNativeComponentBase<T>(out ncb))
@@ -410,7 +410,7 @@ namespace Lumix
                     if (cmp_id < 0) continue;
                     Type t = Type.GetType("Lumix." + types[k].Capitalize('_'));
                     var cmp = (T)System.Activator.CreateInstance(t, new object[] { this, cmp_id });
-                    components.Add(cmp);
+                    components_.Add(cmp);
                     return cmp;
                 }
             }
@@ -421,7 +421,7 @@ namespace Lumix
         public T CreateComponent<T>() where T : Component
         {
             T cmp = (T)Activator.CreateInstance(typeof(T), this);
-            components.Add(cmp);
+            components_.Add(cmp);
             return cmp;
         }
 
