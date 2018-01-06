@@ -228,8 +228,8 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 			"\t<ItemGroup>\n";
 
 		listDirInCSProj(file, StaticString<MAX_PATH_LENGTH>(""));
-		listDirInCSProj(file, StaticString<MAX_PATH_LENGTH>("manual/"));
-		listDirInCSProj(file, StaticString<MAX_PATH_LENGTH>("generated/"));
+		listDirInCSProj(file, StaticString<MAX_PATH_LENGTH>("manual\\"));
+		listDirInCSProj(file, StaticString<MAX_PATH_LENGTH>("generated\\"));
 
 		file <<
 			"\t</ItemGroup>\n"
@@ -636,7 +636,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 				void visit(const Property<bool>& prop)  override { write(prop, "bool", "bool"); }
 				void visit(const Property<const char*>& prop)  override { write(prop, "string", "const char*"); }
 				void visit(const IArrayProperty& prop)  override {}
-				void visit(const IEnumProperty& prop)  override {}
+				void visit(const IEnumProperty& prop)  override { write(prop, "int", "int"); }
 				void visit(const IBlobProperty& prop)  override {}
 				void visit(const ISampledFuncProperty& prop) override {}
 

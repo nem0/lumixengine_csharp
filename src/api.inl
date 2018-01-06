@@ -1,4 +1,14 @@
 {
+	auto f = &CSharpMethodProxy<decltype(&NavigationScene::load)>::call<&NavigationScene::load>;
+	mono_add_internal_call("Lumix.NavigationScene::load", f);
+}
+
+
+{
+	auto f = &CSharpMethodProxy<decltype(&NavigationScene::load)>::call<&NavigationScene::load>;
+	mono_add_internal_call("Lumix.NavigationScene::Load", f);
+}
+{
 	auto f = &CSharpMethodProxy<decltype(&PhysicsScene::raycast)>::call<&PhysicsScene::raycast>;
 	mono_add_internal_call("Lumix.PhysicsScene::raycast", f);
 }
@@ -18,6 +28,13 @@
 	auto f = &CSharpMethodProxy<decltype(&PhysicsScene::raycastEx)>::call<&PhysicsScene::raycastEx>;
 	mono_add_internal_call("Lumix.PhysicsScene::RaycastEx", f);
 }
+{
+	auto getter = &csharp_getProperty<decltype(&RenderScene::isModelInstanceEnabled), &RenderScene::isModelInstanceEnabled>;
+	mono_add_internal_call("Lumix.Renderable::getEnabled", getter);
+	auto setter = &csharp_setProperty<decltype(&RenderScene::enableModelInstance), &RenderScene::enableModelInstance>;
+	mono_add_internal_call("Lumix.Renderable::setEnabled", setter);
+}
+
 {
 	auto getter = &csharp_getProperty<decltype(&RenderScene::getModelInstancePath), &RenderScene::getModelInstancePath>;
 	mono_add_internal_call("Lumix.Renderable::getSource", getter);
@@ -75,6 +92,20 @@
 }
 
 {
+	auto getter = &csharp_getProperty<decltype(&PhysicsScene::getControllerRadius), &PhysicsScene::getControllerRadius>;
+	mono_add_internal_call("Lumix.PhysicalController::getRadius", getter);
+	auto setter = &csharp_setProperty<decltype(&PhysicsScene::setControllerRadius), &PhysicsScene::setControllerRadius>;
+	mono_add_internal_call("Lumix.PhysicalController::setRadius", setter);
+}
+
+{
+	auto getter = &csharp_getProperty<decltype(&PhysicsScene::getControllerHeight), &PhysicsScene::getControllerHeight>;
+	mono_add_internal_call("Lumix.PhysicalController::getHeight", getter);
+	auto setter = &csharp_setProperty<decltype(&PhysicsScene::setControllerHeight), &PhysicsScene::setControllerHeight>;
+	mono_add_internal_call("Lumix.PhysicalController::setHeight", setter);
+}
+
+{
 	auto getter = &csharp_getProperty<decltype(&PhysicsScene::getControllerLayer), &PhysicsScene::getControllerLayer>;
 	mono_add_internal_call("Lumix.PhysicalController::getLayer", getter);
 	auto setter = &csharp_setProperty<decltype(&PhysicsScene::setControllerLayer), &PhysicsScene::setControllerLayer>;
@@ -92,6 +123,13 @@
 	mono_add_internal_call("Lumix.BoxRigidActor::getLayer", getter);
 	auto setter = &csharp_setProperty<decltype(&PhysicsScene::setActorLayer), &PhysicsScene::setActorLayer>;
 	mono_add_internal_call("Lumix.BoxRigidActor::setLayer", setter);
+}
+
+{
+	auto getter = &csharp_getProperty<decltype(&PhysicsScene::getDynamicType), &PhysicsScene::getDynamicType>;
+	mono_add_internal_call("Lumix.BoxRigidActor::getDynamic", getter);
+	auto setter = &csharp_setProperty<decltype(&PhysicsScene::setDynamicType), &PhysicsScene::setDynamicType>;
+	mono_add_internal_call("Lumix.BoxRigidActor::setDynamic", setter);
 }
 
 {
@@ -382,6 +420,13 @@
 }
 
 {
+	auto getter = &csharp_getProperty<decltype(&PhysicsScene::getDynamicType), &PhysicsScene::getDynamicType>;
+	mono_add_internal_call("Lumix.MeshRigidActor::getDynamic", getter);
+	auto setter = &csharp_setProperty<decltype(&PhysicsScene::setDynamicType), &PhysicsScene::setDynamicType>;
+	mono_add_internal_call("Lumix.MeshRigidActor::setDynamic", setter);
+}
+
+{
 	auto getter = &csharp_getProperty<decltype(&PhysicsScene::getShapeSource), &PhysicsScene::getShapeSource>;
 	mono_add_internal_call("Lumix.MeshRigidActor::getSource", getter);
 	auto setter = &csharp_setProperty<decltype(&PhysicsScene::setShapeSource), &PhysicsScene::setShapeSource>;
@@ -452,6 +497,13 @@
 }
 
 {
+	auto getter = &csharp_getProperty<decltype(&PhysicsScene::getDynamicType), &PhysicsScene::getDynamicType>;
+	mono_add_internal_call("Lumix.SphereRigidActor::getDynamic", getter);
+	auto setter = &csharp_setProperty<decltype(&PhysicsScene::setDynamicType), &PhysicsScene::setDynamicType>;
+	mono_add_internal_call("Lumix.SphereRigidActor::setDynamic", setter);
+}
+
+{
 	auto getter = &csharp_getProperty<decltype(&PhysicsScene::getIsTrigger), &PhysicsScene::getIsTrigger>;
 	mono_add_internal_call("Lumix.SphereRigidActor::getTrigger", getter);
 	auto setter = &csharp_setProperty<decltype(&PhysicsScene::setIsTrigger), &PhysicsScene::setIsTrigger>;
@@ -470,6 +522,13 @@
 	mono_add_internal_call("Lumix.CapsuleRigidActor::getHeight", getter);
 	auto setter = &csharp_setProperty<decltype(&PhysicsScene::setCapsuleHeight), &PhysicsScene::setCapsuleHeight>;
 	mono_add_internal_call("Lumix.CapsuleRigidActor::setHeight", setter);
+}
+
+{
+	auto getter = &csharp_getProperty<decltype(&PhysicsScene::getDynamicType), &PhysicsScene::getDynamicType>;
+	mono_add_internal_call("Lumix.CapsuleRigidActor::getDynamic", getter);
+	auto setter = &csharp_setProperty<decltype(&PhysicsScene::setDynamicType), &PhysicsScene::setDynamicType>;
+	mono_add_internal_call("Lumix.CapsuleRigidActor::setDynamic", setter);
 }
 
 {
@@ -592,6 +651,48 @@
 }
 
 {
+	auto getter = &csharp_getProperty<decltype(&PhysicsScene::getD6JointXMotion), &PhysicsScene::getD6JointXMotion>;
+	mono_add_internal_call("Lumix.D6Joint::getXMotion", getter);
+	auto setter = &csharp_setProperty<decltype(&PhysicsScene::setD6JointXMotion), &PhysicsScene::setD6JointXMotion>;
+	mono_add_internal_call("Lumix.D6Joint::setXMotion", setter);
+}
+
+{
+	auto getter = &csharp_getProperty<decltype(&PhysicsScene::getD6JointYMotion), &PhysicsScene::getD6JointYMotion>;
+	mono_add_internal_call("Lumix.D6Joint::getYMotion", getter);
+	auto setter = &csharp_setProperty<decltype(&PhysicsScene::setD6JointYMotion), &PhysicsScene::setD6JointYMotion>;
+	mono_add_internal_call("Lumix.D6Joint::setYMotion", setter);
+}
+
+{
+	auto getter = &csharp_getProperty<decltype(&PhysicsScene::getD6JointZMotion), &PhysicsScene::getD6JointZMotion>;
+	mono_add_internal_call("Lumix.D6Joint::getZMotion", getter);
+	auto setter = &csharp_setProperty<decltype(&PhysicsScene::setD6JointZMotion), &PhysicsScene::setD6JointZMotion>;
+	mono_add_internal_call("Lumix.D6Joint::setZMotion", setter);
+}
+
+{
+	auto getter = &csharp_getProperty<decltype(&PhysicsScene::getD6JointSwing1Motion), &PhysicsScene::getD6JointSwing1Motion>;
+	mono_add_internal_call("Lumix.D6Joint::getSwing1", getter);
+	auto setter = &csharp_setProperty<decltype(&PhysicsScene::setD6JointSwing1Motion), &PhysicsScene::setD6JointSwing1Motion>;
+	mono_add_internal_call("Lumix.D6Joint::setSwing1", setter);
+}
+
+{
+	auto getter = &csharp_getProperty<decltype(&PhysicsScene::getD6JointSwing2Motion), &PhysicsScene::getD6JointSwing2Motion>;
+	mono_add_internal_call("Lumix.D6Joint::getSwing2", getter);
+	auto setter = &csharp_setProperty<decltype(&PhysicsScene::setD6JointSwing2Motion), &PhysicsScene::setD6JointSwing2Motion>;
+	mono_add_internal_call("Lumix.D6Joint::setSwing2", setter);
+}
+
+{
+	auto getter = &csharp_getProperty<decltype(&PhysicsScene::getD6JointTwistMotion), &PhysicsScene::getD6JointTwistMotion>;
+	mono_add_internal_call("Lumix.D6Joint::getTwist", getter);
+	auto setter = &csharp_setProperty<decltype(&PhysicsScene::setD6JointTwistMotion), &PhysicsScene::setD6JointTwistMotion>;
+	mono_add_internal_call("Lumix.D6Joint::setTwist", setter);
+}
+
+{
 	auto getter = &csharp_getProperty<decltype(&PhysicsScene::getD6JointLinearLimit), &PhysicsScene::getD6JointLinearLimit>;
 	mono_add_internal_call("Lumix.D6Joint::getLinearLimit", getter);
 	auto setter = &csharp_setProperty<decltype(&PhysicsScene::setD6JointLinearLimit), &PhysicsScene::setD6JointLinearLimit>;
@@ -613,10 +714,38 @@
 }
 
 {
+	auto getter = &csharp_getProperty<decltype(&PhysicsScene::getD6JointDamping), &PhysicsScene::getD6JointDamping>;
+	mono_add_internal_call("Lumix.D6Joint::getDamping", getter);
+	auto setter = &csharp_setProperty<decltype(&PhysicsScene::setD6JointDamping), &PhysicsScene::setD6JointDamping>;
+	mono_add_internal_call("Lumix.D6Joint::setDamping", setter);
+}
+
+{
+	auto getter = &csharp_getProperty<decltype(&PhysicsScene::getD6JointStiffness), &PhysicsScene::getD6JointStiffness>;
+	mono_add_internal_call("Lumix.D6Joint::getStiffness", getter);
+	auto setter = &csharp_setProperty<decltype(&PhysicsScene::setD6JointStiffness), &PhysicsScene::setD6JointStiffness>;
+	mono_add_internal_call("Lumix.D6Joint::setStiffness", setter);
+}
+
+{
+	auto getter = &csharp_getProperty<decltype(&PhysicsScene::getD6JointRestitution), &PhysicsScene::getD6JointRestitution>;
+	mono_add_internal_call("Lumix.D6Joint::getRestitution", getter);
+	auto setter = &csharp_setProperty<decltype(&PhysicsScene::setD6JointRestitution), &PhysicsScene::setD6JointRestitution>;
+	mono_add_internal_call("Lumix.D6Joint::setRestitution", setter);
+}
+
+{
 	auto getter = &csharp_getProperty<decltype(&PhysicsScene::getActorLayer), &PhysicsScene::getActorLayer>;
 	mono_add_internal_call("Lumix.RigidActor::getLayer", getter);
 	auto setter = &csharp_setProperty<decltype(&PhysicsScene::setActorLayer), &PhysicsScene::setActorLayer>;
 	mono_add_internal_call("Lumix.RigidActor::setLayer", setter);
+}
+
+{
+	auto getter = &csharp_getProperty<decltype(&PhysicsScene::getDynamicType), &PhysicsScene::getDynamicType>;
+	mono_add_internal_call("Lumix.RigidActor::getDynamic", getter);
+	auto setter = &csharp_setProperty<decltype(&PhysicsScene::setDynamicType), &PhysicsScene::setDynamicType>;
+	mono_add_internal_call("Lumix.RigidActor::setDynamic", setter);
 }
 
 {
@@ -627,10 +756,101 @@
 }
 
 {
+	auto getter = &csharp_getProperty<decltype(&GUIScene::getRectTopPoints), &GUIScene::getRectTopPoints>;
+	mono_add_internal_call("Lumix.GuiRect::getTopPoints", getter);
+	auto setter = &csharp_setProperty<decltype(&GUIScene::setRectTopPoints), &GUIScene::setRectTopPoints>;
+	mono_add_internal_call("Lumix.GuiRect::setTopPoints", setter);
+}
+
+{
+	auto getter = &csharp_getProperty<decltype(&GUIScene::getRectTopRelative), &GUIScene::getRectTopRelative>;
+	mono_add_internal_call("Lumix.GuiRect::getTopRelative", getter);
+	auto setter = &csharp_setProperty<decltype(&GUIScene::setRectTopRelative), &GUIScene::setRectTopRelative>;
+	mono_add_internal_call("Lumix.GuiRect::setTopRelative", setter);
+}
+
+{
+	auto getter = &csharp_getProperty<decltype(&GUIScene::getRectRightPoints), &GUIScene::getRectRightPoints>;
+	mono_add_internal_call("Lumix.GuiRect::getRightPoints", getter);
+	auto setter = &csharp_setProperty<decltype(&GUIScene::setRectRightPoints), &GUIScene::setRectRightPoints>;
+	mono_add_internal_call("Lumix.GuiRect::setRightPoints", setter);
+}
+
+{
+	auto getter = &csharp_getProperty<decltype(&GUIScene::getRectRightRelative), &GUIScene::getRectRightRelative>;
+	mono_add_internal_call("Lumix.GuiRect::getRightRelative", getter);
+	auto setter = &csharp_setProperty<decltype(&GUIScene::setRectRightRelative), &GUIScene::setRectRightRelative>;
+	mono_add_internal_call("Lumix.GuiRect::setRightRelative", setter);
+}
+
+{
+	auto getter = &csharp_getProperty<decltype(&GUIScene::getRectBottomPoints), &GUIScene::getRectBottomPoints>;
+	mono_add_internal_call("Lumix.GuiRect::getBottomPoints", getter);
+	auto setter = &csharp_setProperty<decltype(&GUIScene::setRectBottomPoints), &GUIScene::setRectBottomPoints>;
+	mono_add_internal_call("Lumix.GuiRect::setBottomPoints", setter);
+}
+
+{
+	auto getter = &csharp_getProperty<decltype(&GUIScene::getRectBottomRelative), &GUIScene::getRectBottomRelative>;
+	mono_add_internal_call("Lumix.GuiRect::getBottomRelative", getter);
+	auto setter = &csharp_setProperty<decltype(&GUIScene::setRectBottomRelative), &GUIScene::setRectBottomRelative>;
+	mono_add_internal_call("Lumix.GuiRect::setBottomRelative", setter);
+}
+
+{
+	auto getter = &csharp_getProperty<decltype(&GUIScene::getRectLeftPoints), &GUIScene::getRectLeftPoints>;
+	mono_add_internal_call("Lumix.GuiRect::getLeftPoints", getter);
+	auto setter = &csharp_setProperty<decltype(&GUIScene::setRectLeftPoints), &GUIScene::setRectLeftPoints>;
+	mono_add_internal_call("Lumix.GuiRect::setLeftPoints", setter);
+}
+
+{
+	auto getter = &csharp_getProperty<decltype(&GUIScene::getRectLeftRelative), &GUIScene::getRectLeftRelative>;
+	mono_add_internal_call("Lumix.GuiRect::getLeftRelative", getter);
+	auto setter = &csharp_setProperty<decltype(&GUIScene::setRectLeftRelative), &GUIScene::setRectLeftRelative>;
+	mono_add_internal_call("Lumix.GuiRect::setLeftRelative", setter);
+}
+
+{
+	auto getter = &csharp_getProperty<decltype(&GUIScene::getImageColorRGBA), &GUIScene::getImageColorRGBA>;
+	mono_add_internal_call("Lumix.GuiImage::getColor", getter);
+	auto setter = &csharp_setProperty<decltype(&GUIScene::setImageColorRGBA), &GUIScene::setImageColorRGBA>;
+	mono_add_internal_call("Lumix.GuiImage::setColor", setter);
+}
+
+{
+	auto getter = &csharp_getProperty<decltype(&GUIScene::getText), &GUIScene::getText>;
+	mono_add_internal_call("Lumix.GuiText::getText", getter);
+	auto setter = &csharp_setProperty<decltype(&GUIScene::setText), &GUIScene::setText>;
+	mono_add_internal_call("Lumix.GuiText::setText", setter);
+}
+
+{
+	auto getter = &csharp_getProperty<decltype(&GUIScene::getTextFontSize), &GUIScene::getTextFontSize>;
+	mono_add_internal_call("Lumix.GuiText::getFontSize", getter);
+	auto setter = &csharp_setProperty<decltype(&GUIScene::setTextFontSize), &GUIScene::setTextFontSize>;
+	mono_add_internal_call("Lumix.GuiText::setFontSize", setter);
+}
+
+{
+	auto getter = &csharp_getProperty<decltype(&GUIScene::getTextColorRGBA), &GUIScene::getTextColorRGBA>;
+	mono_add_internal_call("Lumix.GuiText::getColor", getter);
+	auto setter = &csharp_setProperty<decltype(&GUIScene::setTextColorRGBA), &GUIScene::setTextColorRGBA>;
+	mono_add_internal_call("Lumix.GuiText::setColor", setter);
+}
+
+{
 	auto getter = &csharp_getProperty<decltype(&AudioScene::isAmbientSound3D), &AudioScene::isAmbientSound3D>;
 	mono_add_internal_call("Lumix.AmbientSound::get3D", getter);
 	auto setter = &csharp_setProperty<decltype(&AudioScene::setAmbientSound3D), &AudioScene::setAmbientSound3D>;
 	mono_add_internal_call("Lumix.AmbientSound::set3D", setter);
+}
+
+{
+	auto getter = &csharp_getProperty<decltype(&AudioScene::getAmbientSoundClipIndex), &AudioScene::getAmbientSoundClipIndex>;
+	mono_add_internal_call("Lumix.AmbientSound::getSound", getter);
+	auto setter = &csharp_setProperty<decltype(&AudioScene::setAmbientSoundClipIndex), &AudioScene::setAmbientSoundClipIndex>;
+	mono_add_internal_call("Lumix.AmbientSound::setSound", setter);
 }
 
 {
@@ -716,4 +936,10 @@
 	auto setter = &csharp_setProperty<decltype(&NavigationScene::setIsGettingRootMotionFromAnim), &NavigationScene::setIsGettingRootMotionFromAnim>;
 	mono_add_internal_call("Lumix.NavmeshAgent::setGetRootMotionFromAnimation", setter);
 }
+
+{
+	auto f = &CSharpMethodProxy<decltype(&NavigationScene::navigate)>::call<&NavigationScene::navigate>;
+	mono_add_internal_call("Lumix.NavmeshAgent::navigate", f);
+}
+
 

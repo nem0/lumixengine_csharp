@@ -21,6 +21,7 @@
 #include "engine/serializer.h"
 #include "engine/universe/component.h"
 #include "engine/universe/universe.h"
+#include "gui/gui_scene.h"
 #include "helpers.h"
 #include "imgui/imgui.h"
 #include "navigation/navigation_scene.h"
@@ -162,6 +163,18 @@ ComponentHandle csharp_Entity_getComponent(Universe* universe, Entity entity, Mo
 }
 
 
+void csharp_Entity_setParent(Universe* universe, Entity parent, Entity child)
+{
+	universe->setParent(parent, child);
+}
+
+
+Entity csharp_Entity_getParent(Universe* universe, Entity entity)
+{
+	return universe->getParent(entity);
+}
+
+
 Universe* csharp_getUniverse(IScene* scene)
 {
 	return &scene->getUniverse();
@@ -240,6 +253,24 @@ void csharp_Entity_setRotation(Universe* universe, int entity, const Quat& pos)
 void csharp_Entity_setLocalRotation(Universe* universe, int entity, const Quat& pos)
 {
 	universe->setLocalRotation({ entity }, pos);
+}
+
+
+void csharp_Entity_setLocalPosition(Universe* universe, int entity, const Vec3& pos)
+{
+	universe->setLocalPosition({entity}, pos);
+}
+
+
+Vec3 csharp_Entity_getLocalPosition(Universe* universe, int entity)
+{
+	return universe->getLocalTransform({entity}).pos;
+}
+
+
+Quat csharp_Entity_getLocalRotation(Universe* universe, int entity)
+{
+	return universe->getLocalTransform({entity}).rot;
 }
 
 
@@ -674,11 +705,16 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		mono_add_internal_call("Lumix.Universe::getEntity", csharp_getEntity);
 		mono_add_internal_call("Lumix.IScene::getUniverse", csharp_getUniverse);
 		mono_add_internal_call("Lumix.Entity::getComponent", csharp_Entity_getComponent);
+		mono_add_internal_call("Lumix.Entity::setParent", csharp_Entity_setParent);
+		mono_add_internal_call("Lumix.Entity::getParent", csharp_Entity_getParent);
 		mono_add_internal_call("Lumix.Entity::destroy", csharp_Entity_destroy);
 		mono_add_internal_call("Lumix.Entity::setPosition", csharp_Entity_setPosition);
 		mono_add_internal_call("Lumix.Entity::getPosition", csharp_Entity_getPosition);
 		mono_add_internal_call("Lumix.Entity::setRotation", csharp_Entity_setRotation);
+		mono_add_internal_call("Lumix.Entity::setLocalPosition", csharp_Entity_setLocalPosition);
+		mono_add_internal_call("Lumix.Entity::getLocalPosition", csharp_Entity_getLocalPosition);
 		mono_add_internal_call("Lumix.Entity::setLocalRotation", csharp_Entity_setLocalRotation);
+		mono_add_internal_call("Lumix.Entity::getLocalRotation", csharp_Entity_getLocalRotation);
 		mono_add_internal_call("Lumix.Entity::getRotation", csharp_Entity_getRotation);
 		mono_add_internal_call("Lumix.Entity::setName", csharp_Entity_setName);
 		mono_add_internal_call("Lumix.Entity::getName", csharp_Entity_getName);
