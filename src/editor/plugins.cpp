@@ -198,6 +198,48 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 	}
 
 
+	void listDirInCSProj(FS::OsFile& file, const char* dirname)
+	{
+		IAllocator& allocator = m_app.getWorldEditor().getAllocator();
+		StaticString<MAX_PATH_LENGTH> path("cs/", dirname);
+		PlatformInterface::FileIterator* iter = PlatformInterface::createFileIterator(path, allocator);
+		PlatformInterface::FileInfo info;
+		while (PlatformInterface::getNextFile(iter, &info))
+		{
+			if (info.filename[0] == '.' || info.is_directory) continue;
+			file << "\t\t<Compile Include=\"" << dirname << info.filename << "\" />\n";
+		}
+		PlatformInterface::destroyFileIterator(iter);
+	}
+
+
+	void generateCSProj()
+	{
+		FS::OsFile file;
+		if (!file.open("cs/main.csproj", FS::Mode::CREATE_AND_WRITE))
+		{
+			g_log_error.log("C#") << "Failed to create cs/main.csproj";
+			return;
+		}
+
+		file <<
+			"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+			"\t<Project ToolsVersion=\"15.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">\n"
+			"\t<ItemGroup>\n";
+
+		listDirInCSProj(file, StaticString<MAX_PATH_LENGTH>(""));
+		listDirInCSProj(file, StaticString<MAX_PATH_LENGTH>("manual/"));
+		listDirInCSProj(file, StaticString<MAX_PATH_LENGTH>("generated/"));
+
+		file <<
+			"\t</ItemGroup>\n"
+			"\t<Import Project=\"$(MSBuildToolsPath)\\Microsoft.CSharp.targets\" />\n"
+			"</Project>\n";
+		
+		file.close();
+	}
+
+
 	void openVSCode(const char* filename)
 	{
 		if (!PlatformInterface::fileExists(m_vs_code_path)) return;
@@ -258,6 +300,8 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 			if (ImGui::Button("Compile")) compile();
 			ImGui::SameLine();
 			if (ImGui::Button("Bindings")) generateBindings();
+			ImGui::SameLine();
+			if (ImGui::Button("Generate project")) generateCSProj();
 			ImGui::SameLine();
 			if (ImGui::Button("Open VS Code")) openVSCode(nullptr);
 			ImGui::SameLine();
