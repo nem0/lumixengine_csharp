@@ -213,6 +213,14 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 	}
 
 
+	void openVSProject()
+	{
+		const char* base_path = m_app.getWorldEditor().getEngine().getDiskFileDevice()->getBasePath();
+		StaticString<MAX_PATH_LENGTH> full_path(base_path, "cs/main.csproj");
+		PlatformInterface::shellExecuteOpen(full_path, nullptr);
+	}
+
+
 	void generateCSProj()
 	{
 		FS::OsFile file;
@@ -302,6 +310,8 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 			if (ImGui::Button("Bindings")) generateBindings();
 			ImGui::SameLine();
 			if (ImGui::Button("Generate project")) generateCSProj();
+			ImGui::SameLine();
+			if (ImGui::Button("Open VS project")) openVSProject();
 			ImGui::SameLine();
 			if (ImGui::Button("Open VS Code")) openVSCode(nullptr);
 			ImGui::SameLine();
