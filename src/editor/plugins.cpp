@@ -31,7 +31,6 @@ namespace Lumix
 
 
 static const ComponentType CSHARP_SCRIPT_TYPE = Reflection::getComponentType("csharp_script");
-static const ResourceType CSHARP_SCRIPT_RESOURCE_TYPE("csharp_script");
 
 
 struct StudioCSharpPlugin : public StudioApp::IPlugin
@@ -810,7 +809,7 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 		}
 
 
-		void deserialize(JsonSerializer& serializer) override
+		void deserialize(JsonDeserializer& serializer) override
 		{
 			// TODO
 		}
@@ -872,7 +871,7 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 		}
 
 
-		void deserialize(JsonSerializer& serializer) override
+		void deserialize(JsonDeserializer& serializer) override
 		{
 			serializer.deserialize("component", cmp, INVALID_COMPONENT);
 			serializer.deserialize("name_hash", name_hash, 0);
@@ -935,7 +934,7 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 		}
 
 
-		void deserialize(JsonSerializer& serializer) override
+		void deserialize(JsonDeserializer& serializer) override
 		{
 			serializer.deserialize("component", cmp, INVALID_COMPONENT);
 			serializer.deserialize("scr_index", scr_index, 0);
