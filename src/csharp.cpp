@@ -222,7 +222,7 @@ int csharp_Component_create(Universe* universe, int entity, MonoString* type_str
 		return INVALID_COMPONENT.index;
 	}
 
-	return scene->createComponent(cmp_type, {entity}).index;
+	return universe->createComponent(cmp_type, {entity}).index;
 }
 
 
@@ -573,7 +573,12 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		, m_on_inputs(plugin.m_allocator)
 		, m_is_game_running(false)
 	{
-		universe.registerComponentType(CSHARP_SCRIPT_TYPE, this, &CSharpScriptSceneImpl::serializeCSharpScript, &CSharpScriptSceneImpl::deserializeCSharpScript);
+		universe.registerComponentType(CSHARP_SCRIPT_TYPE
+			, this
+			, &CSharpScriptSceneImpl::createScriptComponent
+			, &CSharpScriptSceneImpl::destroyScriptComponent
+			, &CSharpScriptSceneImpl::serializeCSharpScript
+			, &CSharpScriptSceneImpl::deserializeCSharpScript);
 
 		#include "api.inl"
 
@@ -867,7 +872,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 		if (m_system.m_assembly) applyProperties(*script);
 
-		m_universe.addComponent(entity, CSHARP_SCRIPT_TYPE, this, cmp);
+		m_universe.onComponentCreated(entity, CSHARP_SCRIPT_TYPE, this, cmp);
 	}
 
 
@@ -1049,10 +1054,8 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	}
 
 
-	ComponentHandle createComponent(ComponentType type, Entity entity) override
+	ComponentHandle createScriptComponent(Entity entity)
 	{
-		if (type != CSHARP_SCRIPT_TYPE) return INVALID_COMPONENT;
-
 		auto& allocator = m_system.m_allocator;
 		
 		ScriptComponent* script = LUMIX_NEW(allocator, ScriptComponent)(allocator);
@@ -1060,15 +1063,13 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		script->entity = entity;
 		m_scripts.insert(entity, script);
 		createCSharpEntity(script->entity);
-		m_universe.addComponent(entity, type, this, cmp);
+		m_universe.onComponentCreated(entity, CSHARP_SCRIPT_TYPE, this, cmp);
 		return cmp;
 	}
 
 
-	void destroyComponent(ComponentHandle component, ComponentType type) override
+	void destroyScriptComponent(ComponentHandle component)
 	{
-		if (type != CSHARP_SCRIPT_TYPE) return;
-
 		Entity entity = {component.index};
 		auto* script = m_scripts[entity];
 		auto handle_iter = m_entities_gc_handles.find(script->entity);
@@ -1083,7 +1084,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		}
 		LUMIX_DELETE(m_system.m_allocator, script);
 		m_scripts.erase(entity);
-		m_universe.destroyComponent(entity, type, this, component);
+		m_universe.onComponentDestroyed(entity, CSHARP_SCRIPT_TYPE, this, component);
 	}
 
 
@@ -1158,7 +1159,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 				}
 			}
 			ComponentHandle cmp = {script->entity.index};
-			m_universe.addComponent(script->entity, CSHARP_SCRIPT_TYPE, this, cmp);
+			m_universe.onComponentCreated(script->entity, CSHARP_SCRIPT_TYPE, this, cmp);
 		}
 	}
 
