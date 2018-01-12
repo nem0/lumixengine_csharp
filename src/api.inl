@@ -476,13 +476,6 @@
 }
 
 {
-	auto getter = &csharp_getProperty<decltype(&RenderScene::getBoneAttachmentBone), &RenderScene::getBoneAttachmentBone>;
-	mono_add_internal_call("Lumix.BoneAttachment::getBone", getter);
-	auto setter = &csharp_setProperty<decltype(&RenderScene::setBoneAttachmentBone), &RenderScene::setBoneAttachmentBone>;
-	mono_add_internal_call("Lumix.BoneAttachment::setBone", setter);
-}
-
-{
 	auto getter = &csharp_getProperty<decltype(&PhysicsScene::getRagdollLayer), &PhysicsScene::getRagdollLayer>;
 	mono_add_internal_call("Lumix.Ragdoll::getLayer", getter);
 	auto setter = &csharp_setProperty<decltype(&PhysicsScene::setRagdollLayer), &PhysicsScene::setRagdollLayer>;
@@ -840,10 +833,24 @@
 }
 
 {
+	auto getter = &csharp_getProperty<decltype(&GUIScene::getImageSprite), &GUIScene::getImageSprite>;
+	mono_add_internal_call("Lumix.GuiImage::getSprite", getter);
+	auto setter = &csharp_setProperty<decltype(&GUIScene::setImageSprite), &GUIScene::setImageSprite>;
+	mono_add_internal_call("Lumix.GuiImage::setSprite", setter);
+}
+
+{
 	auto getter = &csharp_getProperty<decltype(&GUIScene::getText), &GUIScene::getText>;
 	mono_add_internal_call("Lumix.GuiText::getText", getter);
 	auto setter = &csharp_setProperty<decltype(&GUIScene::setText), &GUIScene::setText>;
 	mono_add_internal_call("Lumix.GuiText::setText", setter);
+}
+
+{
+	auto getter = &csharp_getProperty<decltype(&GUIScene::getTextFontPath), &GUIScene::getTextFontPath>;
+	mono_add_internal_call("Lumix.GuiText::getFont", getter);
+	auto setter = &csharp_setProperty<decltype(&GUIScene::setTextFontPath), &GUIScene::setTextFontPath>;
+	mono_add_internal_call("Lumix.GuiText::setFont", setter);
 }
 
 {
@@ -931,10 +938,10 @@
 }
 
 {
-	auto getter = &csharp_getProperty<decltype(&AnimationScene::getControllerDefaultSet), &AnimationScene::getControllerDefaultSet>;
-	mono_add_internal_call("Lumix.AnimController::getDefaultSet", getter);
-	auto setter = &csharp_setProperty<decltype(&AnimationScene::setControllerDefaultSet), &AnimationScene::setControllerDefaultSet>;
-	mono_add_internal_call("Lumix.AnimController::setDefaultSet", setter);
+	auto getter = &csharp_getProperty<decltype(&AnimationScene::getPropertyAnimation), &AnimationScene::getPropertyAnimation>;
+	mono_add_internal_call("Lumix.PropertyAnimator::getAnimation", getter);
+	auto setter = &csharp_setProperty<decltype(&AnimationScene::setPropertyAnimation), &AnimationScene::setPropertyAnimation>;
+	mono_add_internal_call("Lumix.PropertyAnimator::setAnimation", setter);
 }
 
 {

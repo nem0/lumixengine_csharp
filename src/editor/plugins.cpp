@@ -597,8 +597,8 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 			cs_file << "	{\n";
 
 			cs_file <<
-				"		public " << class_name << "(Entity _entity, int _cmpId)\n"
-				"			: base(_entity, _cmpId, getScene(_entity.instance_, \"" << cmp_name << "\" )) { }\n"
+				"		public " << class_name << "(Entity _entity)\n"
+				"			: base(_entity,  getScene(_entity.instance_, \"" << cmp_name << "\" )) { }\n"
 				"\n\n";
 
 			struct : Reflection::IPropertyVisitor
@@ -628,8 +628,8 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 					*file <<
 						"		public " << cs_type << " " << (is_bool ? "Is" : "") << csharp_name << "\n"
 						"		{\n"
-						"			get { return get" << csharp_name << "(scene_, componentId_); }\n"
-						"			set { set" << csharp_name << "(scene_, componentId_, value); }\n"
+						"			get { return get" << csharp_name << "(scene_, entity_.entity_Id_); }\n"
+						"			set { set" << csharp_name << "(scene_, entity_.entity_Id_, value); }\n"
 						"		}\n"
 						"\n";
 				}
@@ -692,7 +692,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 					*cs_file <<
 						")\n"
 						"		{\n"
-						"			" << cpp_method_name << "(scene_, componentId_, ";
+						"			" << cpp_method_name << "(scene_, entity_.entity_Id_, ";
 					
 					for (int i = 1, c = func.getArgCount(); i < c; ++i)
 					{
