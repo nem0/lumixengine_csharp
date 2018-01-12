@@ -762,7 +762,7 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 
 
 		SetPropertyCommand(WorldEditor& _editor,
-			ComponentHandle cmp,
+			Entity entity,
 			int scr_index,
 			const char* property_name,
 			const char* old_value,
@@ -771,7 +771,7 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 			: property_name(property_name, allocator)
 			, new_value(new_value, allocator)
 			, old_value(old_value, allocator)
-			, component(cmp)
+			, entity(entity)
 			, script_index(scr_index)
 			, editor(_editor)
 		{
@@ -788,7 +788,7 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 		void set(const string& value)
 		{
 			CSharpScriptScene* scene = static_cast<CSharpScriptScene*>(editor.getUniverse()->getScene(crc32("csharp_script")));
-			u32 gc_handle = scene->getGCHandle(component, script_index);
+			u32 gc_handle = scene->getGCHandle(entity, script_index);
 			MonoString* prop_mono_str = mono_string_new(mono_domain_get(), property_name.c_str());
 			MonoString* value_str = mono_string_new(mono_domain_get(), value.c_str());
 			auto that = this;
@@ -821,7 +821,7 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 		bool merge(IEditorCommand& command) override
 		{
 			auto& cmd = static_cast<SetPropertyCommand&>(command);
-			if (cmd.component == component && cmd.script_index == script_index && cmd.property_name == property_name)
+			if (cmd.entity == entity && cmd.script_index == script_index && cmd.property_name == property_name)
 			{
 				cmd.new_value = new_value;
 				return true;
@@ -835,7 +835,7 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 		string old_value;
 		string new_value;
 		int value_type;
-		ComponentHandle component;
+		Entity entity;
 		int script_index;
 	};
 
@@ -851,8 +851,8 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 		bool execute() override
 		{
 			auto* scene = static_cast<CSharpScriptScene*>(editor.getUniverse()->getScene(crc32("csharp_script")));
-			scr_index = scene->addScript(cmp);
-			scene->setScriptNameHash(cmp, scr_index, name_hash);
+			scr_index = scene->addScript(entity);
+			scene->setScriptNameHash(entity, scr_index, name_hash);
 			return true;
 		}
 
@@ -860,20 +860,20 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 		void undo() override
 		{
 			auto* scene = static_cast<CSharpScriptScene*>(editor.getUniverse()->getScene(crc32("csharp_script")));
-			scene->removeScript(cmp, scr_index);
+			scene->removeScript(entity, scr_index);
 		}
 
 
 		void serialize(JsonSerializer& serializer) override
 		{ 
-			serializer.serialize("component", cmp);
+			serializer.serialize("entity", entity);
 			serializer.serialize("name_hash", name_hash);
 		}
 
 
 		void deserialize(JsonDeserializer& serializer) override
 		{
-			serializer.deserialize("component", cmp, INVALID_COMPONENT);
+			serializer.deserialize("entity", entity, INVALID_ENTITY);
 			serializer.deserialize("name_hash", name_hash, 0);
 		}
 
@@ -885,7 +885,7 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 
 
 		WorldEditor& editor;
-		ComponentHandle cmp;
+		Entity entity;
 		u32 name_hash;
 		int scr_index;
 	};
@@ -896,7 +896,7 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 		explicit RemoveScriptCommand(WorldEditor& editor)
 			: blob(editor.getAllocator())
 			, scr_index(-1)
-			, cmp(INVALID_COMPONENT)
+			, entity(INVALID_ENTITY)
 		{
 			scene = static_cast<CSharpScriptScene*>(editor.getUniverse()->getScene(crc32("csharp_script")));
 		}
@@ -906,37 +906,37 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 			: blob(allocator)
 			, scene(nullptr)
 			, scr_index(-1)
-			, cmp(INVALID_COMPONENT)
+			, entity(INVALID_ENTITY)
 		{
 		}
 
 
 		bool execute() override
 		{
-			scene->serializeScript(cmp, scr_index, blob);
-			scene->removeScript(cmp, scr_index);
+			scene->serializeScript(entity, scr_index, blob);
+			scene->removeScript(entity, scr_index);
 			return true;
 		}
 
 
 		void undo() override
 		{
-			scene->insertScript(cmp, scr_index);
+			scene->insertScript(entity, scr_index);
 			InputBlob input(blob);
-			scene->deserializeScript(cmp, scr_index, input);
+			scene->deserializeScript(entity, scr_index, input);
 		}
 
 
 		void serialize(JsonSerializer& serializer) override
 		{
-			serializer.serialize("component", cmp);
+			serializer.serialize("entity", entity);
 			serializer.serialize("scr_index", scr_index);
 		}
 
 
 		void deserialize(JsonDeserializer& serializer) override
 		{
-			serializer.deserialize("component", cmp, INVALID_COMPONENT);
+			serializer.deserialize("entity", entity, INVALID_ENTITY);
 			serializer.deserialize("scr_index", scr_index, 0);
 		}
 
@@ -948,7 +948,7 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 
 		OutputBlob blob;
 		CSharpScriptScene* scene;
-		ComponentHandle cmp;
+		Entity entity;
 		int scr_index;
 	};
 
@@ -993,20 +993,19 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 		, MonoString* new_value)
 	{
 		CSharpScriptScene* scene = (CSharpScriptScene*)universe->getScene(CSHARP_SCRIPT_TYPE);
-		ComponentHandle cmp = scene->getComponent(entity, CSHARP_SCRIPT_TYPE);
 		MonoStringHolder prop_str = prop;
 		MonoStringHolder new_value_str = new_value;
 		MonoStringHolder old_value_str = old_value;
 		WorldEditor& editor = that->m_app.getWorldEditor();
 		IAllocator& allocator = editor.getAllocator();
-		int script_count = scene->getScriptCount(cmp);
+		int script_count = scene->getScriptCount(entity);
 		for (int i = 0; i < script_count; ++i)
 		{
-			u32 gc_handle = scene->getGCHandle(cmp, i);
+			u32 gc_handle = scene->getGCHandle(entity, i);
 			if (mono_gchandle_get_target(gc_handle) == cmp_obj)
 			{
 				auto* set_source_cmd = LUMIX_NEW(allocator, PropertyGridCSharpPlugin::SetPropertyCommand)(
-					editor, cmp, i, (const char*)prop_str, (const char*)old_value_str, (const char*)new_value_str, allocator);
+					editor, entity, i, (const char*)prop_str, (const char*)old_value_str, (const char*)new_value_str, allocator);
 				editor.executeCommand(set_source_cmd);
 				break;
 			}
@@ -1045,7 +1044,7 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 				if (ImGui::Selectable(name, &b))
 				{
 					auto* cmd = LUMIX_NEW(allocator, AddCSharpScriptCommand)(editor);
-					cmd->cmp = cmp.handle;
+					cmd->entity = cmp.entity;
 					cmd->name_hash = crc32(name);
 					editor.executeCommand(cmd);
 					break;
@@ -1054,15 +1053,15 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 			ImGui::EndPopup();
 		}
 
-		for (int j = 0; j < scene->getScriptCount(cmp.handle); ++j)
+		for (int j = 0; j < scene->getScriptCount(cmp.entity); ++j)
 		{
-			const char* script_name = scene->getScriptName(cmp.handle, j);
+			const char* script_name = scene->getScriptName(cmp.entity, j);
 			StaticString<MAX_PATH_LENGTH + 20> header(script_name);
 			if (header.empty()) header << j;
 			header << "###" << j;
 			if (ImGui::CollapsingHeader(header))
 			{
-				u32 gc_handle = scene->getGCHandle(cmp.handle, j);
+				u32 gc_handle = scene->getGCHandle(cmp.entity, j);
 				if (gc_handle == INVALID_GC_HANDLE) continue;
 				ImGui::PushID(j);
 				auto* that = this;
@@ -1077,7 +1076,7 @@ struct PropertyGridCSharpPlugin LUMIX_FINAL : public PropertyGrid::IPlugin
 				if (ImGui::Button("Remove script"))
 				{
 					auto* cmd = LUMIX_NEW(allocator, RemoveScriptCommand)(allocator);
-					cmd->cmp = cmp.handle;
+					cmd->entity = cmp.entity;
 					cmd->scr_index = j;
 					cmd->scene = scene;
 					editor.executeCommand(cmd);
@@ -1132,8 +1131,7 @@ struct AddCSharpComponentPlugin LUMIX_FINAL : public StudioApp::IAddComponentPlu
 				IAllocator& allocator = editor.getAllocator();
 				auto* cmd = LUMIX_NEW(allocator, PropertyGridCSharpPlugin::AddCSharpScriptCommand)(editor);
 
-				ComponentHandle cmp = editor.getUniverse()->getComponent(entity, CSHARP_SCRIPT_TYPE).handle;
-				cmd->cmp = cmp;
+				cmd->entity = entity;
 				cmd->name_hash = crc32(name);
 				editor.executeCommand(cmd);
 

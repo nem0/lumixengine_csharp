@@ -155,14 +155,6 @@ Resource* csharp_Resource_load(Engine& engine, MonoString* path, MonoString* typ
 }
 
 
-ComponentHandle csharp_Entity_getComponent(Universe* universe, Entity entity, MonoString* cmp_type)
-{
-	MonoStringHolder type_str = cmp_type;
-	ComponentType type = Reflection::getComponentType((const char*)type_str);
-	return universe->getComponent(entity, type).handle;
-}
-
-
 void csharp_Entity_setParent(Universe* universe, Entity parent, Entity child)
 {
 	universe->setParent(parent, child);
@@ -210,19 +202,19 @@ IScene* csharp_getSceneByName(Universe* universe, MonoString* type_str)
 }
 
 
-int csharp_Component_create(Universe* universe, int entity, MonoString* type_str)
+void csharp_Component_create(Universe* universe, int entity, MonoString* type_str)
 {
 	MonoStringHolder type = type_str;
 	ComponentType cmp_type = Reflection::getComponentType((const char*)type);
 	IScene* scene = universe->getScene(cmp_type);
-	if (!scene) return INVALID_COMPONENT.index;
-	if (scene->getComponent({entity}, cmp_type) != INVALID_COMPONENT)
+	if (!scene) return;
+	if (universe->hasComponent({entity}, cmp_type))
 	{
 		g_log_error.log("C# Script") << "Component " << (const char*)type << " already exists in entity " << entity;
-		return INVALID_COMPONENT.index;
+		return;
 	}
 
-	return universe->createComponent(cmp_type, {entity}).index;
+	universe->createComponent(cmp_type, {entity});
 }
 
 
@@ -453,31 +445,31 @@ auto csharp_getProperty(typename ClassOf<Getter>::Type* scene, int cmp) -> typen
 }
 
 
-template <typename C, int (C::*Function)(ComponentHandle cmp)>
-int csharp_getSubobjectCount(C* scene, int cmp)
+template <typename C, int (C::*Function)(Entity)>
+int csharp_getSubobjectCount(C* scene, int entity)
 {
-	return (scene->*Function)({ cmp });
+	return (scene->*Function)({ entity });
 }
 
 
-template <typename C, void (C::*Function)(ComponentHandle cmp, int)>
-void csharp_addSubobject(C* scene, int cmp)
+template <typename C, void (C::*Function)(Entity, int)>
+void csharp_addSubobject(C* scene, int entity)
 {
-	(scene->*Function)({ cmp }, -1);
+	(scene->*Function)({ entity }, -1);
 }
 
 
-template <typename C, void (C::*Function)(ComponentHandle cmp, int)>
-void csharp_removeSubobject(C* scene, int cmp, int index)
+template <typename C, void (C::*Function)(Entity, int)>
+void csharp_removeSubobject(C* scene, int entity, int index)
 {
-	(scene->*Function)({ cmp }, index);
+	(scene->*Function)({ entity }, index);
 }
 
 
-template <typename R, typename C, R(C::*Function)(ComponentHandle, int)>
-typename ToCSharpType<R>::Type csharp_getSubproperty(C* scene, int cmp, int index)
+template <typename R, typename C, R(C::*Function)(Entity, int)>
+typename ToCSharpType<R>::Type csharp_getSubproperty(C* scene, int entity, int index)
 {
-	R val = (scene->*Function)({cmp}, index);
+	R val = (scene->*Function)({ entity }, index);
 	return toCSharpValue(val);
 }
 
@@ -489,17 +481,17 @@ void csharp_setProperty(typename ClassOf<Setter>::Type* scene, int cmp, typename
 }
 
 
-template <typename T, typename C, void (C::*Function)(ComponentHandle, int, T)>
-void csharp_setSubproperty(C* scene, int cmp, typename ToCSharpType<T>::Type value, int index)
+template <typename T, typename C, void (C::*Function)(Entity, int, T)>
+void csharp_setSubproperty(C* scene, int entity, typename ToCSharpType<T>::Type value, int index)
 {
-	(scene->*Function)({cmp}, index, fromCSharpValue(value));
+	(scene->*Function)({entity}, index, fromCSharpValue(value));
 }
 
 
-template <typename T, typename C, void (C::*Function)(ComponentHandle, const T&)>
-void csharp_setProperty(C* scene, int cmp, typename ToCSharpType<T>::Type value)
+template <typename T, typename C, void (C::*Function)(Entity, const T&)>
+void csharp_setProperty(C* scene, int entity, typename ToCSharpType<T>::Type value)
 {
-	(scene->*Function)({ cmp }, T(fromCSharpValue(value)));
+	(scene->*Function)({ entity }, T(fromCSharpValue(value)));
 }
 
 
@@ -709,7 +701,6 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		mono_add_internal_call("Lumix.Universe::getSceneByName", csharp_getSceneByName);
 		mono_add_internal_call("Lumix.Universe::getEntity", csharp_getEntity);
 		mono_add_internal_call("Lumix.IScene::getUniverse", csharp_getUniverse);
-		mono_add_internal_call("Lumix.Entity::getComponent", csharp_Entity_getComponent);
 		mono_add_internal_call("Lumix.Entity::setParent", csharp_Entity_setParent);
 		mono_add_internal_call("Lumix.Entity::getParent", csharp_Entity_getParent);
 		mono_add_internal_call("Lumix.Entity::destroy", csharp_Entity_destroy);
@@ -798,9 +789,9 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	};
 
 
-	void serializeCSharpScript(ISerializer& serializer, ComponentHandle cmp)
+	void serializeCSharpScript(ISerializer& serializer, Entity entity)
 	{
-		ScriptComponent* script = m_scripts[{cmp.index}];
+		ScriptComponent* script = m_scripts[entity];
 		serializer.write("count", script->scripts.size());
 		for (Script& inst : script->scripts)
 		{
@@ -852,7 +843,6 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	{
 		auto& allocator = m_system.m_allocator;
 		ScriptComponent* script = LUMIX_NEW(allocator, ScriptComponent)(allocator);
-		ComponentHandle cmp = { entity.index };
 		script->entity = entity;
 		m_scripts.insert(entity, script);
 		createCSharpEntity(script->entity);
@@ -865,50 +855,50 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 			Script& inst = script->scripts.emplace(allocator);
 			u32 hash;
 			serializer.read(&hash);
-			setScriptNameHash(cmp, i, hash);
+			setScriptNameHash(entity, i, hash);
 			
 			serializer.read(&inst.properties);
 		}
 
 		if (m_system.m_assembly) applyProperties(*script);
 
-		m_universe.onComponentCreated(entity, CSHARP_SCRIPT_TYPE, this, cmp);
+		m_universe.onComponentCreated(entity, CSHARP_SCRIPT_TYPE, this);
 	}
 
 
 
-	void serializeScript(ComponentHandle cmp, int scr_index, OutputBlob& blob) override
+	void serializeScript(Entity entity, int scr_index, OutputBlob& blob) override
 	{
-		Script& scr = m_scripts[{cmp.index}]->scripts[scr_index];
+		Script& scr = m_scripts[entity]->scripts[scr_index];
 		blob.write(scr.script_name_hash);
 	}
 
 
-	void deserializeScript(ComponentHandle cmp, int scr_index, InputBlob& blob) override
+	void deserializeScript(Entity entity, int scr_index, InputBlob& blob) override
 	{
 		u32 name_hash = blob.read<u32>();
-		setScriptNameHash(cmp, scr_index, name_hash);
+		setScriptNameHash(entity, scr_index, name_hash);
 	}
 
 
-	void insertScript(ComponentHandle cmp, int idx) override
+	void insertScript(Entity entity, int idx) override
 	{
-		m_scripts[{cmp.index}]->scripts.emplaceAt(idx, m_system.m_allocator);
+		m_scripts[entity]->scripts.emplaceAt(idx, m_system.m_allocator);
 	}
 
 
-	int addScript(ComponentHandle cmp) override
+	int addScript(Entity entity) override
 	{
-		ScriptComponent* script_cmp = m_scripts[{cmp.index}];
+		ScriptComponent* script_cmp = m_scripts[entity];
 		script_cmp->scripts.emplace(m_system.m_allocator);
 		return script_cmp->scripts.size() - 1;
 	}
 
 
-	void removeScript(ComponentHandle cmp, int scr_index) override
+	void removeScript(Entity entity, int scr_index) override
 	{
-		setScriptNameHash(cmp, scr_index, 0);
-		m_scripts[{cmp.index}]->scripts.erase(scr_index);
+		setScriptNameHash(entity, scr_index, 0);
+		m_scripts[entity]->scripts.erase(scr_index);
 	}
 
 
@@ -922,31 +912,31 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	}
 
 
-	u32 getGCHandle(ComponentHandle cmp, int scr_index) const override
+	u32 getGCHandle(Entity entity, int scr_index) const override
 	{
-		Script& scr = m_scripts[{cmp.index}]->scripts[scr_index];
+		Script& scr = m_scripts[entity]->scripts[scr_index];
 		return scr.gc_handle;
 	}
 
 
-	const char* getScriptName(ComponentHandle cmp, int scr_index) override
+	const char* getScriptName(Entity entity, int scr_index) override
 	{
-		Script& scr = m_scripts[{cmp.index}]->scripts[scr_index];
+		Script& scr = m_scripts[entity]->scripts[scr_index];
 		int idx = m_system.m_names.find(scr.script_name_hash);
 		if (idx < 0) return "";
 		return m_system.m_names.at(idx).c_str();
 	}
 
 
-	int getScriptCount(ComponentHandle cmp) const override
+	int getScriptCount(Entity entity) const override
 	{
-		return m_scripts[{cmp.index}]->scripts.size();
+		return m_scripts[entity]->scripts.size();
 	}
 
 
-	u32 getScriptNameHash(ComponentHandle cmp, int scr_index) override
+	u32 getScriptNameHash(Entity entity, int scr_index) override
 	{
-		return m_scripts[{cmp.index}]->scripts[scr_index].script_name_hash;
+		return m_scripts[entity]->scripts[scr_index].script_name_hash;
 	}
 
 
@@ -1016,9 +1006,9 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	}
 
 
-	void setScriptNameHash(ComponentHandle cmp, int scr_index, u32 name_hash) override
+	void setScriptNameHash(Entity entity, int scr_index, u32 name_hash) override
 	{
-		ScriptComponent* script_cmp = m_scripts[{cmp.index}];
+		ScriptComponent* script_cmp = m_scripts[entity];
 		if (script_cmp->scripts.size() <= scr_index) return;
 
 		setScriptNameHash(*script_cmp, script_cmp->scripts[scr_index], name_hash);
@@ -1054,23 +1044,20 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	}
 
 
-	ComponentHandle createScriptComponent(Entity entity)
+	void createScriptComponent(Entity entity)
 	{
 		auto& allocator = m_system.m_allocator;
 		
 		ScriptComponent* script = LUMIX_NEW(allocator, ScriptComponent)(allocator);
-		ComponentHandle cmp = {entity.index};
 		script->entity = entity;
 		m_scripts.insert(entity, script);
 		createCSharpEntity(script->entity);
-		m_universe.onComponentCreated(entity, CSHARP_SCRIPT_TYPE, this, cmp);
-		return cmp;
+		m_universe.onComponentCreated(entity, CSHARP_SCRIPT_TYPE, this);
 	}
 
 
-	void destroyScriptComponent(ComponentHandle component)
+	void destroyScriptComponent(Entity entity)
 	{
-		Entity entity = {component.index};
 		auto* script = m_scripts[entity];
 		auto handle_iter = m_entities_gc_handles.find(script->entity);
 		if(handle_iter.isValid())
@@ -1084,7 +1071,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		}
 		LUMIX_DELETE(m_system.m_allocator, script);
 		m_scripts.erase(entity);
-		m_universe.onComponentDestroyed(entity, CSHARP_SCRIPT_TYPE, this, component);
+		m_universe.onComponentDestroyed(entity, CSHARP_SCRIPT_TYPE, this);
 	}
 
 
@@ -1158,8 +1145,8 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 					tryCallMethod(true, obj, nullptr, "Deserialize", str);
 				}
 			}
-			ComponentHandle cmp = {script->entity.index};
-			m_universe.onComponentCreated(script->entity, CSHARP_SCRIPT_TYPE, this, cmp);
+			Entity entity = {script->entity.index};
+			m_universe.onComponentCreated(script->entity, CSHARP_SCRIPT_TYPE, this);
 		}
 	}
 
@@ -1289,14 +1276,6 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	
 	
 	void lateUpdate(float time_delta, bool paused) override {}
-
-
-	ComponentHandle getComponent(Entity entity, ComponentType type) override 
-	{
-		if(type != CSHARP_SCRIPT_TYPE) return INVALID_COMPONENT; 
-		if (m_scripts.find(entity) != -1) return {entity.index};
-		return INVALID_COMPONENT;
-	}
 
 
 	Universe& getUniverse() override { return m_universe; }
