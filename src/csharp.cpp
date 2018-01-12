@@ -155,6 +155,14 @@ Resource* csharp_Resource_load(Engine& engine, MonoString* path, MonoString* typ
 }
 
 
+bool csharp_Entity_hasComponent(Universe* universe, Entity entity, MonoString* type)
+{
+	MonoStringHolder type_str = type;
+	ComponentType cmp_type = Reflection::getComponentType((const char*)type_str);
+	return universe->hasComponent(entity, cmp_type);
+}
+
+
 void csharp_Entity_setParent(Universe* universe, Entity parent, Entity child)
 {
 	universe->setParent(parent, child);
@@ -701,6 +709,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		mono_add_internal_call("Lumix.Universe::getSceneByName", csharp_getSceneByName);
 		mono_add_internal_call("Lumix.Universe::getEntity", csharp_getEntity);
 		mono_add_internal_call("Lumix.IScene::getUniverse", csharp_getUniverse);
+		mono_add_internal_call("Lumix.Entity::hasComponent", csharp_Entity_hasComponent);
 		mono_add_internal_call("Lumix.Entity::setParent", csharp_Entity_setParent);
 		mono_add_internal_call("Lumix.Entity::getParent", csharp_Entity_getParent);
 		mono_add_internal_call("Lumix.Entity::destroy", csharp_Entity_destroy);
