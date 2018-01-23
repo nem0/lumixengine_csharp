@@ -691,7 +691,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		REGISTER_FUNCTION(SetCursorScreenPos);
 		REGISTER_FUNCTION(SetNextWindowPos);
 		REGISTER_FUNCTION(SetNextWindowSize);
-		REGISTER_FUNCTION(ShowTestWindow);
+		REGISTER_FUNCTION(ShowDemoWindow);
 		REGISTER_FUNCTION(SliderFloat);
 		REGISTER_FUNCTION(Unindent);
 
