@@ -373,16 +373,36 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 		skip("Lumix::");
 		cs_type = c;
 		char* end = cs_type.data + stringLength(cs_type.data) - 1;
-		while (end >= cs_type.data && (*end == ' ' || *end == '&')) --end;
+		bool is_ref = false;
+		while (end >= cs_type.data && (*end == ' ' || *end == '&'))
+		{
+			is_ref = is_ref || *end == '&';
+			--end;
+		}
 		++end;
 		*end = 0;
-		if (endsWith(cs_type, " const")) cs_type.data[stringLength(cs_type.data) - sizeof(" const") + 1] = '\0';
+		bool is_const = false;
+		if (endsWith(cs_type, " const"))
+		{
+			is_const = true;
+			cs_type.data[stringLength(cs_type.data) - sizeof(" const") + 1] = '\0';
+		}
+		bool is_ptr = false;
 		if(endsWith(cs_type, "*"))
 		{
+			is_ptr = true;
 			if (startsWith(cs_type, "const char")) cs_type = "string";
 			else if (startsWith(cs_type, "char const")) cs_type = "string";
 		}
-		else if (cs_type == "Path") cs_type = "string";
+		else if (cs_type == "Path")
+		{
+			cs_type = "string";
+		}
+		else if ((is_ptr || is_ref) && !is_const)
+		{
+			StaticString<64> tmp("ref ", cs_type);
+			cs_type = tmp;
+		}
 	}
 
 
@@ -500,10 +520,14 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 
 					for (int i = 0, c = func.getArgCount(); i < c; ++i)
 					{
-						if (i > 0) *cs_file << ", ";
-						*cs_file << "a" << i;
 						StaticString<64> cs_type;
 						getCSType(func.getArgType(i), cs_type);
+						if (i > 0) *cs_file << ", ";
+						if (startsWith(cs_type, "ref "))
+						{
+							*cs_file << "ref ";
+						}
+						*cs_file << "a" << i;
 						if (equalStrings(cs_type, "Entity"))
 						{
 							*cs_file << ".entity_Id_";
