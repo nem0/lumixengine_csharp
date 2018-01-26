@@ -439,6 +439,40 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 	}
 
 
+	static void generateEnumsBindings()
+	{
+		FS::OsFile cs_file;
+		if (!cs_file.open("cs/generated/enums.cs", FS::Mode::CREATE_AND_WRITE))
+		{
+			g_log_error.log("C#") << "Failed to create cs/generated/enums.cs";
+			return;
+		}
+
+		cs_file << "namespace Lumix {\n";
+
+		for (int i = 0, count = Reflection::getEnumsCount(); i < count; ++i)
+		{
+			const Reflection::EnumBase& e = Reflection::getEnum(i);
+			const char* name_start = e.name;
+			if (startsWith(name_start, "enum ")) name_start += stringLength("enum ");
+			name_start = reverseFind(name_start, nullptr, ':');
+			if (name_start[0] == ':') ++name_start;
+			cs_file << "\tenum " << name_start << " {\n";
+			for (int j = 0; j < e.values_count; ++j)
+			{
+				cs_file << "\t\t" << e.values[j].name;
+				if (j < e.values_count - 1) cs_file << ",";
+				cs_file << "\n";
+			}
+
+			cs_file << "\t}\n";
+		}
+
+		cs_file << "}\n";
+		cs_file.close();
+	}
+
+
 	static void generateScenesBindings(FS::OsFile& api_file)
 	{
 		using namespace Reflection;
@@ -587,6 +621,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 			return;
 		}
 
+		generateEnumsBindings();
 		generateScenesBindings(api_file);
 
 		using namespace Reflection;
