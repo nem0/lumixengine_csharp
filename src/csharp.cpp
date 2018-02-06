@@ -975,7 +975,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 			{
 				char class_name[256];
 				getClassName(name_hash, class_name);
-				script.gc_handle = createObjectGC("Lumix", class_name);
+				script.gc_handle = createObjectGC("", class_name);
 				if(script.gc_handle != INVALID_GC_HANDLE) setCSharpComponent(script, cmp);
 			}
 
@@ -1099,18 +1099,23 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 				MonoObject* obj = mono_gchandle_get_target(scr.gc_handle);
 				MonoObject* cs_serialized;
-				if (tryCallMethod(true, obj, &cs_serialized, "Serialize"))
+				if (obj && tryCallMethod(true, obj, &cs_serialized, "Serialize"))
 				{
 					MonoObject* exc;
 					MonoStringHolder str = mono_object_to_string(cs_serialized, &exc);
 					if (exc)
 					{
 						handleException(exc);
+						serializer.writeString("");
 					}
 					else
 					{
 						serializer.writeString((const char*)str);
 					}
+				}
+				else
+				{
+					serializer.writeString("");
 				}
 			}
 		}
@@ -1142,16 +1147,19 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 				u32 size = serializer.read<u32>();
 				buf.resize(size);
 				MonoObject* obj = mono_gchandle_get_target(scr.gc_handle);
-				if (size > 0)
+				if (obj)
 				{
-					serializer.read(&buf[0], size);
-					MonoString* str = mono_string_new(mono_domain_get(), (const char*)&buf[0]);
-					tryCallMethod(true, obj, nullptr, "Deserialize", str);
-				}
-				else
-				{
-					MonoString* str = mono_string_new(mono_domain_get(), "");
-					tryCallMethod(true, obj, nullptr, "Deserialize", str);
+					if (size > 0)
+					{
+						serializer.read(&buf[0], size);
+						MonoString* str = mono_string_new(mono_domain_get(), (const char*)&buf[0]);
+						tryCallMethod(true, obj, nullptr, "Deserialize", str);
+					}
+					else
+					{
+						MonoString* str = mono_string_new(mono_domain_get(), "");
+						tryCallMethod(true, obj, nullptr, "Deserialize", str);
+					}
 				}
 			}
 			Entity entity = {script->entity.index};
