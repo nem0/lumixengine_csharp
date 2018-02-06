@@ -426,11 +426,11 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 	}
 
 
-	static void writeCSArgs(const Reflection::FunctionBase& func, FS::OsFile& file, int skip_args, bool cs_internal_call)
+	static void writeCSArgs(const Reflection::FunctionBase& func, FS::OsFile& file, int skip_args, bool cs_internal_call, bool start_with_comma)
 	{
 		for (int i = skip_args, c = func.getArgCount(); i < c; ++i)
 		{
-			if (i > skip_args) file << ", ";
+			if (i > skip_args || start_with_comma) file << ", ";
 			StaticString<64> cs_type;
 			getCSType(func.getArgType(i), cs_type);
 			if (cs_internal_call && cs_type == "Entity") cs_type = "int";
@@ -535,15 +535,15 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 
 					*cs_file <<
 						"		[MethodImplAttribute(MethodImplOptions.InternalCall)]\n"
-						"		extern static "<< interop_return_type << " " << cpp_method_name << "(IntPtr instance, ";
+						"		extern static "<< interop_return_type << " " << cpp_method_name << "(IntPtr instance";
 
-					writeCSArgs(func, *cs_file, 0, true);
+					writeCSArgs(func, *cs_file, 0, true, true);
 
 					*cs_file << ");\n"
 						"\n"
 						"		public " << cs_return_type <<  " " << cs_method_name << "(";
 
-					writeCSArgs(func, *cs_file, 0, false);
+					writeCSArgs(func, *cs_file, 0, false, false);
 
 					const char* return_expr = cs_return_type == "void" ? "" : (cs_return_type == "Entity" ? "var ret =" : "return");
 
@@ -738,25 +738,24 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 
 					*cs_file <<
 						"		[MethodImplAttribute(MethodImplOptions.InternalCall)]\n"
-						"		extern static void " << cpp_method_name << "(IntPtr instance, int cmp, ";
+						"		extern static void " << cpp_method_name << "(IntPtr instance, int cmp";
 					
-					writeCSArgs(func, *cs_file, 1, true);
+					writeCSArgs(func, *cs_file, 1, true, true);
 
 					*cs_file << ");\n"
 						"\n"
 						"		public void " << cs_method_name << "(";
 
-					writeCSArgs(func, *cs_file, 1, false);
+					writeCSArgs(func, *cs_file, 1, false, false);
 
 					*cs_file <<
 						")\n"
 						"		{\n"
-						"			" << cpp_method_name << "(scene_, entity_.entity_Id_, ";
+						"			" << cpp_method_name << "(scene_, entity_.entity_Id_";
 					
 					for (int i = 1, c = func.getArgCount(); i < c; ++i)
 					{
-						if (i > 1) *cs_file << ", ";
-						*cs_file << "a" << i - 1;
+						*cs_file << ", a" << i - 1;
 					}
 
 					*cs_file << ");\n"
