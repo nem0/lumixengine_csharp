@@ -736,22 +736,24 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 						"}\n"
 						"\n\n";
 
+					StaticString<64> ret_cs;
+					getCSType(func.getReturnType(), ret_cs);
 					*cs_file <<
 						"		[MethodImplAttribute(MethodImplOptions.InternalCall)]\n"
-						"		extern static void " << cpp_method_name << "(IntPtr instance, int cmp";
+						"		extern static " <<  ret_cs << " " << cpp_method_name << "(IntPtr instance, int cmp";
 					
 					writeCSArgs(func, *cs_file, 1, true, true);
 
 					*cs_file << ");\n"
 						"\n"
-						"		public void " << cs_method_name << "(";
+						"		public " << ret_cs << " " << cs_method_name << "(";
 
 					writeCSArgs(func, *cs_file, 1, false, false);
 
 					*cs_file <<
 						")\n"
 						"		{\n"
-						"			" << cpp_method_name << "(scene_, entity_.entity_Id_";
+						"			" << (ret_cs != "void" ? "return " : "") << cpp_method_name << "(scene_, entity_.entity_Id_";
 					
 					for (int i = 1, c = func.getArgCount(); i < c; ++i)
 					{
