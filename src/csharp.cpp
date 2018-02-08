@@ -210,6 +210,18 @@ IScene* csharp_getSceneByName(Universe* universe, MonoString* type_str)
 }
 
 
+int csharp_Component_getEntityIDFromGUID(IDeserializer* serializer, u64 guid)
+{
+	return serializer->getEntity({guid}).index;
+}
+
+
+u64 csharp_Component_getEntityGUIDFromID(ISerializer* serializer, int id)
+{
+	return serializer->getGUID({id}).value;
+}
+
+
 void csharp_Component_create(Universe* universe, int entity, MonoString* type_str)
 {
 	MonoStringHolder type = type_str;
@@ -703,6 +715,8 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 	{
 		mono_add_internal_call("Lumix.Engine::logError", csharp_logError);
 		mono_add_internal_call("Lumix.Engine::loadResource", csharp_loadResource);
+		mono_add_internal_call("Lumix.Component::getEntityIDFromGUID", csharp_Component_getEntityIDFromGUID);
+		mono_add_internal_call("Lumix.Component::getEntityGUIDFromID", csharp_Component_getEntityGUIDFromID);
 		mono_add_internal_call("Lumix.Component::create", csharp_Component_create);
 		mono_add_internal_call("Lumix.Component::getScene", csharp_getScene);
 		mono_add_internal_call("Lumix.Universe::instantiatePrefab", csharp_instantiatePrefab);
@@ -813,7 +827,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 			MonoObject* obj = mono_gchandle_get_target(inst.gc_handle);
 			MonoObject* res;
-			if (tryCallMethod(true, obj, &res, "Serialize"))
+			if (tryCallMethod(true, obj, &res, "Serialize", &serializer))
 			{
 				MonoObject* exc;
 				MonoStringHolder str = mono_object_to_string(res, &exc);
@@ -859,6 +873,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		int count;
 		serializer.read(&count);
 		script->scripts.reserve(count);
+		string tmp(allocator);
 		for (int i = 0; i < count; ++i)
 		{
 			Script& inst = script->scripts.emplace(allocator);
@@ -866,7 +881,22 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 			serializer.read(&hash);
 			setScriptNameHash(entity, i, hash);
 			
-			serializer.read(&inst.properties);
+			serializer.read(&tmp);
+			MonoObject* res;
+			MonoClass* mono_class = mono_class_from_name(mono_assembly_get_image(m_system.m_assembly), "Lumix", "Component");
+
+			MonoString* str_arg = mono_string_new(mono_domain_get(), tmp.c_str());
+			tryCallStaticMethod(true, mono_class, &res, "ConvertGUIDToID", str_arg, &serializer);
+			MonoObject* exc;
+			MonoStringHolder str = mono_object_to_string(res, &exc);
+			if (exc)
+			{
+				handleException(exc);
+			}
+			else
+			{
+				inst.properties = (const char*)str;
+			}
 		}
 
 		if (m_system.m_assembly) applyProperties(*script);
@@ -1099,7 +1129,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 
 				MonoObject* obj = mono_gchandle_get_target(scr.gc_handle);
 				MonoObject* cs_serialized;
-				if (obj && tryCallMethod(true, obj, &cs_serialized, "Serialize"))
+				if (obj && tryCallMethod(true, obj, &cs_serialized, "Serialize", (ISerializer*)nullptr))
 				{
 					MonoObject* exc;
 					MonoStringHolder str = mono_object_to_string(cs_serialized, &exc);
@@ -1365,6 +1395,31 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 		MonoObject* exc = nullptr;
 		void* mono_args[] = { toCSharpArg(&args)... };
 		MonoObject* res = mono_runtime_invoke(method, obj, mono_args, &exc);
+		handleException(exc);
+		if (result && !exc) *result = res;
+
+		return exc == nullptr;
+	}
+
+	template <typename... T>
+	bool tryCallStaticMethod(bool try_parents, MonoClass* mono_class, MonoObject** result, const char* method_name, T... args)
+	{
+		ASSERT(mono_class);
+		MonoMethod* method = mono_class_get_method_from_name(mono_class, method_name, sizeof...(args));
+		if (!method && try_parents)
+		{
+			while (!method)
+			{
+				mono_class = mono_class_get_parent(mono_class);
+				if (!mono_class) return false;
+				method = mono_class_get_method_from_name(mono_class, method_name, sizeof...(args));
+			}
+		}
+		if (!method) return false;
+
+		MonoObject* exc = nullptr;
+		void* mono_args[] = { toCSharpArg(&args)... };
+		MonoObject* res = mono_runtime_invoke(method, nullptr, mono_args, &exc);
 		handleException(exc);
 		if (result && !exc) *result = res;
 
