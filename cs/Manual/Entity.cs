@@ -25,7 +25,7 @@ namespace Lumix
         private extern static void destroy(IntPtr universe, int entity);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        private extern static int getComponent(IntPtr universe, int entity, string cmp_type);
+        private extern static bool hasComponent(IntPtr universe, int entity, string cmp_type);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		protected extern static IntPtr getScene(IntPtr universe, string cmp_type);
@@ -175,7 +175,7 @@ namespace Lumix
 			 if(x < 0) return null;
 			  return new Entity(instance_, x);
 			}
-			set { setParent(instance_, entity_Id_, value); }
+			set { setParent(instance_, value == null ? -1 : value.entity_Id_, entity_Id_); }
 		}
 
 		public System.IntPtr LocalTransform
@@ -394,10 +394,9 @@ namespace Lumix
             {
                 string cmp_type = prop.Type;
 
-                int cmp_id = getComponent(instance_, entity_Id_, cmp_type);
-                if (cmp_id < 0) return null;
+                if (!hasComponent(instance_, entity_Id_, cmp_type)) return null;
 
-                var cmp = (T)System.Activator.CreateInstance(typeof(T), new object[] { this, cmp_id });
+                var cmp = (T)System.Activator.CreateInstance(typeof(T), new object[] { this });
                 components_.Add(cmp);
                 return cmp;
             }
@@ -406,10 +405,10 @@ namespace Lumix
                 var types = ncb.SupportedTypes;
                 for (int k = 0; k < types.Length; k++)
                 {
-                    int cmp_id = getComponent(instance_, entity_Id_, types[k]);
-                    if (cmp_id < 0) continue;
+                    if (!hasComponent(instance_, entity_Id_, types[k])) continue;
+
                     Type t = Type.GetType("Lumix." + types[k].Capitalize('_'));
-                    var cmp = (T)System.Activator.CreateInstance(t, new object[] { this, cmp_id });
+                    var cmp = (T)System.Activator.CreateInstance(t, new object[] { this });
                     components_.Add(cmp);
                     return cmp;
                 }
