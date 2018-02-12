@@ -1178,7 +1178,7 @@ struct AddCSharpComponentPlugin LUMIX_FINAL : public StudioApp::IAddComponentPlu
 				if (create_entity)
 				{
 					Entity entity = editor.addEntity();
-					editor.selectEntities(&entity, 1);
+					editor.selectEntities(&entity, 1, false);
 				}
 				if (editor.getSelectedEntities().empty()) return;
 				Entity entity = editor.getSelectedEntities()[0];
