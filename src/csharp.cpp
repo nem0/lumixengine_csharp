@@ -6,6 +6,7 @@
 #include "engine/crc32.h"
 #include "engine/engine.h"
 #include "engine/flag_set.h"
+#include "engine/fs/os_file.h"
 #include "engine/geometry.h"
 #include "engine/hash_map.h"
 #include "engine/iallocator.h"
@@ -19,6 +20,7 @@
 #include "engine/resource_manager.h"
 #include "engine/resource_manager_base.h"
 #include "engine/serializer.h"
+#include "engine/system.h"
 #include "engine/universe/component.h"
 #include "engine/universe/universe.h"
 #include "gui/gui_scene.h"
@@ -515,20 +517,6 @@ void csharp_setProperty(C* scene, int entity, typename ToCSharpType<T>::Type val
 }
 
 
-MonoString* csharp_Animable_getSource(AnimationScene* scene, int cmp)
-{
-	Path src = scene->getAnimation({cmp});
-	return mono_string_new(mono_domain_get(), src.c_str());
-}
-
-
-void csharp_Animable_setSource(AnimationScene* scene, int cmp, MonoString* src)
-{
-	MonoStringHolder str = src;
-	scene->setAnimation({cmp}, Path((const char*)str));
-}
-
-
 Resource* csharp_loadResource(Engine* engine, MonoString* path, MonoString* type)
 {
 	MonoStringHolder type_str = type;
@@ -882,20 +870,23 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 			setScriptNameHash(entity, i, hash);
 			
 			serializer.read(&tmp);
-			MonoObject* res;
-			MonoClass* mono_class = mono_class_from_name(mono_assembly_get_image(m_system.m_assembly), "Lumix", "Component");
+			if (m_system.m_assembly)
+			{
+				MonoObject* res;
+				MonoClass* mono_class = mono_class_from_name(mono_assembly_get_image(m_system.m_assembly), "Lumix", "Component");
 
-			MonoString* str_arg = mono_string_new(mono_domain_get(), tmp.c_str());
-			tryCallStaticMethod(true, mono_class, &res, "ConvertGUIDToID", str_arg, &serializer);
-			MonoObject* exc;
-			MonoStringHolder str = mono_object_to_string(res, &exc);
-			if (exc)
-			{
-				handleException(exc);
-			}
-			else
-			{
-				inst.properties = (const char*)str;
+				MonoString* str_arg = mono_string_new(mono_domain_get(), tmp.c_str());
+				tryCallStaticMethod(true, mono_class, &res, "ConvertGUIDToID", str_arg, &serializer);
+				MonoObject* exc;
+				MonoStringHolder str = mono_object_to_string(res, &exc);
+				if (exc)
+				{
+					handleException(exc);
+				}
+				else
+				{
+					inst.properties = (const char*)str;
+				}
 			}
 		}
 
@@ -1548,7 +1539,7 @@ CSharpPluginImpl::CSharpPluginImpl(Engine& engine)
 {
 	registerProperties();
 
-	//mono_trace_set_level_string("debug");
+	mono_trace_set_level_string("debug");
 	auto printer = [](const char* msg, mono_bool is_stdout) {
 		g_log_error.log("Mono") << msg;
 	};
@@ -1562,10 +1553,15 @@ CSharpPluginImpl::CSharpPluginImpl(Engine& engine)
 	mono_trace_set_printerr_handler(printer);
 	mono_trace_set_log_handler(logger, nullptr);
 
-	mono_set_dirs("C:\\Program Files\\Mono\\lib", "C:\\Program Files\\Mono\\etc");
-	mono_config_parse(nullptr);
-	//mono_set_dirs("C:\\projects\\cs_demo\\mono3\\", "C:\\Program Files\\Mono\\etc");
-	//mono_set_assemblies_path("mono\\");
+	//mono_set_dirs("C:\\Program Files\\Mono\\lib", "C:\\Program Files\\Mono\\etc");
+	//mono_config_parse(nullptr);
+	mono_set_dirs(nullptr, nullptr);
+	char exe_path[MAX_PATH_LENGTH];
+	getExecutablePath(exe_path, lengthOf(exe_path));
+	char exe_dir[MAX_PATH_LENGTH];
+	PathUtils::getDir(exe_dir, lengthOf(exe_dir), exe_path);
+	StaticString<MAX_PATH_LENGTH * 3> assemblies_paths(exe_dir, ";", engine.getWorkingDirectory());
+	mono_set_assemblies_path(assemblies_paths);
 	initDebug();
 	m_domain = mono_jit_init("lumix");
 	mono_thread_set_main(mono_thread_current());
@@ -1663,7 +1659,7 @@ void CSharpPluginImpl::loadAssembly()
 {
 	ASSERT(!m_assembly);
 	
-	const char* path = "cs\\main.dll";
+	const char* path = "main.dll";
 
 	IAllocator& allocator = m_engine.getAllocator();
 	m_assembly_domain = mono_domain_create_appdomain("lumix_runtime", nullptr);

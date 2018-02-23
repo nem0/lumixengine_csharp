@@ -1,5 +1,5 @@
 function linkMono()
-	libdirs {"../../lumixengine_csharp/external/lib/"}
+	libdirs {[[c:/Program Files/Mono/lib/]]}
 end
 
 project "lumixengine_csharp"
@@ -12,7 +12,7 @@ project "lumixengine_csharp"
 		"src/**.inl",
 		"genie.lua"
 	}
-	includedirs { "../lumixengine_csharp/src", [[external/include/mono-2.0]] }
+	includedirs { "../lumixengine_csharp/src", [[c:/Program Files/Mono/include/mono-2.0]] }
 	buildoptions { "/wd4267", "/wd4244" }
 	defines { "BUILDING_CSHARP" }
 	links { "engine" }
@@ -20,6 +20,9 @@ project "lumixengine_csharp"
 	defaultConfigurations()
 	postbuildcommands {
 		"xcopy /Y \"c:\\Program Files\\Mono\\bin\\mono-2.0-sgen.dll\" \"$(SolutionDir)bin\\Debug\"",
+		"xcopy /Y \"c:\\Program Files\\Mono\\lib\\mono\\4.5\\mscorlib.dll\" \"$(SolutionDir)bin\\Debug\"",
+		"xcopy /Y \"c:\\Program Files\\Mono\\lib\\mono\\4.5\\system.dll\" \"$(SolutionDir)bin\\Debug\"",
+		"xcopy /Y \"c:\\Program Files\\Mono\\lib\\mono\\4.5\\system.configuration.dll\" \"$(SolutionDir)bin\\Debug\"",
 	}
 
 table.insert(build_app_callbacks, linkMono)

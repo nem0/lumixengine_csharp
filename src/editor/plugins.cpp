@@ -17,12 +17,12 @@
 #include "engine/resource.h"
 #include "engine/resource_manager.h"
 #include "engine/resource_manager_base.h"
+#include "engine/system.h"
 #include "engine/universe/universe.h"
 #include "helpers.h"
 #include "imgui/imgui.h"
 #include "csharp.h"
 #include <cstdlib>
-
 
 
 
@@ -47,6 +47,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 		m_watcher->getCallback().bind<StudioCSharpPlugin, &StudioCSharpPlugin::onFileChanged>(this);
 
 		findVSCode();
+		findMono();
 
 		makeUpToDate();
 	}
@@ -55,6 +56,52 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 	~StudioCSharpPlugin()
 	{
 		FileSystemWatcher::destroy(m_watcher);
+	}
+
+
+	bool packData(const char* dest_dir)
+	{
+		char exe_path[MAX_PATH_LENGTH];
+		getExecutablePath(exe_path, lengthOf(exe_path));
+		char exe_dir[MAX_PATH_LENGTH];
+
+		const char* mono_dlls[] = {
+			"mono-2.0-sgen.dll",
+			"System.dll",
+			"mscorlib.dll",
+			"System.Configuration.dll"
+		};
+		for (const char* dll : mono_dlls)
+		{
+			PathUtils::getDir(exe_dir, lengthOf(exe_dir), exe_path);
+			StaticString<MAX_PATH_LENGTH> tmp(exe_dir, dll);
+			if (!PlatformInterface::fileExists(tmp)) return false;
+			StaticString<MAX_PATH_LENGTH> dest(dest_dir, dll);
+			if (!copyFile(tmp, dest))
+			{
+				g_log_error.log("C#") << "Failed to copy " << tmp << " to " << dest;
+				return false;
+			}
+		}
+		
+		StaticString<MAX_PATH_LENGTH> dest(dest_dir, "main.dll");
+		if (!copyFile("main.dll", dest))
+		{
+			g_log_error.log("C#") << "Failed to copy main.dll to " << dest;
+			return false;
+		}
+		
+		return true;
+	}
+
+
+
+	void findMono()
+	{
+		if (!PlatformInterface::fileExists("C:\\Program Files\\Mono\\bin\\mcs.bat"))
+		{
+			g_log_error.log("C#") << "C:\\Program Files\\Mono\\bin\\mcs.bat does not exist, can not compile C# scripts";
+		}
 	}
 
 
@@ -109,13 +156,13 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 	void makeUpToDate()
 	{
 		IAllocator& allocator = m_app.getWorldEditor().getAllocator();
-		if (!PlatformInterface::fileExists("cs\\main.dll"))
+		if (!PlatformInterface::fileExists("main.dll"))
 		{
 			compile();
 			return;
 		}
 
-		u64 dll_modified = PlatformInterface::getLastModified("cs\\main.dll");
+		u64 dll_modified = PlatformInterface::getLastModified("main.dll");
 		PlatformInterface::FileIterator* iter = PlatformInterface::createFileIterator("cs", allocator);
 		PlatformInterface::FileInfo info;
 		while (PlatformInterface::getNextFile(iter, &info))
@@ -794,7 +841,7 @@ struct StudioCSharpPlugin : public StudioApp::IPlugin
 		CSharpPlugin& plugin = (CSharpPlugin&)scene->getPlugin();
 		plugin.unloadAssembly();
 		IAllocator& allocator = m_app.getWorldEditor().getAllocator();
-		m_compile_process = PlatformInterface::createProcess("c:\\windows\\system32\\cmd.exe", "/c \"\"C:\\Program Files\\Mono\\bin\\mcs.bat\" -out:\"cs\\main.dll\" -target:library -debug -unsafe -recurse:\"cs\\*.cs\"", allocator);
+		m_compile_process = PlatformInterface::createProcess("c:\\windows\\system32\\cmd.exe", "/c \"\"C:\\Program Files\\Mono\\bin\\mcs.bat\" -out:\"main.dll\" -target:library -debug -unsafe -recurse:\"cs\\*.cs\"", allocator);
 	}
 
 	PlatformInterface::Process* m_compile_process = nullptr;
