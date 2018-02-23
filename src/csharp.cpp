@@ -1539,7 +1539,7 @@ CSharpPluginImpl::CSharpPluginImpl(Engine& engine)
 {
 	registerProperties();
 
-	mono_trace_set_level_string("debug");
+	//mono_trace_set_level_string("debug");
 	auto printer = [](const char* msg, mono_bool is_stdout) {
 		g_log_error.log("Mono") << msg;
 	};
