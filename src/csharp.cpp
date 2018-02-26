@@ -876,16 +876,18 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene
 				MonoClass* mono_class = mono_class_from_name(mono_assembly_get_image(m_system.m_assembly), "Lumix", "Component");
 
 				MonoString* str_arg = mono_string_new(mono_domain_get(), tmp.c_str());
-				tryCallStaticMethod(true, mono_class, &res, "ConvertGUIDToID", str_arg, &serializer);
-				MonoObject* exc;
-				MonoStringHolder str = mono_object_to_string(res, &exc);
-				if (exc)
+				if (tryCallStaticMethod(true, mono_class, &res, "ConvertGUIDToID", str_arg, &serializer))
 				{
-					handleException(exc);
-				}
-				else
-				{
-					inst.properties = (const char*)str;
+					MonoObject* exc;
+					MonoStringHolder str = mono_object_to_string(res, &exc);
+					if (exc)
+					{
+						handleException(exc);
+					}
+					else
+					{
+						inst.properties = (const char*)str;
+					}
 				}
 			}
 		}
