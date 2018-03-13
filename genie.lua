@@ -18,12 +18,21 @@ project "lumixengine_csharp"
 	links { "engine" }
 	useLua()
 	defaultConfigurations()
-	postbuildcommands {
-		"xcopy /Y \"c:\\Program Files\\Mono\\bin\\mono-2.0-sgen.dll\" \"$(SolutionDir)bin\\Debug\"",
-		"xcopy /Y \"c:\\Program Files\\Mono\\lib\\mono\\4.5\\mscorlib.dll\" \"$(SolutionDir)bin\\Debug\"",
-		"xcopy /Y \"c:\\Program Files\\Mono\\lib\\mono\\4.5\\system.dll\" \"$(SolutionDir)bin\\Debug\"",
-		"xcopy /Y \"c:\\Program Files\\Mono\\lib\\mono\\4.5\\system.configuration.dll\" \"$(SolutionDir)bin\\Debug\"",
-	}
+
+	configuration { "Debug" }
+		postbuildcommands {
+			"xcopy /Y \"c:\\Program Files\\Mono\\bin\\mono-2.0-sgen.dll\" \"$(SolutionDir)bin\\Debug\"",
+			"xcopy /Y \"c:\\Program Files\\Mono\\lib\\mono\\4.5\\mscorlib.dll\" \"$(SolutionDir)bin\\Debug\"",
+			"xcopy /Y \"c:\\Program Files\\Mono\\lib\\mono\\4.5\\system.dll\" \"$(SolutionDir)bin\\Debug\"",
+			"xcopy /Y \"c:\\Program Files\\Mono\\lib\\mono\\4.5\\system.configuration.dll\" \"$(SolutionDir)bin\\Debug\"",
+		}
+	configuration { "RelWithDebInfo" }
+		postbuildcommands {
+			"xcopy /Y \"c:\\Program Files\\Mono\\bin\\mono-2.0-sgen.dll\" \"$(SolutionDir)bin\\RelWithDebInfo\"",
+			"xcopy /Y \"c:\\Program Files\\Mono\\lib\\mono\\4.5\\mscorlib.dll\" \"$(SolutionDir)bin\\RelWithDebInfo\"",
+			"xcopy /Y \"c:\\Program Files\\Mono\\lib\\mono\\4.5\\system.dll\" \"$(SolutionDir)bin\\RelWithDebInfo\"",
+			"xcopy /Y \"c:\\Program Files\\Mono\\lib\\mono\\4.5\\system.configuration.dll\" \"$(SolutionDir)bin\\RelWithDebInfo\"",
+		}
 
 table.insert(build_app_callbacks, linkMono)
 table.insert(build_studio_callbacks, linkMono)
