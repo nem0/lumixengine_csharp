@@ -82,7 +82,7 @@ void getCSharpName(const char* in_name, StaticString<128>& class_name)
 	bool to_upper = true;
 	while (*in && out - class_name.data < lengthOf(class_name.data) - 1)
 	{
-		if (*in == '_' || *in == ' ')
+		if (*in == '_' || *in == ' ' || *in == '-')
 		{
 			to_upper = true;
 			++in;
