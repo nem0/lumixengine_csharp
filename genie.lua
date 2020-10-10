@@ -2,7 +2,7 @@ function linkMono()
 	libdirs {[[c:/Program Files/Mono/lib/]]}
 end
 
-project "lumixengine_csharp"
+project "csharp"
 	libType()
 	files { 
 		"src/**.c",
@@ -12,7 +12,7 @@ project "lumixengine_csharp"
 		"src/**.inl",
 		"genie.lua"
 	}
-	includedirs { "../lumixengine_csharp/src", [[c:/Program Files/Mono/include/mono-2.0]] }
+	includedirs { "../csharp/src", [[c:/Program Files/Mono/include/mono-2.0]] }
 	buildoptions { "/wd4267", "/wd4244" }
 	defines { "BUILDING_CSHARP" }
 	links { "engine" }
@@ -34,5 +34,6 @@ project "lumixengine_csharp"
 			"xcopy /Y \"c:\\Program Files\\Mono\\lib\\mono\\4.5\\system.configuration.dll\" \"$(SolutionDir)bin\\RelWithDebInfo\"",
 		}
 
+linkPlugin("csharp")
 table.insert(build_app_callbacks, linkMono)
 table.insert(build_studio_callbacks, linkMono)
