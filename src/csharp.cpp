@@ -35,6 +35,115 @@ namespace Lumix {
 
 static const ComponentType CSHARP_SCRIPT_TYPE = Reflection::getComponentType("csharp_script");
 
+struct CSProperties : Reflection::IDynamicProperties {
+	CSProperties() { name = "cs_properties"; }
+		
+	u32 getCount(ComponentUID cmp, int index) const override { 
+		//CSharpScriptSceneImpl& scene = (CSharpScriptSceneImpl&)*cmp.scene;
+		//const EntityRef e = (EntityRef)cmp.entity;
+		//return scene.getPropertyCount(e, index);
+		return {};
+	}
+
+	Type getType(ComponentUID cmp, int array_idx, u32 idx) const override { 
+		//LuaScriptSceneImpl& scene = (LuaScriptSceneImpl&)*cmp.scene;
+		//const EntityRef e = (EntityRef)cmp.entity;
+		//const LuaScriptScene::Property::Type type = scene.getPropertyType(e, array_idx, idx);
+		//switch(type) {
+		//	case LuaScriptScene::Property::Type::BOOLEAN: return BOOLEAN;
+		//	case LuaScriptScene::Property::Type::INT: return I32;
+		//	case LuaScriptScene::Property::Type::FLOAT: return FLOAT;
+		//	case LuaScriptScene::Property::Type::STRING: return STRING;
+		//	case LuaScriptScene::Property::Type::ENTITY: return ENTITY;
+		//	case LuaScriptScene::Property::Type::RESOURCE: return RESOURCE;
+		//	case LuaScriptScene::Property::Type::COLOR: return COLOR;
+		//	default: ASSERT(false); return NONE;
+		//}
+		return NONE;
+	}
+
+	const char* getName(ComponentUID cmp, int array_idx, u32 idx) const override {
+		//LuaScriptSceneImpl& scene = (LuaScriptSceneImpl&)*cmp.scene;
+		//const EntityRef e = (EntityRef)cmp.entity;
+		//return scene.getPropertyName(e, array_idx, idx);
+		return "";
+	}
+
+	Reflection::ResourceAttribute getResourceAttribute(ComponentUID cmp, int array_idx, u32 idx) const override {
+		//Reflection::ResourceAttribute attr;
+		//LuaScriptSceneImpl& scene = (LuaScriptSceneImpl&)*cmp.scene;
+		//const EntityRef e = (EntityRef)cmp.entity;
+		//const LuaScriptScene::Property::Type type = scene.getPropertyType(e, array_idx, idx);
+		//ASSERT(type == LuaScriptScene::Property::Type::RESOURCE);
+		//attr.file_type = "*.*";
+		//attr.type  = scene.getPropertyResourceType(e, array_idx, idx);
+		//return attr;
+		return {};
+	}
+
+
+	Value getValue(ComponentUID cmp, int array_idx, u32 idx) const override { 
+		//LuaScriptSceneImpl& scene = (LuaScriptSceneImpl&)*cmp.scene;
+		//const EntityRef e = (EntityRef)cmp.entity;
+		//const LuaScriptScene::Property::Type type = scene.getPropertyType(e, array_idx, idx);
+		//const char* name = scene.getPropertyName(e, array_idx, idx);
+		//Value v = {};
+		//switch(type) {
+		//	case LuaScriptScene::Property::Type::COLOR: Reflection::set(v, scene.getPropertyValue<Vec3>(e, array_idx, name)); break;
+		//	case LuaScriptScene::Property::Type::BOOLEAN: Reflection::set(v, scene.getPropertyValue<bool>(e, array_idx, name)); break;
+		//	case LuaScriptScene::Property::Type::INT: Reflection::set(v, scene.getPropertyValue<i32>(e, array_idx, name)); break;
+		//	case LuaScriptScene::Property::Type::FLOAT: Reflection::set(v, scene.getPropertyValue<float>(e, array_idx, name)); break;
+		//	case LuaScriptScene::Property::Type::STRING: Reflection::set(v, scene.getPropertyValue<const char*>(e, array_idx, name)); break;
+		//	case LuaScriptScene::Property::Type::ENTITY: Reflection::set(v, scene.getPropertyValue<EntityPtr>(e, array_idx, name)); break;
+		//	case LuaScriptScene::Property::Type::RESOURCE: {
+		//		const i32 res_idx = scene.getPropertyValue<i32>(e, array_idx, name);
+		//		if (res_idx < 0) {
+		//			Reflection::set(v, ""); 
+		//		}
+		//		else {
+		//			Resource* res = scene.m_system.m_engine.getLuaResource(res_idx);
+		//			Reflection::set(v, res ? res->getPath().c_str() : ""); 
+		//		}
+		//		break;
+		//	}
+		//	default: ASSERT(false); break;
+		//}
+		//return v;
+		return {};
+	}
+		
+	void set(ComponentUID cmp, int array_idx, const char* name, Type type, Value v) const override { 
+		//LuaScriptSceneImpl& scene = (LuaScriptSceneImpl&)*cmp.scene;
+		//const EntityRef e = (EntityRef)cmp.entity;
+		//switch(type) {
+		//	case BOOLEAN: scene.setPropertyValue(e, array_idx, name, v.b); break;
+		//	case I32: scene.setPropertyValue(e, array_idx, name, v.i); break;
+		//	case FLOAT: scene.setPropertyValue(e, array_idx, name, v.f); break;
+		//	case STRING: scene.setPropertyValue(e, array_idx, name, v.s); break;
+		//	case ENTITY: scene.setPropertyValue(e, array_idx, name, v.e); break;
+		//	case RESOURCE: scene.setPropertyValue(e, array_idx, name, v.s); break;
+		//	case COLOR: scene.setPropertyValue(e, array_idx, name, v.v3); break;
+		//	default: ASSERT(false); break;
+		//}
+	}
+
+	void set(ComponentUID cmp, int array_idx, u32 idx, Value v) const override {
+		//LuaScriptSceneImpl& scene = (LuaScriptSceneImpl&)*cmp.scene;
+		//const EntityRef e = (EntityRef)cmp.entity;
+		//const LuaScriptScene::Property::Type type = scene.getPropertyType(e, array_idx, idx);
+		//const char* name = scene.getPropertyName(e, array_idx, idx);
+		//switch(type) {
+		//	case LuaScriptScene::Property::Type::BOOLEAN: scene.setPropertyValue(e, array_idx, name, v.b); break;
+		//	case LuaScriptScene::Property::Type::INT: scene.setPropertyValue(e, array_idx, name, v.i); break;
+		//	case LuaScriptScene::Property::Type::FLOAT: scene.setPropertyValue(e, array_idx, name, v.f); break;
+		//	case LuaScriptScene::Property::Type::STRING: scene.setPropertyValue(e, array_idx, name, v.s); break;
+		//	case LuaScriptScene::Property::Type::ENTITY: scene.setPropertyValue(e, array_idx, name, v.e); break;
+		//	case LuaScriptScene::Property::Type::RESOURCE: scene.setPropertyValue(e, array_idx, name, v.s); break;
+		//	case LuaScriptScene::Property::Type::COLOR: scene.setPropertyValue(e, array_idx, name, v.v3); break;
+		//	default: ASSERT(false); break;
+		//}
+	}
+};
 
 static MonoString* GetStringProperty(const char* propertyName, MonoClass* classType, MonoObject* classObject) {
 	MonoProperty* messageProperty;
@@ -106,6 +215,7 @@ struct CSharpPluginImpl : public CSharpPlugin {
 	void unloadAssembly() override;
 	void loadAssembly() override;
 	const HashMap<u32, String>& getNames() const override { return m_names; }
+	const Array<String>& getNamesArray() const override { return m_names_array; }
 	void setStaticField(const char* name_space, const char* class_name, const char* field_name, void* value);
 	void registerProperties();
 	u32 getVersion() const override { return 0; }
@@ -118,6 +228,7 @@ struct CSharpPluginImpl : public CSharpPlugin {
 	MonoAssembly* m_assembly = nullptr;
 	MonoDomain* m_assembly_domain = nullptr;
 	HashMap<u32, String> m_names;
+	Array<String> m_names_array;
 	DelegateList<void()> m_on_assembly_unload;
 	DelegateList<void()> m_on_assembly_load;
 };
@@ -458,7 +569,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 
 		enum Flags : u32 { HAS_UPDATE = 1 << 0, HAS_ON_INPUT = 1 << 2 };
 
-		u32 script_name_hash;
+		u32 script_name_hash = 0;
 		u32 gc_handle = INVALID_GC_HANDLE;
 		FlagSet<Flags, u32> flags;
 		String properties;
@@ -578,7 +689,6 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 		REGISTER_FUNCTION(SetCursorScreenPos);
 		REGISTER_FUNCTION(SetNextWindowPos);
 		REGISTER_FUNCTION(SetNextWindowSize);
-		REGISTER_FUNCTION(ShowDemoWindow);
 		REGISTER_FUNCTION(SliderFloat);
 		REGISTER_FUNCTION(Unindent);
 #undef REGISTER_FUNCTION
@@ -662,14 +772,13 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 
 
 	void getClassName(u32 name_hash, char (&out_name)[256]) const {
-		/*int idx = m_system.m_names.find(name_hash);
-		if (idx < 0) {
+		auto iter = m_system.m_names.find(name_hash);
+		if (!iter.isValid()) {
 			out_name[0] = 0;
 			return;
 		}
 
-		copyString(out_name, m_system.m_names.at(idx).c_str());*/
-		ASSERT(false); // TODO
+		copyString(out_name, iter.value().c_str());
 	}
 
 
@@ -770,11 +879,11 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 
 	void insertScript(EntityRef entity, int idx) override { m_scripts[entity]->scripts.emplaceAt(idx, m_system.m_allocator); }
 
-
-	int addScript(EntityRef entity) override {
+	int addScript(EntityRef entity, int scr_index) override {
 		ScriptComponent* script_cmp = m_scripts[entity];
-		script_cmp->scripts.emplace(m_system.m_allocator);
-		return script_cmp->scripts.size() - 1;
+		if (scr_index == -1) scr_index = script_cmp->scripts.size();
+		script_cmp->scripts.emplaceAt(scr_index, m_system.m_allocator);
+		return scr_index;
 	}
 
 
@@ -798,21 +907,20 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 	}
 
 
-	const char* getScriptName(EntityRef entity, int scr_index) override {
-		ASSERT(false); // TODO
-		/*Script& scr = m_scripts[entity]->scripts[scr_index];
-		int idx = m_system.m_names.find(scr.script_name_hash);
-		if (idx < 0) return "";
-		return m_system.m_names.at(idx).c_str();*/
-		return {};
-	}
-
-
 	int getScriptCount(EntityRef entity) const override { return m_scripts[entity]->scripts.size(); }
 
 
-	u32 getScriptNameHash(EntityRef entity, int scr_index) override { return m_scripts[entity]->scripts[scr_index].script_name_hash; }
-
+	const char* getScriptName(EntityRef entity, int scr_index) override { 
+		const u32 hash = m_scripts[entity]->scripts[scr_index].script_name_hash;
+		auto iter = m_system.m_names.find(hash);
+		return iter.isValid() ? iter.value().c_str() : "N/A";
+	}
+	
+	void setScriptName(EntityRef entity, int scr_index, const char* name) override {
+		const u32 name_hash = crc32(name);
+		ScriptComponent* cmp = m_scripts[entity];
+		setScriptNameHash(*cmp, cmp->scripts[scr_index], name_hash);
+	}
 
 	void setScriptNameHash(ScriptComponent& cmp, Script& script, u32 name_hash) {
 		if (script.gc_handle != INVALID_GC_HANDLE) {
@@ -871,7 +979,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 	}
 
 
-	void setScriptNameHash(EntityRef entity, int scr_index, u32 name_hash) override {
+	void setScriptNameHash(EntityRef entity, int scr_index, u32 name_hash) {
 		ScriptComponent* script_cmp = m_scripts[entity];
 		if (script_cmp->scripts.size() <= scr_index) return;
 
@@ -1296,6 +1404,7 @@ CSharpPluginImpl::CSharpPluginImpl(Engine& engine)
 	: m_engine(engine)
 	, m_allocator(engine.getAllocator())
 	, m_names(m_allocator)
+	, m_names_array(m_allocator)
 	, m_on_assembly_load(m_allocator)
 	, m_on_assembly_unload(m_allocator) {
 	registerProperties();
@@ -1328,8 +1437,23 @@ CSharpPluginImpl::CSharpPluginImpl(Engine& engine)
 
 
 void CSharpPluginImpl::registerProperties() {
+	struct ScriptEnum : Reflection::StringEnumAttribute {
+		u32 count(ComponentUID cmp) const override { return getPlugin(cmp).getNamesArray().size(); }
+		const char* name(ComponentUID cmp, u32 idx) const override { return getPlugin(cmp).getNamesArray()[idx].c_str(); }
+		static CSharpPlugin& getPlugin(ComponentUID cmp) { return static_cast<CSharpPlugin&>(cmp.scene->getPlugin()); }
+	};
+
 	using namespace Reflection;
-	static auto csharp_scene = scene("csharp", component("csharp_script"));
+	static auto csharp_scene = scene("csharp", 
+		component("csharp_script",
+			array("scripts", &CSharpScriptScene::getScriptCount, &CSharpScriptScene::addScript, &CSharpScriptScene::removeScript, 
+				property("Script", LUMIX_PROP(CSharpScriptScene, ScriptName), ScriptEnum()),
+				//property("Enabled", &LuaScriptScene::isScriptEnabled, &LuaScriptScene::enableScript),
+				//property("Path", LUMIX_PROP(LuaScriptScene, ScriptPath), ResourceAttribute("Lua script (*.lua)", LuaScript::TYPE))//,
+				CSProperties()
+			)
+		)
+	);
 	registerScene(csharp_scene);
 }
 
@@ -1373,6 +1497,7 @@ void CSharpPluginImpl::unloadAssembly() {
 	m_on_assembly_unload.invoke();
 
 	m_names.clear();
+	m_names_array.clear();
 	if (mono_domain_get() != m_domain) mono_domain_set(m_domain, true);
 	MonoObject* exc = NULL;
 	mono_gc_collect(mono_gc_max_generation());
@@ -1388,15 +1513,11 @@ void CSharpPluginImpl::unloadAssembly() {
 }
 
 
-static bool isNativeComponent(MonoClass* cl) {
+static bool hasAttribute(MonoClass* cl, MonoClass* attr) {
 	MonoCustomAttrInfo* attrs = mono_custom_attrs_from_class(cl);
 	if (!attrs) return false;
-	MonoObject* obj = mono_custom_attrs_get_attr(attrs, cl);
-	if (!obj) return false;
-	MonoClass* attr_class = obj ? mono_object_get_class(obj) : nullptr;
-	if (!attr_class) return false;
-	const char* attr_name = mono_class_get_name(attr_class);
-	return equalStrings(attr_name, "NativeComponent");
+	MonoObject* obj = mono_custom_attrs_get_attr(attrs, attr);
+	return obj;
 }
 
 
@@ -1416,14 +1537,17 @@ void CSharpPluginImpl::loadAssembly() {
 	MonoImage* img = mono_assembly_get_image(m_assembly);
 
 	m_names.clear();
+	m_names_array.clear();
 	int num_types = mono_image_get_table_rows(img, MONO_TABLE_TYPEDEF);
+	MonoClass* native_component_class = mono_class_from_name(img, "Lumix", "NativeComponent");
 	for (int i = 2; i <= num_types; ++i) {
 		MonoClass* cl = mono_class_get(img, i | MONO_TOKEN_TYPE_DEF);
 		const char* n = mono_class_get_name(cl);
 		MonoClass* parent = mono_class_get_parent(cl);
 
-		if (!isNativeComponent(cl) && inherits(cl, "Component")) {
+		if (!hasAttribute(cl, native_component_class) && inherits(cl, "Component")) {
 			m_names.insert(crc32(n), String(n, allocator));
+			m_names_array.push(String(n, allocator));
 		}
 	}
 	setStaticField("Lumix", "Engine", "instance_", &m_engine);
