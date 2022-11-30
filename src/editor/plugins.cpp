@@ -6,9 +6,9 @@
 #include "editor/studio_app.h"
 #include "editor/utils.h"
 #include "editor/world_editor.h"
-#include "engine/crc32.h"
 #include "engine/engine.h"
 #include "engine/log.h"
+#include "engine/os.h"
 #include "engine/reflection.h"
 #include "engine/resource.h"
 #include "engine/resource_manager.h"
@@ -21,10 +21,10 @@
 namespace Lumix {
 
 
-static const ComponentType CSHARP_SCRIPT_TYPE = Reflection::getComponentType("csharp_script");
+static const ComponentType CSHARP_SCRIPT_TYPE = reflection::getComponentType("csharp_script");
 
-struct CSPropertyVisitor : Reflection::IPropertyVisitor {
-	template <typename T> void write(const Reflection::Property<T>& prop, const char* cs_type, const char* cpp_type) {
+struct CSPropertyVisitor : reflection::IPropertyVisitor {
+	template <typename T> void write(const reflection::Property<T>& prop, const char* cs_type, const char* cpp_type) {
 		StaticString<128> csharp_name;
 		getCSharpName(prop.name, csharp_name);
 
@@ -68,24 +68,24 @@ struct CSPropertyVisitor : Reflection::IPropertyVisitor {
 				 "\n";
 	}
 
-	void visit(const Reflection::Property<float>& prop) override { write(prop, "float", "float"); }
-	void visit(const Reflection::Property<u32>& prop) override { write(prop, "uint", "u32"); }
-	void visit(const Reflection::Property<i32>& prop) override { write(prop, "int", "int"); }
-	void visit(const Reflection::Property<EntityPtr>& prop) override {}
-	void visit(const Reflection::Property<IVec3>& prop) override { write(prop, "IVec3", "IVec3"); }
-	void visit(const Reflection::Property<Vec2>& prop) override { write(prop, "Vec2", "Vec2"); }
-	void visit(const Reflection::Property<Vec3>& prop) override { write(prop, "Vec3", "Vec3"); }
-	void visit(const Reflection::Property<Vec4>& prop) override { write(prop, "Vec4", "Vec4"); }
-	void visit(const Reflection::Property<Path>& prop) override { write(prop, "string", "Path"); }
-	void visit(const Reflection::Property<bool>& prop) override { write(prop, "bool", "bool"); }
-	void visit(const Reflection::Property<const char*>& prop) override { write(prop, "string", "const char*"); }
-	void visit(const Reflection::IArrayProperty& prop) override {}
-	void visit(const Reflection::IBlobProperty& prop) override {}
+	void visit(const reflection::Property<float>& prop) override { write(prop, "float", "float"); }
+	void visit(const reflection::Property<u32>& prop) override { write(prop, "uint", "u32"); }
+	void visit(const reflection::Property<i32>& prop) override { write(prop, "int", "int"); }
+	void visit(const reflection::Property<EntityPtr>& prop) override {}
+	void visit(const reflection::Property<IVec3>& prop) override { write(prop, "IVec3", "IVec3"); }
+	void visit(const reflection::Property<Vec2>& prop) override { write(prop, "Vec2", "Vec2"); }
+	void visit(const reflection::Property<Vec3>& prop) override { write(prop, "Vec3", "Vec3"); }
+	void visit(const reflection::Property<Vec4>& prop) override { write(prop, "Vec4", "Vec4"); }
+	void visit(const reflection::Property<Path>& prop) override { write(prop, "string", "Path"); }
+	void visit(const reflection::Property<bool>& prop) override { write(prop, "bool", "bool"); }
+	void visit(const reflection::Property<const char*>& prop) override { write(prop, "string", "const char*"); }
+	void visit(const reflection::ArrayProperty& prop) override {}
+	void visit(const reflection::BlobProperty& prop) override {}
 
-	const Reflection::ComponentBase* cmp;
+	const reflection::ComponentBase* cmp;
 	const char* class_name;
-	OS::OutputFile* api_file;
-	OS::OutputFile* file;
+	os::OutputFile* api_file;
+	os::OutputFile* file;
 };
 
 struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
@@ -104,40 +104,38 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 		makeUpToDate();
 	}
 
-
-	~StudioCSharpPlugin() { FileSystemWatcher::destroy(m_watcher); }
-
-
 	bool packData(const char* dest_dir) {
-		char exe_path[MAX_PATH_LENGTH];
-		OS::getExecutablePath(Span(exe_path));
-		char exe_dir[MAX_PATH_LENGTH];
+		/*char exe_path[LUMIX_MAX_PATH];
+		os::getExecutablePath(Span(exe_path));
+		char exe_dir[LUMIX_MAX_PATH];
 
 		const char* mono_dlls[] = {"mono-2.0-sgen.dll", "System.dll", "mscorlib.dll", "System.Configuration.dll"};
 		for (const char* dll : mono_dlls) {
 			Path::getDir(Span(exe_dir), exe_path);
-			StaticString<MAX_PATH_LENGTH> tmp(exe_dir, dll);
-			if (!OS::fileExists(tmp)) return false;
-			StaticString<MAX_PATH_LENGTH> dest(dest_dir, dll);
-			if (!OS::copyFile(tmp, dest)) {
+			StaticString<LUMIX_MAX_PATH> tmp(exe_dir, dll);
+			if (!os::fileExists(tmp)) return false;
+			StaticString<LUMIX_MAX_PATH> dest(dest_dir, dll);
+			if (!os::copyFile(tmp, dest)) {
 				logError("C#") << "Failed to copy " << tmp << " to " << dest;
 				return false;
 			}
 		}
 
-		StaticString<MAX_PATH_LENGTH> dest(dest_dir, "main.dll");
-		if (!OS::copyFile("main.dll", dest)) {
+		StaticString<LUMIX_MAX_PATH> dest(dest_dir, "main.dll");
+		if (!os::copyFile("main.dll", dest)) {
 			logError("C#") << "Failed to copy main.dll to " << dest;
 			return false;
 		}
 
-		return true;
+		return true;*/
+		ASSERT(false); // TODO
+		return false;
 	}
 
 
 	void findMono() {
-		if (!OS::fileExists("C:\\Program Files\\Mono\\bin\\mcs.bat")) {
-			logError("C#") << "C:\\Program Files\\Mono\\bin\\mcs.bat does not exist, can not compile C# scripts";
+		if (!os::fileExists("C:\\Program Files\\Mono\\bin\\mcs.bat")) {
+			logError("C:\\Program Files\\Mono\\bin\\mcs.bat does not exist, can not compile C# scripts");
 		}
 	}
 
@@ -158,13 +156,13 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 				if (fgets(tmp, sizeof(tmp), p_stderr)) {
 					m_compile_log.cat(tmp);
 				}
-				logError("C#") << m_compile_log;
+				logError(m_compile_log);
 
 				FILE* p_stdout = subprocess_stdout(&m_compile_process);
 				if (fgets(tmp, sizeof(tmp), p_stdout)) {
 					m_compile_log.cat(tmp);
 				}
-				logError("C#") << m_compile_log;
+				logError(m_compile_log);
 			}
 			subprocess_destroy(&m_compile_process);
 			m_compilation_running = false;
@@ -180,26 +178,26 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 
 	void makeUpToDate() {
 		IAllocator& allocator = m_app.getWorldEditor().getAllocator();
-		if (!OS::fileExists("main.dll")) {
+		if (!os::fileExists("main.dll")) {
 			compile();
 			return;
 		}
 
-		u64 dll_modified = OS::getLastModified("main.dll");
-		OS::FileIterator* iter = OS::createFileIterator("cs", allocator);
-		OS::FileInfo info;
-		while (OS::getNextFile(iter, &info)) {
+		u64 dll_modified = os::getLastModified("main.dll");
+		os::FileIterator* iter = os::createFileIterator("cs", allocator);
+		os::FileInfo info;
+		while (os::getNextFile(iter, &info)) {
 			if (info.is_directory) continue;
 
-			StaticString<MAX_PATH_LENGTH> tmp("cs\\", info.filename);
-			u64 script_modified = OS::getLastModified(tmp);
+			StaticString<LUMIX_MAX_PATH> tmp("cs\\", info.filename);
+			u64 script_modified = os::getLastModified(tmp);
 			if (script_modified > dll_modified) {
 				compile();
-				OS::destroyFileIterator(iter);
+				os::destroyFileIterator(iter);
 				return;
 			}
 		}
-		OS::destroyFileIterator(iter);
+		os::destroyFileIterator(iter);
 	}
 
 
@@ -209,7 +207,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 
 
 	void createNewScript(const char* name) {
-		OS::OutputFile file;
+		os::OutputFile file;
 		char class_name[128];
 
 		const char* cin = name;
@@ -235,13 +233,13 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 		}
 		*cout = '\0';
 
-		StaticString<MAX_PATH_LENGTH> path("cs/", class_name, ".cs");
-		if (OS::fileExists(path)) {
-			logError("C#") << path << "already exists";
+		StaticString<LUMIX_MAX_PATH> path("cs/", class_name, ".cs");
+		if (os::fileExists(path)) {
+			logError(path, " already exists");
 			return;
 		}
 		if (!file.open(path)) {
-			logError("C#") << "Failed to create file " << path;
+			logError("Failed to create file ", path);
 			return;
 		}
 
@@ -250,30 +248,30 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 	}
 
 
-	void listDirInCSProj(OS::OutputFile& file, const char* dirname) {
+	void listDirInCSProj(os::OutputFile& file, const char* dirname) {
 		IAllocator& allocator = m_app.getWorldEditor().getAllocator();
-		StaticString<MAX_PATH_LENGTH> path("cs/", dirname);
-		OS::FileIterator* iter = OS::createFileIterator(path, allocator);
-		OS::FileInfo info;
-		while (OS::getNextFile(iter, &info)) {
+		StaticString<LUMIX_MAX_PATH> path("cs/", dirname);
+		os::FileIterator* iter = os::createFileIterator(path, allocator);
+		os::FileInfo info;
+		while (os::getNextFile(iter, &info)) {
 			if (info.filename[0] == '.' || info.is_directory) continue;
 			file << "\t\t<Compile Include=\"" << dirname << info.filename << "\" />\n";
 		}
-		OS::destroyFileIterator(iter);
+		os::destroyFileIterator(iter);
 	}
 
 
 	void openVSProject() {
 		const char* base_path = m_app.getWorldEditor().getEngine().getFileSystem().getBasePath();
-		StaticString<MAX_PATH_LENGTH> full_path(base_path, "cs/main.csproj");
-		OS::shellExecuteOpen(full_path);
+		StaticString<LUMIX_MAX_PATH> full_path(base_path, "cs/main.csproj");
+		os::shellExecuteOpen(full_path);
 	}
 
 
 	void generateCSProj() {
-		OS::OutputFile file;
+		os::OutputFile file;
 		if (!file.open("cs/main.csproj")) {
-			logError("C#") << "Failed to create cs/main.csproj";
+			logError("Failed to create cs/main.csproj");
 			return;
 		}
 
@@ -281,9 +279,9 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 				"\t<Project ToolsVersion=\"15.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">\n"
 				"\t<ItemGroup>\n";
 
-		listDirInCSProj(file, StaticString<MAX_PATH_LENGTH>(""));
-		listDirInCSProj(file, StaticString<MAX_PATH_LENGTH>("manual\\"));
-		listDirInCSProj(file, StaticString<MAX_PATH_LENGTH>("generated\\"));
+		listDirInCSProj(file, StaticString<LUMIX_MAX_PATH>(""));
+		listDirInCSProj(file, StaticString<LUMIX_MAX_PATH>("manual\\"));
+		listDirInCSProj(file, StaticString<LUMIX_MAX_PATH>("generated\\"));
 
 		file << "\t</ItemGroup>\n"
 				"\t<Import Project=\"$(MSBuildToolsPath)\\Microsoft.CSharp.targets\" />\n"
@@ -296,13 +294,13 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 	void open(const char* filename) {
 		WorldEditor& editor = m_app.getWorldEditor();
 		FileSystem& fs = editor.getEngine().getFileSystem();
-		StaticString<MAX_PATH_LENGTH> root(fs.getBasePath(), "cs/");
-		StaticString<MAX_PATH_LENGTH> vs_code_project_dir(root, ".vscode/");
-		if (!OS::dirExists(vs_code_project_dir)) {
-			StaticString<MAX_PATH_LENGTH> launch_json_path(vs_code_project_dir, "launch.json");
+		StaticString<LUMIX_MAX_PATH> vs_code_project_dir("cs/.vscode/");
+		if (!os::dirExists(vs_code_project_dir)) {
+			StaticString<LUMIX_MAX_PATH> launch_json_path(vs_code_project_dir, "launch.json");
 
-			OS::makePath(vs_code_project_dir);
-			const char* laung_json_content = "{\n"
+			bool res = os::makePath(vs_code_project_dir);
+			ASSERT(res); // TODO
+			const char* launch_json_content = "{\n"
 											 "	\"version\": \"0.2.0\",\n"
 											 "	\"configurations\": [\n"
 											 "		{\n"
@@ -315,12 +313,13 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 											 "	]\n"
 											 "}\n";
 
-			m_app.makeFile(launch_json_path, laung_json_content);
+			bool res2 = fs.saveContentSync(Path(launch_json_path), Span((const u8*)launch_json_content, stringLength(launch_json_content)));
+			(void)res2; // TODO
 		}
 
-		StaticString<MAX_PATH_LENGTH> file_path(root, "generated/");
+		StaticString<LUMIX_MAX_PATH> file_path(fs.getBasePath(), "cs/generated/");
 		if (filename) file_path << filename;
-		OS::shellExecuteOpen(file_path);
+		os::shellExecuteOpen(file_path);
 	}
 
 
@@ -365,7 +364,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 			if (m_filter[0] != '\0' && stristr(name.c_str(), m_filter) == 0) continue;
 			ImGui::PushID((const void*)name.c_str());
 			if (ImGui::Button("Edit")) {
-				StaticString<MAX_PATH_LENGTH> filename(name.c_str(), ".cs");
+				StaticString<LUMIX_MAX_PATH> filename(name.c_str(), ".cs");
 				open(filename);
 			}
 			ImGui::SameLine();
@@ -386,7 +385,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 
 	CSharpScriptScene* getScene() const {
 		WorldEditor& editor = m_app.getWorldEditor();
-		return (CSharpScriptScene*)editor.getUniverse()->getScene(crc32("csharp_script"));
+		return (CSharpScriptScene*)editor.getUniverse()->getScene("csharp_script");
 	}
 
 
@@ -446,7 +445,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 	}
 
 
-	/*static void writeCSArgs(const Reflection::FunctionBase& func, OS::OutputFile& file, int skip_args, bool cs_internal_call, bool start_with_comma) {
+	/*static void writeCSArgs(const reflection::FunctionBase& func, os::OutputFile& file, int skip_args, bool cs_internal_call, bool start_with_comma) {
 		for (int i = skip_args, c = func.getArgCount(); i < c; ++i) {
 			if (i > skip_args || start_with_comma) file << ", ";
 			StaticString<64> cs_type;
@@ -458,7 +457,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 
 
 	static void generateEnumsBindings() {
-		OS::OutputFile cs_file;
+		os::OutputFile cs_file;
 		if (!cs_file.open("cs/generated/enums.cs")) {
 			logError("C#") << "Failed to create cs/generated/enums.cs";
 			return;
@@ -466,8 +465,8 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 
 		cs_file << "namespace Lumix {\n";
 
-		for (int i = 0, count = Reflection::getEnumsCount(); i < count; ++i) {
-			const Reflection::EnumBase& e = Reflection::getEnum(i);
+		for (int i = 0, count = reflection::getEnumsCount(); i < count; ++i) {
+			const reflection::EnumBase& e = reflection::getEnum(i);
 			const char* name_start = e.name;
 			if (startsWith(name_start, "enum ")) name_start += stringLength("enum ");
 			name_start = reverseFind(name_start, nullptr, ':');
@@ -487,17 +486,17 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 	}
 
 
-	static void generateScenesBindings(OS::OutputFile& api_file) {
+	static void generateScenesBindings(os::OutputFile& api_file) {
 		using namespace Reflection;
 		for (int i = 0, c = getScenesCount(); i < c; ++i) {
-			const SceneBase& scene = Reflection::getScene(i);
+			const SceneBase& scene = reflection::getScene(i);
 
 			StaticString<128> class_name;
 			getCSharpName(scene.name, class_name);
 			class_name << "Scene";
 
-			OS::OutputFile cs_file;
-			StaticString<MAX_PATH_LENGTH> filepath("cs/generated/", class_name, ".cs");
+			os::OutputFile cs_file;
+			StaticString<LUMIX_MAX_PATH> filepath("cs/generated/", class_name, ".cs");
 			if (!cs_file.open(filepath)) {
 				logError("C#") << "Failed to create " << filepath;
 				continue;
@@ -605,8 +604,8 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 				}
 
 				const char* class_name;
-				OS::OutputFile* cs_file;
-				OS::OutputFile* api_file;
+				os::OutputFile* cs_file;
+				os::OutputFile* api_file;
 			} visitor;
 
 			visitor.class_name = class_name;
@@ -622,38 +621,38 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 
 
 	void generateBindings() {
-		OS::OutputFile api_file;
+		os::OutputFile api_file;
 		const char* api_h_filepath = "../plugins/csharp/src/api.inl";
 		if (!api_file.open(api_h_filepath)) {
-			logError("C#") << "Failed to create " << api_h_filepath;
+			logError("Failed to create ", api_h_filepath);
 			return;
 		}
 
 		const char* base_path = m_app.getWorldEditor().getEngine().getFileSystem().getBasePath();
-		StaticString<MAX_PATH_LENGTH> path(base_path, "cs/generated");
-		if (!OS::makePath(path) && !OS::dirExists(path)) {
-			logError("C#") << "Failed to create " << path;
+		StaticString<LUMIX_MAX_PATH> path(base_path, "cs/generated");
+		if (!os::makePath(path) && !os::dirExists(path)) {
+			logError("Failed to create ", path);
 			return;
 		}
 
 		// generateEnumsBindings();
 		// generateScenesBindings(api_file);
 
-		using namespace Reflection;
-		int cmps_count = getComponentTypesCount();
-		for (int i = 0; i < cmps_count; ++i) {
-			const char* cmp_name = getComponentTypeID(i);
-			ComponentType cmp_type = getComponentType(cmp_name);
-			const ComponentBase* cmp = Reflection::getComponent(cmp_type);
+		using namespace reflection;
+		Span<const RegisteredComponent> cmps = reflection::getComponents();
+		for (const RegisteredComponent& rc : cmps) {
+			const ComponentBase* cmp = rc.cmp;
 			if (!cmp) continue;
+			const char* cmp_name = cmp->name;
+			ComponentType cmp_type = cmp->component_type;
 
 			StaticString<128> class_name;
 			getCSharpName(cmp_name, class_name);
 
-			OS::OutputFile cs_file;
-			StaticString<MAX_PATH_LENGTH> filepath("cs/generated/", class_name, ".cs");
+			os::OutputFile cs_file;
+			StaticString<LUMIX_MAX_PATH> filepath("cs/generated/", class_name, ".cs");
 			if (!cs_file.open(filepath)) {
-				logError("C#") << "Failed to create " << filepath;
+				logError("Failed to create ", filepath);
 				continue;
 			}
 
@@ -728,8 +727,8 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 								"\n";
 				}
 				const char* class_name;
-				OS::OutputFile* cs_file;
-				OS::OutputFile* api_file;
+				os::OutputFile* cs_file;
+				os::OutputFile* api_file;
 			} fnc_visitor;
 
 			fnc_visitor.cs_file = &cs_file;
@@ -763,7 +762,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 	subprocess_s m_compile_process;
 	bool m_compilation_running = false;
 	StudioApp& m_app;
-	FileSystemWatcher* m_watcher;
+	UniquePtr<FileSystemWatcher> m_watcher;
 	String m_compile_log;
 	char m_filter[128];
 	char m_new_script_name[128];
@@ -945,7 +944,7 @@ struct PropertyGridCSharpPlugin final : public PropertyGrid::IPlugin {
 		MonoStringHolder type_str = type;
 		ResourceType res_type((const char*)type_str);
 		AssetBrowser& browser = that->m_app.getAssetBrowser();
-		char buf[MAX_PATH_LENGTH];
+		char buf[LUMIX_MAX_PATH];
 		copyString(buf, resource ? resource->getPath().c_str() : "");
 		if (browser.resourceInput((const char*)label_str, (const char*)label_str, buf, sizeof(buf), res_type)) {
 			if (buf[0] == '\0') return nullptr;
@@ -1030,7 +1029,7 @@ struct PropertyGridCSharpPlugin final : public PropertyGrid::IPlugin {
 
 		for (int j = 0; j < scene->getScriptCount(cmp.entity); ++j) {
 			const char* script_name = scene->getScriptName(cmp.entity, j);
-			StaticString<MAX_PATH_LENGTH + 20> header(script_name);
+			StaticString<LUMIX_MAX_PATH + 20> header(script_name);
 			if (header.empty()) header << j;
 			header << "###" << j;
 			if (ImGui::CollapsingHeader(header)) {
@@ -1041,7 +1040,7 @@ struct PropertyGridCSharpPlugin final : public PropertyGrid::IPlugin {
 				void* args[] = {&that};
 				scene->tryCallMethod(gc_handle, "OnInspector", args, 1, true);
 				if (ImGui::Button("Edit")) {
-					StaticString<MAX_PATH_LENGTH> filename(script_name, ".cs");
+					StaticString<LUMIX_MAX_PATH> filename(script_name, ".cs");
 					m_studio_plugin.openVSCode(filename);
 				}
 				ImGui::SameLine();
@@ -1069,11 +1068,10 @@ struct AddCSharpComponentPlugin final : public StudioApp::IAddComponentPlugin {
 		: app(_app) {}
 
 
-	void onGUI(bool create_entity, bool) override {
+	void onGUI(bool create_entity, bool from_filter, EntityPtr parent, struct WorldEditor& editor) override {
 		ImGui::SetNextWindowSize(ImVec2(300, 300));
 		if (!ImGui::BeginMenu(getLabel())) return;
 
-		WorldEditor& editor = app.getWorldEditor();
 		CSharpScriptScene* script_scene = (CSharpScriptScene*)editor.getUniverse()->getScene(CSHARP_SCRIPT_TYPE);
 		CSharpPlugin& plugin = (CSharpPlugin&)script_scene->getPlugin();
 		for (auto& iter : plugin.getNamesArray()) {
@@ -1092,14 +1090,14 @@ struct AddCSharpComponentPlugin final : public StudioApp::IAddComponentPlugin {
 				}
 
 				const ComponentUID cmp = editor.getUniverse()->getComponent(entity, CSHARP_SCRIPT_TYPE);
-				editor.beginCommandGroup(crc32("add_cs_script"));
+				editor.beginCommandGroup("add_cs_script");
 				editor.addArrayPropertyItem(cmp, "scripts");
 
-				auto* script_scene = static_cast<CSharpScriptScene*>(editor.getUniverse()->getScene(CSHARP_SCRIPT_TYPE));
 				int scr_count = script_scene->getScriptCount(entity);
 				editor.setProperty(cmp.type, "scripts", scr_count - 1, "Script", Span((const EntityRef*)&entity, 1), name);
 				editor.endCommandGroup();
-
+				editor.lockGroupCommand();
+				if (parent.isValid()) editor.makeParent(parent, entity);
 				ImGui::CloseCurrentPopup();
 			}
 		}

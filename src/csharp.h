@@ -3,6 +3,7 @@
 
 #include "engine/plugin.h"
 #include "engine/hash_map.h"
+#include "engine/string.h"
 
 
 namespace Lumix
@@ -25,7 +26,7 @@ struct CSharpPlugin : IPlugin
 	virtual void* getAssembly() const = 0;
 	virtual void unloadAssembly() = 0;
 	virtual void loadAssembly() = 0;
-	virtual const HashMap<u32, String>& getNames() const = 0;
+	virtual const HashMap<RuntimeHash, String>& getNames() const = 0;
 	virtual const Array<String>& getNamesArray() const = 0;
 };
 

@@ -3,7 +3,6 @@
 #include "animation/animation.h"
 #include "animation/animation_scene.h"
 #include "audio/audio_scene.h"
-#include "engine/crc32.h"
 #include "engine/engine.h"
 #include "engine/flag_set.h"
 #include "engine/geometry.h"
@@ -14,7 +13,6 @@
 #include "engine/prefab.h"
 #include "engine/reflection.h"
 #include "engine/resource_manager.h"
-#include "engine/serializer.h"
 #include "engine/universe.h"
 #include "gui/gui_scene.h"
 #include "helpers.h"
@@ -33,10 +31,12 @@
 namespace Lumix {
 
 
-static const ComponentType CSHARP_SCRIPT_TYPE = Reflection::getComponentType("csharp_script");
+static const ComponentType CSHARP_SCRIPT_TYPE = reflection::getComponentType("csharp_script");
 
-struct CSProperties : Reflection::IDynamicProperties {
-	CSProperties() { name = "cs_properties"; }
+struct CSProperties : reflection::DynamicProperties {
+	CSProperties(IAllocator& allocator)
+		: reflection::DynamicProperties(allocator)
+	{ name = "cs_properties"; }
 		
 	u32 getCount(ComponentUID cmp, int index) const override { 
 		//CSharpScriptSceneImpl& scene = (CSharpScriptSceneImpl&)*cmp.scene;
@@ -69,8 +69,8 @@ struct CSProperties : Reflection::IDynamicProperties {
 		return "";
 	}
 
-	Reflection::ResourceAttribute getResourceAttribute(ComponentUID cmp, int array_idx, u32 idx) const override {
-		//Reflection::ResourceAttribute attr;
+	reflection::ResourceAttribute getResourceAttribute(ComponentUID cmp, int array_idx, u32 idx) const override {
+		//reflection::ResourceAttribute attr;
 		//LuaScriptSceneImpl& scene = (LuaScriptSceneImpl&)*cmp.scene;
 		//const EntityRef e = (EntityRef)cmp.entity;
 		//const LuaScriptScene::Property::Type type = scene.getPropertyType(e, array_idx, idx);
@@ -89,20 +89,20 @@ struct CSProperties : Reflection::IDynamicProperties {
 		//const char* name = scene.getPropertyName(e, array_idx, idx);
 		//Value v = {};
 		//switch(type) {
-		//	case LuaScriptScene::Property::Type::COLOR: Reflection::set(v, scene.getPropertyValue<Vec3>(e, array_idx, name)); break;
-		//	case LuaScriptScene::Property::Type::BOOLEAN: Reflection::set(v, scene.getPropertyValue<bool>(e, array_idx, name)); break;
-		//	case LuaScriptScene::Property::Type::INT: Reflection::set(v, scene.getPropertyValue<i32>(e, array_idx, name)); break;
-		//	case LuaScriptScene::Property::Type::FLOAT: Reflection::set(v, scene.getPropertyValue<float>(e, array_idx, name)); break;
-		//	case LuaScriptScene::Property::Type::STRING: Reflection::set(v, scene.getPropertyValue<const char*>(e, array_idx, name)); break;
-		//	case LuaScriptScene::Property::Type::ENTITY: Reflection::set(v, scene.getPropertyValue<EntityPtr>(e, array_idx, name)); break;
+		//	case LuaScriptScene::Property::Type::COLOR: reflection::set(v, scene.getPropertyValue<Vec3>(e, array_idx, name)); break;
+		//	case LuaScriptScene::Property::Type::BOOLEAN: reflection::set(v, scene.getPropertyValue<bool>(e, array_idx, name)); break;
+		//	case LuaScriptScene::Property::Type::INT: reflection::set(v, scene.getPropertyValue<i32>(e, array_idx, name)); break;
+		//	case LuaScriptScene::Property::Type::FLOAT: reflection::set(v, scene.getPropertyValue<float>(e, array_idx, name)); break;
+		//	case LuaScriptScene::Property::Type::STRING: reflection::set(v, scene.getPropertyValue<const char*>(e, array_idx, name)); break;
+		//	case LuaScriptScene::Property::Type::ENTITY: reflection::set(v, scene.getPropertyValue<EntityPtr>(e, array_idx, name)); break;
 		//	case LuaScriptScene::Property::Type::RESOURCE: {
 		//		const i32 res_idx = scene.getPropertyValue<i32>(e, array_idx, name);
 		//		if (res_idx < 0) {
-		//			Reflection::set(v, ""); 
+		//			reflection::set(v, ""); 
 		//		}
 		//		else {
 		//			Resource* res = scene.m_system.m_engine.getLuaResource(res_idx);
-		//			Reflection::set(v, res ? res->getPath().c_str() : ""); 
+		//			reflection::set(v, res ? res->getPath().c_str() : ""); 
 		//		}
 		//		break;
 		//	}
@@ -167,10 +167,10 @@ static void handleException(MonoObject* exc) {
 	MonoStringHolder source = GetStringProperty("Source", exception_class, exc);
 	MonoStringHolder stack_trace = GetStringProperty("StackTrace", exception_class, exc);
 	MonoStringHolder target_site = GetStringProperty("TargetSite", exception_class, exc);
-	if (message.isValid()) logError("C#") << (const char*)message;
-	if (source.isValid()) logError("C#") << (const char*)source;
-	if (stack_trace.isValid()) logError("C#") << (const char*)stack_trace;
-	if (target_site.isValid()) logError("C#") << (const char*)target_site;
+	if (message.isValid()) logError((const char*)message);
+	if (source.isValid()) logError((const char*)source);
+	if (stack_trace.isValid()) logError((const char*)stack_trace);
+	if (target_site.isValid()) logError((const char*)target_site);
 }
 
 
@@ -214,7 +214,7 @@ struct CSharpPluginImpl : public CSharpPlugin {
 	void* getDomain() const override;
 	void unloadAssembly() override;
 	void loadAssembly() override;
-	const HashMap<u32, String>& getNames() const override { return m_names; }
+	const HashMap<RuntimeHash, String>& getNames() const override { return m_names; }
 	const Array<String>& getNamesArray() const override { return m_names_array; }
 	void setStaticField(const char* name_space, const char* class_name, const char* field_name, void* value);
 	void registerProperties();
@@ -227,7 +227,7 @@ struct CSharpPluginImpl : public CSharpPlugin {
 	MonoDomain* m_domain = nullptr;
 	MonoAssembly* m_assembly = nullptr;
 	MonoDomain* m_assembly_domain = nullptr;
-	HashMap<u32, String> m_names;
+	HashMap<RuntimeHash, String> m_names;
 	Array<String> m_names_array;
 	DelegateList<void()> m_on_assembly_unload;
 	DelegateList<void()> m_on_assembly_load;
@@ -251,7 +251,7 @@ Resource* csharp_Resource_load(Engine& engine, MonoString* path, MonoString* typ
 
 bool csharp_Entity_hasComponent(Universe* universe, Entity entity, MonoString* type) {
 	MonoStringHolder type_str = type;
-	ComponentType cmp_type = Reflection::getComponentType((const char*)type_str);
+	ComponentType cmp_type = reflection::getComponentType((const char*)type_str);
 	return universe->hasComponent(entity, cmp_type);
 }
 
@@ -280,7 +280,7 @@ MonoObject* csharp_getEntity(Universe* universe, int entity_idx) {
 
 IScene* csharp_getScene(Universe* universe, MonoString* type_str) {
 	MonoStringHolder type = type_str;
-	ComponentType cmp_type = Reflection::getComponentType((const char*)type);
+	ComponentType cmp_type = reflection::getComponentType((const char*)type);
 	return universe->getScene(cmp_type);
 }
 
@@ -308,7 +308,7 @@ u64 csharp_Component_getEntityGUIDFromID(ISerializer* serializer, int id) {
 
 void csharp_Component_create(Universe* universe, int entity, MonoString* type_str) {
 	MonoStringHolder type = type_str;
-	ComponentType cmp_type = Reflection::getComponentType((const char*)type);
+	ComponentType cmp_type = reflection::getComponentType((const char*)type);
 	IScene* scene = universe->getScene(cmp_type);
 	if (!scene) return;
 	if (universe->hasComponent({entity}, cmp_type)) {
@@ -558,7 +558,7 @@ Resource* csharp_loadResource(Engine* engine, MonoString* path, MonoString* type
 
 void csharp_logError(MonoString* message) {
 	MonoStringHolder tmp = message;
-	logError("C#") << (const char*)tmp;
+	logError((const char*)tmp);
 }
 
 
@@ -569,7 +569,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 
 		enum Flags : u32 { HAS_UPDATE = 1 << 0, HAS_ON_INPUT = 1 << 2 };
 
-		u32 script_name_hash = 0;
+		RuntimeHash script_name_hash;
 		u32 gc_handle = INVALID_GC_HANDLE;
 		FlagSet<Flags, u32> flags;
 		String properties;
@@ -593,7 +593,6 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 		, m_updates(plugin.m_allocator)
 		, m_on_inputs(plugin.m_allocator)
 		, m_is_game_running(false) {
-		universe.registerComponentType(CSHARP_SCRIPT_TYPE, this, &CSharpScriptSceneImpl::createScriptComponent, &CSharpScriptSceneImpl::destroyScriptComponent);
 
 #include "api.inl"
 
@@ -679,11 +678,11 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 		REGISTER_FUNCTION(InputInt);
 		REGISTER_FUNCTION(NewLine);
 		REGISTER_FUNCTION(NextColumn);
-		REGISTER_FUNCTION(OpenPopup);
+//		REGISTER_FUNCTION(OpenPopup);
 		REGISTER_FUNCTION(PopItemWidth);
 		REGISTER_FUNCTION(PopID);
 		REGISTER_FUNCTION(PushItemWidth);
-		REGISTER_FUNCTION(Rect);
+//		REGISTER_FUNCTION(Rect);
 		REGISTER_FUNCTION(SameLine);
 		REGISTER_FUNCTION(Separator);
 		REGISTER_FUNCTION(SetCursorScreenPos);
@@ -745,7 +744,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 
 
 	void startGame() override {
-		PhysicsScene* phy_scene = (PhysicsScene*)m_universe.getScene(crc32("physics"));
+		PhysicsScene* phy_scene = (PhysicsScene*)m_universe.getScene("physics");
 		if (phy_scene) {
 			phy_scene->onContact().bind<&CSharpScriptSceneImpl::onContact>(this);
 			;
@@ -763,7 +762,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 
 	void stopGame() override {
 		m_is_game_running = false;
-		PhysicsScene* phy_scene = (PhysicsScene*)m_universe.getScene(crc32("physics"));
+		PhysicsScene* phy_scene = (PhysicsScene*)m_universe.getScene("physics");
 		if (phy_scene) {
 			phy_scene->onContact().unbind<&CSharpScriptSceneImpl::onContact>(this);
 			;
@@ -771,7 +770,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 	}
 
 
-	void getClassName(u32 name_hash, char (&out_name)[256]) const {
+	void getClassName(RuntimeHash name_hash, char (&out_name)[256]) const {
 		auto iter = m_system.m_names.find(name_hash);
 		if (!iter.isValid()) {
 			out_name[0] = 0;
@@ -888,7 +887,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 
 
 	void removeScript(EntityRef entity, int scr_index) override {
-		setScriptNameHash(entity, scr_index, 0);
+		setScriptNameHash(entity, scr_index, RuntimeHash());
 		m_scripts[entity]->scripts.erase(scr_index);
 	}
 
@@ -911,18 +910,18 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 
 
 	const char* getScriptName(EntityRef entity, int scr_index) override { 
-		const u32 hash = m_scripts[entity]->scripts[scr_index].script_name_hash;
+		const RuntimeHash hash = m_scripts[entity]->scripts[scr_index].script_name_hash;
 		auto iter = m_system.m_names.find(hash);
 		return iter.isValid() ? iter.value().c_str() : "N/A";
 	}
 	
 	void setScriptName(EntityRef entity, int scr_index, const char* name) override {
-		const u32 name_hash = crc32(name);
+		const RuntimeHash name_hash(name);
 		ScriptComponent* cmp = m_scripts[entity];
 		setScriptNameHash(*cmp, cmp->scripts[scr_index], name_hash);
 	}
 
-	void setScriptNameHash(ScriptComponent& cmp, Script& script, u32 name_hash) {
+	void setScriptNameHash(ScriptComponent& cmp, Script& script, RuntimeHash name_hash) {
 		if (script.gc_handle != INVALID_GC_HANDLE) {
 			ASSERT(m_system.m_assembly);
 			mono_gchandle_free(script.gc_handle);
@@ -934,11 +933,11 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 				script.flags.unset(Script::HAS_ON_INPUT);
 				m_on_inputs.eraseItems([&script](u32 iter) { return iter == script.gc_handle; });
 			}
-			script.script_name_hash = 0;
+			script.script_name_hash = RuntimeHash();
 			script.gc_handle = INVALID_GC_HANDLE;
 		}
 
-		if (name_hash != 0) {
+		if (name_hash != RuntimeHash()) {
 			if (m_system.m_assembly) {
 				char class_name[256];
 				getClassName(name_hash, class_name);
@@ -979,7 +978,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 	}
 
 
-	void setScriptNameHash(EntityRef entity, int scr_index, u32 name_hash) {
+	void setScriptNameHash(EntityRef entity, int scr_index, RuntimeHash name_hash) {
 		ScriptComponent* script_cmp = m_scripts[entity];
 		if (script_cmp->scripts.size() <= scr_index) return;
 
@@ -1034,7 +1033,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 			m_entities_gc_handles.erase(handle_iter);
 		}
 		for (Script& scr : script->scripts) {
-			setScriptNameHash(*script, scr, 0);
+			setScriptNameHash(*script, scr, RuntimeHash());
 		}
 		LUMIX_DELETE(m_system.m_allocator, script);
 		m_scripts.erase(entity);
@@ -1072,7 +1071,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 	}
 
 
-	void deserialize(struct InputMemoryStream& serialize, const struct EntityMap& entity_map) override {
+	void deserialize(InputMemoryStream& serialize, const EntityMap& entity_map, i32 version) override {
 		/*int len = serializer.read<int>();
 		m_scripts.reserve(len);
 		IAllocator& allocator = m_system.m_allocator;
@@ -1203,6 +1202,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 						cs_event = createMouseEvent(event);
 						break;
 					}
+					case InputSystem::Device::CONTROLLER: ASSERT(false); /* TODO */ break;
 				}
 				tryCallMethod(true, gc_handle, nullptr, "OnInput", cs_event);
 			}
@@ -1235,7 +1235,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 		m_entities_gc_handles.clear();
 		for (ScriptComponent* script_cmp : m_scripts) {
 			for (Script& script : script_cmp->scripts) {
-				setScriptNameHash(*script_cmp, script, 0);
+				setScriptNameHash(*script_cmp, script, RuntimeHash());
 			}
 			LUMIX_DELETE(m_system.m_allocator, script_cmp);
 		}
@@ -1410,9 +1410,9 @@ CSharpPluginImpl::CSharpPluginImpl(Engine& engine)
 	registerProperties();
 
 	// mono_trace_set_level_string("debug");
-	auto printer = [](const char* msg, mono_bool is_stdout) { logError("Mono") << msg; };
+	auto printer = [](const char* msg, mono_bool is_stdout) { logError(msg); };
 
-	auto logger = [](const char* log_domain, const char* log_level, const char* message, mono_bool fatal, void* user_data) { logError("Mono") << message; };
+	auto logger = [](const char* log_domain, const char* log_level, const char* message, mono_bool fatal, void* user_data) { logError(message); };
 
 	mono_trace_set_print_handler(printer);
 	mono_trace_set_printerr_handler(printer);
@@ -1422,11 +1422,10 @@ CSharpPluginImpl::CSharpPluginImpl(Engine& engine)
 	mono_config_parse(nullptr);
 	
 	mono_set_dirs(nullptr, nullptr);
-	char exe_path[MAX_PATH_LENGTH];
-	OS::getExecutablePath(Span(exe_path));
-	char exe_dir[MAX_PATH_LENGTH];
-	Path::getDir(Span(exe_dir), exe_path);
-	StaticString<MAX_PATH_LENGTH * 3> assemblies_paths(exe_dir, ";.");
+	char exe_path[LUMIX_MAX_PATH];
+	os::getExecutablePath(Span(exe_path));
+	Span<const char> exe_dir = Path::getDir(exe_path);
+	StaticString<LUMIX_MAX_PATH * 3> assemblies_paths(exe_dir, ";.");
 	mono_set_assemblies_path(assemblies_paths);
 	initDebug();
 	m_domain = mono_jit_init("lumix");
@@ -1437,24 +1436,19 @@ CSharpPluginImpl::CSharpPluginImpl(Engine& engine)
 
 
 void CSharpPluginImpl::registerProperties() {
-	struct ScriptEnum : Reflection::StringEnumAttribute {
+	struct ScriptEnum : reflection::StringEnumAttribute {
 		u32 count(ComponentUID cmp) const override { return getPlugin(cmp).getNamesArray().size(); }
 		const char* name(ComponentUID cmp, u32 idx) const override { return getPlugin(cmp).getNamesArray()[idx].c_str(); }
 		static CSharpPlugin& getPlugin(ComponentUID cmp) { return static_cast<CSharpPlugin&>(cmp.scene->getPlugin()); }
 	};
 
-	using namespace Reflection;
-	static auto csharp_scene = scene("csharp", 
-		component("csharp_script",
-			array("scripts", &CSharpScriptScene::getScriptCount, &CSharpScriptScene::addScript, &CSharpScriptScene::removeScript, 
-				property("Script", LUMIX_PROP(CSharpScriptScene, ScriptName), ScriptEnum()),
-				//property("Enabled", &LuaScriptScene::isScriptEnabled, &LuaScriptScene::enableScript),
-				//property("Path", LUMIX_PROP(LuaScriptScene, ScriptPath), ResourceAttribute("Lua script (*.lua)", LuaScript::TYPE))//,
-				CSProperties()
-			)
-		)
-	);
-	registerScene(csharp_scene);
+	using namespace reflection;
+	LUMIX_SCENE(CSharpScriptSceneImpl, "csharp")
+		.LUMIX_CMP(ScriptComponent, "csharp_script", "C# script")
+			.begin_array<&CSharpScriptScene::getScriptCount, &CSharpScriptScene::addScript, &CSharpScriptScene::removeScript>("scripts")
+				.LUMIX_PROP(ScriptName, "Path").attribute<ScriptEnum>()
+				.property<CSProperties>()
+			.end_array();
 }
 
 
@@ -1546,7 +1540,7 @@ void CSharpPluginImpl::loadAssembly() {
 		MonoClass* parent = mono_class_get_parent(cl);
 
 		if (!hasAttribute(cl, native_component_class) && inherits(cl, "Component")) {
-			m_names.insert(crc32(n), String(n, allocator));
+			m_names.insert(RuntimeHash(n), String(n, allocator));
 			m_names_array.push(String(n, allocator));
 		}
 	}
