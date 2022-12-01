@@ -36,8 +36,8 @@ struct CSharpScriptScene : IScene
 	virtual int addScript(EntityRef entity, int scr_index) = 0;
 	virtual void removeScript(EntityRef entity, int scr_index) = 0;
 	virtual void insertScript(EntityRef entity, int idx) = 0;
-	//virtual void serializeScript(EntityRef entity, int scr_index, OutputBlob& blob) = 0;
-	//virtual void deserializeScript(EntityRef entity, int scr_index, InputBlob& blob) = 0;
+	virtual void serializeScript(EntityRef entity, int scr_index, OutputMemoryStream& blob) = 0;
+	virtual void deserializeScript(EntityRef entity, int scr_index, InputMemoryStream& blob) = 0;
 	virtual int getScriptCount(EntityRef entity) const = 0;
 	virtual const char* getScriptName(EntityRef entity, int scr_index) = 0;
 	virtual void setScriptName(EntityRef entity, int scr_index, const char* name) = 0;

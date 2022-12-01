@@ -74,7 +74,7 @@ namespace Lumix
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setLocalPosition(IntPtr instance, int entity, Vec3 pos);
+		extern static void setLocalPosition(IntPtr instance, int entity, DVec3 pos);
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -124,7 +124,7 @@ namespace Lumix
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static void setPosition(IntPtr instance, int entity, float x, float y, float z);
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setPosition(IntPtr instance, int entity, Vec3 pos);
+		extern static void setPosition(IntPtr instance, int entity, DVec3 pos);
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -136,7 +136,7 @@ namespace Lumix
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static Vec3 getPosition(IntPtr instance, int entity);
+		extern static DVec3 getPosition(IntPtr instance, int entity);
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -258,7 +258,7 @@ namespace Lumix
 			}
 		}
 
-		public void SetLocalPosition(Vec3 pos)
+		public void SetLocalPosition(DVec3 pos)
 		{
 			setLocalPosition(instance_, entity_Id_, pos);
 		}
@@ -316,12 +316,12 @@ namespace Lumix
 			setPosition(instance_, entity_Id_, x, y, z);
 		}
 
-		public void SetPosition(Vec3 pos)
+		public void SetPosition(DVec3 pos)
 		{
 			setPosition(instance_, entity_Id_, pos);
 		}
 
-		public Vec3 GetPosition()
+		public DVec3 GetPosition()
 		{
 			return getPosition(instance_, entity_Id_);
 		}
@@ -424,14 +424,11 @@ namespace Lumix
             return cmp;
         }
 
-
-
-        public Vec3 Position
+        public DVec3 Position
         {
             get { return getPosition(instance_, entity_Id_); }
             set { setPosition(instance_, entity_Id_, value); }
         }
-
 
 		public Vec3 Direction
 		{

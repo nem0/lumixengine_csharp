@@ -27,7 +27,7 @@ public class ImGui
 	public extern static void Columns(int count, string id, bool border);
 
 	[MethodImplAttribute(MethodImplOptions.InternalCall)]
-	public extern static bool DragFloat(string label, ref float v, float v_speed, float v_max, float v_min, string display_format, float power);
+	public extern static bool DragFloat(string label, ref float v, float v_speed, float v_max, float v_min, string display_format, int flags);
 
 	[MethodImplAttribute(MethodImplOptions.InternalCall)]
 	public extern static void Dummy(Lumix.Vec2 size);

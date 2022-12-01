@@ -240,7 +240,7 @@ namespace Lumix
 				{
 					float old_value = (float)val;
 					float new_value = old_value;
-					if(ImGui.DragFloat(f.Name, ref new_value, 0.1f, float.MaxValue, float.MaxValue, "%f", 1))
+					if(ImGui.DragFloat(f.Name, ref new_value, 0.1f, float.MaxValue, float.MaxValue, "%f", 0))
 					{
 						pushUndoCommand(editor, entity.instance_, entity.entity_Id_, this, f.Name, old_value.ToString(), new_value.ToString());
 					}

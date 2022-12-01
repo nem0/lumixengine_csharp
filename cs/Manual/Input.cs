@@ -31,7 +31,7 @@ namespace Lumix
     {
         public uint key_id;
         public bool is_down;
-        public float x_abs;
-        public float y_abs;
+        public float x;
+        public float y;
     }
 }
