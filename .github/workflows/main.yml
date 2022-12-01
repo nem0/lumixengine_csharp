@@ -1,0 +1,25 @@
+name: build
+on: [push]
+jobs:
+    windows:
+        runs-on: windows-2019
+        steps:
+            - name: clone engine
+              run: |
+                git.exe clone --depth=1 https://github.com/nem0/lumixengine.git .
+            - name: make plugins dir
+              run: |
+                mkdir plugins
+            - name: clone csharp plugin
+              working-directory: plugins              
+              run: |
+                git.exe clone --depth=1 https://github.com/nem0/lumixengine_csharp.git csharp
+            - name: create project
+              working-directory: projects
+              run: |
+                ./genie.exe vs2019
+            - name: build
+              working-directory: projects
+              shell: cmd
+              run: |
+                "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/MSBuild/Current/Bin/MSBuild.exe" tmp/vs2019/LumixEngine.sln /p:Configuration=Debug                
