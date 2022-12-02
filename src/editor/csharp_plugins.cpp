@@ -574,7 +574,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 	void listDirInCSProj(OutputMemoryStream& blob, const char* dirname) {
 		IAllocator& allocator = m_app.getWorldEditor().getAllocator();
 		FileSystem& fs = m_app.getEngine().getFileSystem();
-		StaticString<LUMIX_MAX_PATH> path("cs/", dirname);
+		StaticString<LUMIX_MAX_PATH> path("cs/src/", dirname);
 		os::FileIterator* iter = fs.createFileIterator(path);
 		os::FileInfo info;
 		while (os::getNextFile(iter, &info)) {
@@ -592,7 +592,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 
 	void openVSProject() {
 		const char* base_path = m_app.getWorldEditor().getEngine().getFileSystem().getBasePath();
-		StaticString<LUMIX_MAX_PATH> full_path(base_path, "cs/main.csproj");
+		StaticString<LUMIX_MAX_PATH> full_path(base_path, "cs/src/main.csproj");
 		os::shellExecuteOpen(full_path);
 	}
 
@@ -611,8 +611,8 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 				"</Project>\n";
 
 		FileSystem& fs = m_app.getEngine().getFileSystem();
-		if (!fs.saveContentSync(Path("cs/main.csproj"), blob)) {
-			logError("Faile to save cs/main.csproj");
+		if (!fs.saveContentSync(Path("cs/src/main.csproj"), blob)) {
+			logError("Faile to save cs/src/main.csproj");
 		}
 	}
 
