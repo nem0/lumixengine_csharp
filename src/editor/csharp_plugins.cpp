@@ -306,7 +306,7 @@ struct PropertyGridCSharpPlugin final : public PropertyGrid::IPlugin {
 				scene->tryCallMethod(gc_handle, "OnInspector", args, 1, true);
 				if (ImGui::Button("Edit")) {
 					FileSystem& fs = m_app.getEngine().getFileSystem();
-					StaticString<LUMIX_MAX_PATH> fullpath(fs.getBasePath(), script_name, ".cs");
+					StaticString<LUMIX_MAX_PATH> fullpath(fs.getBasePath(), "cs/src/", script_name, ".cs");
 					os::ExecuteOpenResult res = os::shellExecuteOpen(fullpath);
 					switch(res) {
 						case os::ExecuteOpenResult::SUCCESS: break;
@@ -339,7 +339,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 		m_new_script_name[0] = '\0';
 
 		IAllocator& allocator = app.getWorldEditor().getAllocator();
-		m_watcher = FileSystemWatcher::create("cs", allocator);
+		m_watcher = FileSystemWatcher::create("cs/src", allocator);
 		m_watcher->getCallback().bind<&StudioCSharpPlugin::onFileChanged>(this);
 
 		findMono();
@@ -388,8 +388,8 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 		}
 
 		StaticString<LUMIX_MAX_PATH> dest(dest_dir, "main.dll");
-		if (!os::copyFile("main.dll", dest)) {
-			logError("Failed to copy main.dll to ", dest);
+		if (!os::copyFile("cs/bin/main.dll", dest)) {
+			logError("Failed to copy cs/main.dll to ", dest);
 			return false;
 		}
 
@@ -439,15 +439,75 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 		}
 	}
 
+	static void copyDir(const char* src, const char* dest, IAllocator& allocator) 	{
+		PathInfo fi(src);
+		StaticString<LUMIX_MAX_PATH> dst_dir(dest, "/", fi.m_basename);
+		if (!os::makePath(dst_dir)) logError("Could not create ", dst_dir);
+		os::FileIterator* iter = os::createFileIterator(src, allocator);
+
+		os::FileInfo cfi;
+		while(os::getNextFile(iter, &cfi)) {
+			if (cfi.is_directory) {
+				if (cfi.filename[0] != '.') {
+					StaticString<LUMIX_MAX_PATH> tmp_src(src, "/", cfi.filename);
+					StaticString<LUMIX_MAX_PATH> tmp_dst(dest, "/", fi.m_basename);
+					copyDir(tmp_src, tmp_dst, allocator);
+				}
+			}
+			else {
+				StaticString<LUMIX_MAX_PATH> tmp_src(src, "/", cfi.filename);
+				StaticString<LUMIX_MAX_PATH> tmp_dst(dest, "/", fi.m_basename, "/", cfi.filename);
+				if(!os::copyFile(tmp_src, tmp_dst)) {
+					logError("Failed to copy ", tmp_src, " to ", tmp_dst);
+				}
+			}
+		}
+		os::destroyFileIterator(iter);
+	}
+
+	void initProject() {
+		FileSystem& fs = m_app.getEngine().getFileSystem();
+		StaticString<LUMIX_MAX_PATH> cs_dir_path(fs.getBasePath(), "cs");
+		if (!os::makePath(cs_dir_path)) logError("Failed to create ", cs_dir_path);
+		StaticString<LUMIX_MAX_PATH> bin_dir_path(cs_dir_path, "/bin");
+		if (!os::makePath(bin_dir_path)) logError("Failed to create ", bin_dir_path);
+		StaticString<LUMIX_MAX_PATH> src_dir_path(cs_dir_path, "/src");
+		if (!os::makePath(src_dir_path)) logError("Failed to create ", src_dir_path);
+
+		StaticString<LUMIX_MAX_PATH> vs_code_project_dir(cs_dir_path, "/.vscode/");
+		if (!os::dirExists(vs_code_project_dir)) {
+			if (!os::makePath(vs_code_project_dir)) {
+				logError("Failed to create ", vs_code_project_dir);
+			}
+			const char* launch_json_content = "{\n"
+											 "	\"version\": \"0.2.0\",\n"
+											 "	\"configurations\": [\n"
+											 "		{\n"
+											 "			\"name\": \"Attach to Lumix\",\n"
+											 "			\"type\": \"mono\",\n"
+											 "			\"request\": \"attach\",\n"
+											 "			\"address\": \"127.0.0.1\",\n"
+											 "			\"port\": 55555\n"
+											 "		}\n"
+											 "	]\n"
+											 "}\n";
+
+			if (!fs.saveContentSync(Path("cs/.vscode/launch.json"), Span((const u8*)launch_json_content, stringLength(launch_json_content)))) {
+				logError("Failed to save cs/.vscode/launch.json");
+			}
+		}	
+
+		copyDir(StaticString<LUMIX_MAX_PATH>(fs.getBasePath(), "../plugins/csharp/cs/"), StaticString<LUMIX_MAX_PATH>(fs.getBasePath(), "cs/src/"), m_app.getAllocator());
+	}
 
 	void makeUpToDate() {
 		IAllocator& allocator = m_app.getWorldEditor().getAllocator();
-		if (!os::fileExists("main.dll")) {
+		if (os::dirExists("cs") && !os::fileExists("cs/bin/main.dll")) {
 			compile();
 			return;
 		}
 
-		u64 dll_modified = os::getLastModified("main.dll");
+		u64 dll_modified = os::getLastModified("cs/bin/main.dll");
 		os::FileIterator* iter = os::createFileIterator("cs", allocator);
 		os::FileInfo info;
 		while (os::getNextFile(iter, &info)) {
@@ -499,7 +559,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 		OutputMemoryStream blob(m_app.getAllocator());
 		blob << "public class " << class_name << " : Lumix.Component\n{\n}\n";
 
-		StaticString<LUMIX_MAX_PATH> path("cs/", class_name, ".cs");
+		StaticString<LUMIX_MAX_PATH> path("cs/src/", class_name, ".cs");
 		FileSystem& fs = m_app.getEngine().getFileSystem();
 		if (fs.fileExists(path)) {
 			logError(path, " already exists");
@@ -524,13 +584,17 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 		os::destroyFileIterator(iter);
 	}
 
+	void openCSFolder() {
+		const char* base_path = m_app.getWorldEditor().getEngine().getFileSystem().getBasePath();
+		StaticString<LUMIX_MAX_PATH> full_path(base_path, "cs/");
+		os::shellExecuteOpen("code", ".", full_path);
+	}
 
 	void openVSProject() {
 		const char* base_path = m_app.getWorldEditor().getEngine().getFileSystem().getBasePath();
 		StaticString<LUMIX_MAX_PATH> full_path(base_path, "cs/main.csproj");
 		os::shellExecuteOpen(full_path);
 	}
-
 
 	void generateCSProj() {
 		OutputMemoryStream blob(m_app.getAllocator());
@@ -556,30 +620,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 	void open(const char* filename) {
 		WorldEditor& editor = m_app.getWorldEditor();
 		FileSystem& fs = editor.getEngine().getFileSystem();
-		StaticString<LUMIX_MAX_PATH> vs_code_project_dir(fs.getBasePath(), "cs/.vscode/");
-		if (!os::dirExists(vs_code_project_dir)) {
-			if (!os::makePath(vs_code_project_dir)) {
-				logError("Failed to create ", vs_code_project_dir);
-			}
-			const char* launch_json_content = "{\n"
-											 "	\"version\": \"0.2.0\",\n"
-											 "	\"configurations\": [\n"
-											 "		{\n"
-											 "			\"name\": \"Attach to Lumix\",\n"
-											 "			\"type\": \"mono\",\n"
-											 "			\"request\": \"attach\",\n"
-											 "			\"address\": \"127.0.0.1\",\n"
-											 "			\"port\": 55555\n"
-											 "		}\n"
-											 "	]\n"
-											 "}\n";
-
-			if (!fs.saveContentSync(Path("cs/.vscode/launch.json"), Span((const u8*)launch_json_content, stringLength(launch_json_content)))) {
-				logError("Failed to save cs/.vscode/launch.json");
-			}
-		}
-
-		StaticString<LUMIX_MAX_PATH> file_path(fs.getBasePath(), "cs/");
+		StaticString<LUMIX_MAX_PATH> file_path(fs.getBasePath(), "cs/src/");
 		if (filename) file_path << filename;
 		os::shellExecuteOpen(file_path);
 	}
@@ -593,6 +634,8 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 			return;
 		}
 
+		bool need_init = !os::dirExists("cs");
+
 		CSharpScriptScene* scene = getScene();
 		CSharpPlugin& plugin = (CSharpPlugin&)scene->getPlugin();
 		if (m_compilation_running) {
@@ -603,22 +646,29 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 				ImGui::SameLine();
 			}
 
-			if (ImGui::Button("Compile")) compile();
-			ImGui::SameLine();
-			if (ImGui::Button("Bindings")) generateBindings();
-			ImGui::SameLine();
-			if (ImGui::Button("Generate project")) generateCSProj();
-			ImGui::SameLine();
-			if (ImGui::Button("Open VS project")) openVSProject();
-			ImGui::SameLine();
-			if (ImGui::Button("New script")) ImGui::OpenPopup("new_csharp_script");
-			if (ImGui::BeginPopup("new_csharp_script")) {
-				ImGui::InputText("Name", m_new_script_name, sizeof(m_new_script_name));
-				if (ImGui::Button("Create")) {
-					createNewScript(m_new_script_name);
-					ImGui::CloseCurrentPopup();
+			if (need_init) {
+				if (ImGui::Button("Init")) initProject();
+			}
+			else {
+				if (ImGui::Button("Compile")) compile();
+				ImGui::SameLine();
+				if (ImGui::Button("Bindings")) generateBindings();
+				ImGui::SameLine();
+				if (ImGui::Button("Generate project")) generateCSProj();
+
+				if (ImGui::Button("VS Code")) openCSFolder();
+				ImGui::SameLine();
+				if (ImGui::Button("Open VS project")) openVSProject();
+				ImGui::SameLine();
+				if (ImGui::Button("New script")) ImGui::OpenPopup("new_csharp_script");
+				if (ImGui::BeginPopup("new_csharp_script")) {
+					ImGui::InputText("Name", m_new_script_name, sizeof(m_new_script_name));
+					if (ImGui::Button("Create")) {
+						createNewScript(m_new_script_name);
+						ImGui::CloseCurrentPopup();
+					}
+					ImGui::EndPopup();
 				}
-				ImGui::EndPopup();
 			}
 		}
 
@@ -772,7 +822,6 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 	}
 
 	static void generateScenesBindings(OutputMemoryStream& api_blob) {
-		#if 1 // TODO
 		using namespace reflection;
 		for (Scene* scene_ptr = getFirstScene(); scene_ptr; scene_ptr = scene_ptr->next) {
 			Scene& scene = *scene_ptr;
@@ -890,13 +939,12 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 			cs_file << "	}\n}\n";
 			cs_file.close();
 		}
-		#endif
 	}
 
 
 	void generateBindings() {
 		FileSystem& fs = m_app.getWorldEditor().getEngine().getFileSystem();
-		StaticString<LUMIX_MAX_PATH> path(fs.getBasePath(), "cs/generated");
+		StaticString<LUMIX_MAX_PATH> path(fs.getBasePath(), "cs/src/generated");
 		if (!os::makePath(path) && !os::dirExists(path)) {
 			logError("Failed to create ", path);
 			return;
@@ -943,7 +991,6 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 			visitor.api_blob = &api_blob;
 			cmp->visit(visitor);
 
-			#if 0 // TODO
 			for (reflection::FunctionBase* func : cmp->functions) {
 				StaticString<128> cs_method_name;
 				const char* cpp_method_name = func->decl_code + stringLength(func->decl_code);
@@ -951,12 +998,11 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 				if (*cpp_method_name == ':') ++cpp_method_name;
 				getCSharpName(cpp_method_name, cs_method_name);
 				api_blob << "{\n"
-							"	auto f = &CSharpMethodProxy<decltype(&"
-						<< func->decl_code << ")>::call<&" << func->decl_code
-						<< ">;\n"
-							"	mono_add_internal_call(\"Lumix."
-						<< class_name << "::" << cpp_method_name
-						<< "\", f);\n"
+							"	using T = ";
+							printType(func, api_blob);
+				api_blob << ";\n"
+							"	auto f = &CSharpMethodProxy<T>::call<(T)&" << func->decl_code << ">;\n"
+							"	mono_add_internal_call(\"Lumix." << class_name << "::" << cpp_method_name << "\", f);\n"
 							"}\n"
 							"\n\n";
 
@@ -988,7 +1034,6 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 							"		}\n"
 							"\n";
 			}
-			#endif
 
 			cs_blob << "\t} // class\n"
 					   "} // namespace\n";
@@ -1015,7 +1060,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 		CSharpPlugin& plugin = (CSharpPlugin&)scene->getPlugin();
 		plugin.unloadAssembly();
 		IAllocator& allocator = m_app.getWorldEditor().getAllocator();
-		const char* args[] = {"c:\\windows\\system32\\cmd.exe", "/c \"\"C:\\Program Files\\Mono\\bin\\mcs.bat\" -out:\"main.dll\" -target:library -debug -unsafe -recurse:\"cs\\*.cs\"", nullptr};
+		const char* args[] = {"c:\\windows\\system32\\cmd.exe", "/c \"\"C:\\Program Files\\Mono\\bin\\mcs.bat\" -out:\"cs\\bin\\main.dll\" -target:library -debug -unsafe -recurse:\"cs\\src\\*.cs\"", nullptr};
 		const int res = subprocess_create(args, 0, &m_compile_process);
 		m_compilation_running = res == 0;
 	}

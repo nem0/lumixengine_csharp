@@ -1,184 +1,4 @@
 {
-	using T = Lumix::EntityPtr(Lumix::GUIScene::*)(const Vec2&) const;
-	auto f = &CSharpMethodProxy<T>::call<(T)&GUIScene::getRectAt>;
-	mono_add_internal_call("Lumix.GuiScene::getRectAt", f);
-}
-
-
-{
-	using T = Lumix::EntityPtr(Lumix::GUIScene::*)(const Vec2&) const;
-	auto f = &CSharpMethodProxy<T>::call<(T)&GUIScene::getRectAt>;
-	mono_add_internal_call("Lumix.GuiScene::GetRectAt", f);
-}
-{
-	using T = bool(Lumix::GUIScene::*)(const Vec2&, EntityRef);
-	auto f = &CSharpMethodProxy<T>::call<(T)&GUIScene::isOver>;
-	mono_add_internal_call("Lumix.GuiScene::isOver", f);
-}
-
-
-{
-	using T = bool(Lumix::GUIScene::*)(const Vec2&, EntityRef);
-	auto f = &CSharpMethodProxy<T>::call<(T)&GUIScene::isOver>;
-	mono_add_internal_call("Lumix.GuiScene::IsOver", f);
-}
-{
-	using T = Lumix::GUISystem *(Lumix::GUIScene::*)();
-	auto f = &CSharpMethodProxy<T>::call<(T)&GUIScene::getSystem>;
-	mono_add_internal_call("Lumix.GuiScene::getSystem", f);
-}
-
-
-{
-	using T = Lumix::GUISystem *(Lumix::GUIScene::*)();
-	auto f = &CSharpMethodProxy<T>::call<(T)&GUIScene::getSystem>;
-	mono_add_internal_call("Lumix.GuiScene::GetSystem", f);
-}
-{
-	using T = void(Lumix::AudioScene::*)(float);
-	auto f = &CSharpMethodProxy<T>::call<(T)&AudioScene::setMasterVolume>;
-	mono_add_internal_call("Lumix.AudioScene::setMasterVolume", f);
-}
-
-
-{
-	using T = void(Lumix::AudioScene::*)(float);
-	auto f = &CSharpMethodProxy<T>::call<(T)&AudioScene::setMasterVolume>;
-	mono_add_internal_call("Lumix.AudioScene::SetMasterVolume", f);
-}
-{
-	using T = int(Lumix::AudioScene::*)(EntityRef, const Path&, bool);
-	auto f = &CSharpMethodProxy<T>::call<(T)&AudioScene::play>;
-	mono_add_internal_call("Lumix.AudioScene::play", f);
-}
-
-
-{
-	using T = int(Lumix::AudioScene::*)(EntityRef, const Path&, bool);
-	auto f = &CSharpMethodProxy<T>::call<(T)&AudioScene::play>;
-	mono_add_internal_call("Lumix.AudioScene::Play", f);
-}
-{
-	using T = void(Lumix::AudioScene::*)(int);
-	auto f = &CSharpMethodProxy<T>::call<(T)&AudioScene::stop>;
-	mono_add_internal_call("Lumix.AudioScene::stop", f);
-}
-
-
-{
-	using T = void(Lumix::AudioScene::*)(int);
-	auto f = &CSharpMethodProxy<T>::call<(T)&AudioScene::stop>;
-	mono_add_internal_call("Lumix.AudioScene::Stop", f);
-}
-{
-	using T = bool(Lumix::AudioScene::*)(int);
-	auto f = &CSharpMethodProxy<T>::call<(T)&AudioScene::isEnd>;
-	mono_add_internal_call("Lumix.AudioScene::isEnd", f);
-}
-
-
-{
-	using T = bool(Lumix::AudioScene::*)(int);
-	auto f = &CSharpMethodProxy<T>::call<(T)&AudioScene::isEnd>;
-	mono_add_internal_call("Lumix.AudioScene::IsEnd", f);
-}
-{
-	using T = void(Lumix::AudioScene::*)(int, u32);
-	auto f = &CSharpMethodProxy<T>::call<(T)&AudioScene::setFrequency>;
-	mono_add_internal_call("Lumix.AudioScene::setFrequency", f);
-}
-
-
-{
-	using T = void(Lumix::AudioScene::*)(int, u32);
-	auto f = &CSharpMethodProxy<T>::call<(T)&AudioScene::setFrequency>;
-	mono_add_internal_call("Lumix.AudioScene::SetFrequency", f);
-}
-{
-	using T = void(Lumix::AudioScene::*)(int, float);
-	auto f = &CSharpMethodProxy<T>::call<(T)&AudioScene::setVolume>;
-	mono_add_internal_call("Lumix.AudioScene::setVolume", f);
-}
-
-
-{
-	using T = void(Lumix::AudioScene::*)(int, float);
-	auto f = &CSharpMethodProxy<T>::call<(T)&AudioScene::setVolume>;
-	mono_add_internal_call("Lumix.AudioScene::SetVolume", f);
-}
-{
-	using T = void(Lumix::AudioScene::*)(int, float, float, float, float);
-	auto f = &CSharpMethodProxy<T>::call<(T)&AudioScene::setEcho>;
-	mono_add_internal_call("Lumix.AudioScene::setEcho", f);
-}
-
-
-{
-	using T = void(Lumix::AudioScene::*)(int, float, float, float, float);
-	auto f = &CSharpMethodProxy<T>::call<(T)&AudioScene::setEcho>;
-	mono_add_internal_call("Lumix.AudioScene::SetEcho", f);
-}
-{
-	using T = void(Lumix::RenderScene::*)(const DVec3&, float, Color);
-	auto f = &CSharpMethodProxy<T>::call<(T)&RenderScene::addDebugCross>;
-	mono_add_internal_call("Lumix.RendererScene::addDebugCross", f);
-}
-
-
-{
-	using T = void(Lumix::RenderScene::*)(const DVec3&, float, Color);
-	auto f = &CSharpMethodProxy<T>::call<(T)&RenderScene::addDebugCross>;
-	mono_add_internal_call("Lumix.RendererScene::AddDebugCross", f);
-}
-{
-	using T = void(Lumix::RenderScene::*)(const DVec3&, const DVec3&, Color);
-	auto f = &CSharpMethodProxy<T>::call<(T)&RenderScene::addDebugLine>;
-	mono_add_internal_call("Lumix.RendererScene::addDebugLine", f);
-}
-
-
-{
-	using T = void(Lumix::RenderScene::*)(const DVec3&, const DVec3&, Color);
-	auto f = &CSharpMethodProxy<T>::call<(T)&RenderScene::addDebugLine>;
-	mono_add_internal_call("Lumix.RendererScene::AddDebugLine", f);
-}
-{
-	using T = void(Lumix::RenderScene::*)(const DVec3&, const DVec3&, const DVec3&, Color);
-	auto f = &CSharpMethodProxy<T>::call<(T)&RenderScene::addDebugTriangle>;
-	mono_add_internal_call("Lumix.RendererScene::addDebugTriangle", f);
-}
-
-
-{
-	using T = void(Lumix::RenderScene::*)(const DVec3&, const DVec3&, const DVec3&, Color);
-	auto f = &CSharpMethodProxy<T>::call<(T)&RenderScene::addDebugTriangle>;
-	mono_add_internal_call("Lumix.RendererScene::AddDebugTriangle", f);
-}
-{
-	using T = void(Lumix::RenderScene::*)(EntityRef);
-	auto f = &CSharpMethodProxy<T>::call<(T)&RenderScene::setActiveCamera>;
-	mono_add_internal_call("Lumix.RendererScene::setActiveCamera", f);
-}
-
-
-{
-	using T = void(Lumix::RenderScene::*)(EntityRef);
-	auto f = &CSharpMethodProxy<T>::call<(T)&RenderScene::setActiveCamera>;
-	mono_add_internal_call("Lumix.RendererScene::SetActiveCamera", f);
-}
-{
-	using T = Lumix::EntityPtr(Lumix::PhysicsScene::*)(const Vec3&, const Vec3&, EntityRef);
-	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsScene::raycast>;
-	mono_add_internal_call("Lumix.PhysicsScene::raycast", f);
-}
-
-
-{
-	using T = Lumix::EntityPtr(Lumix::PhysicsScene::*)(const Vec3&, const Vec3&, EntityRef);
-	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsScene::raycast>;
-	mono_add_internal_call("Lumix.PhysicsScene::Raycast", f);
-}
-{
 	const reflection::Property<bool>* prop = getProperty<bool>("gui_rect", "Enabled");
 	ASSERT(prop);
 	mono_add_internal_call("Lumix.GuiRect::getEnabled", prop->getter);
@@ -330,6 +150,20 @@
 	mono_add_internal_call("Lumix.Terrain::getGridResolution", prop->getter);
 	mono_add_internal_call("Lumix.Terrain::setGridResolution", prop->setter);
 }
+
+{
+	using T = Lumix::Vec3(Lumix::RenderScene::*)(EntityRef, float, float);
+	auto f = &CSharpMethodProxy<T>::call<(T)&RenderScene::getTerrainNormalAt>;
+	mono_add_internal_call("Lumix.Terrain::getTerrainNormalAt", f);
+}
+
+
+{
+	using T = float(Lumix::RenderScene::*)(EntityRef, float, float);
+	auto f = &CSharpMethodProxy<T>::call<(T)&RenderScene::getTerrainHeightAt>;
+	mono_add_internal_call("Lumix.Terrain::getTerrainHeightAt", f);
+}
+
 
 {
 	const reflection::Property<float>* prop = getProperty<float>("camera", "FOV");
@@ -550,6 +384,13 @@
 }
 
 {
+	using T = Lumix::Model *(Lumix::RenderScene::*)(EntityRef);
+	auto f = &CSharpMethodProxy<T>::call<(T)&RenderScene::getModelInstanceModel>;
+	mono_add_internal_call("Lumix.ModelInstance::getModelInstanceModel", f);
+}
+
+
+{
 	const reflection::Property<bool>* prop = getProperty<bool>("environment_probe", "Enabled");
 	ASSERT(prop);
 	mono_add_internal_call("Lumix.EnvironmentProbe::getEnabled", prop->getter);
@@ -692,6 +533,48 @@
 }
 
 {
+	using T = void(Lumix::PhysicsScene::*)(EntityRef);
+	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsScene::putToSleep>;
+	mono_add_internal_call("Lumix.RigidActor::putToSleep", f);
+}
+
+
+{
+	using T = float(Lumix::PhysicsScene::*)(EntityRef);
+	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsScene::getActorSpeed>;
+	mono_add_internal_call("Lumix.RigidActor::getActorSpeed", f);
+}
+
+
+{
+	using T = Lumix::Vec3(Lumix::PhysicsScene::*)(EntityRef);
+	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsScene::getActorVelocity>;
+	mono_add_internal_call("Lumix.RigidActor::getActorVelocity", f);
+}
+
+
+{
+	using T = void(Lumix::PhysicsScene::*)(EntityRef, const Vec3&);
+	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsScene::applyForceToActor>;
+	mono_add_internal_call("Lumix.RigidActor::applyForceToActor", f);
+}
+
+
+{
+	using T = void(Lumix::PhysicsScene::*)(EntityRef, const Vec3&);
+	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsScene::applyImpulseToActor>;
+	mono_add_internal_call("Lumix.RigidActor::applyImpulseToActor", f);
+}
+
+
+{
+	using T = void(Lumix::PhysicsScene::*)(EntityRef, const Vec3&, const Vec3&);
+	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsScene::addForceAtPos>;
+	mono_add_internal_call("Lumix.RigidActor::addForceAtPos", f);
+}
+
+
+{
 	const reflection::Property<int>* prop = getProperty<int>("physical_heightfield", "Layer");
 	ASSERT(prop);
 	mono_add_internal_call("Lumix.PhysicalHeightfield::getLayer", prop->getter);
@@ -763,6 +646,20 @@
 	mono_add_internal_call("Lumix.PhysicalController::getCustomGravityAcceleration", prop->getter);
 	mono_add_internal_call("Lumix.PhysicalController::setCustomGravityAcceleration", prop->setter);
 }
+
+{
+	using T = void(Lumix::PhysicsScene::*)(EntityRef, const Vec3&);
+	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsScene::moveController>;
+	mono_add_internal_call("Lumix.PhysicalController::moveController", f);
+}
+
+
+{
+	using T = bool(Lumix::PhysicsScene::*)(EntityRef) const;
+	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsScene::isControllerCollisionDown>;
+	mono_add_internal_call("Lumix.PhysicalController::isControllerCollisionDown", f);
+}
+
 
 {
 	const reflection::Property<bool>* prop = getProperty<bool>("gui_image", "Enabled");
@@ -893,6 +790,41 @@
 	mono_add_internal_call("Lumix.Animator::getDefaultSet", prop->getter);
 	mono_add_internal_call("Lumix.Animator::setDefaultSet", prop->setter);
 }
+
+{
+	using T = void(Lumix::AnimationScene::*)(EntityRef, u32, u32);
+	auto f = &CSharpMethodProxy<T>::call<(T)&AnimationScene::setAnimatorInput>;
+	mono_add_internal_call("Lumix.Animator::setAnimatorInput", f);
+}
+
+
+{
+	using T = void(Lumix::AnimationScene::*)(EntityRef, u32, float);
+	auto f = &CSharpMethodProxy<T>::call<(T)&AnimationScene::setAnimatorInput>;
+	mono_add_internal_call("Lumix.Animator::setAnimatorInput", f);
+}
+
+
+{
+	using T = void(Lumix::AnimationScene::*)(EntityRef, u32, bool);
+	auto f = &CSharpMethodProxy<T>::call<(T)&AnimationScene::setAnimatorInput>;
+	mono_add_internal_call("Lumix.Animator::setAnimatorInput", f);
+}
+
+
+{
+	using T = int(Lumix::AnimationScene::*)(EntityRef, Path) const;
+	auto f = &CSharpMethodProxy<T>::call<(T)&AnimationScene::getAnimatorInputIndex>;
+	mono_add_internal_call("Lumix.Animator::getAnimatorInputIndex", f);
+}
+
+
+{
+	using T = void(Lumix::AnimationScene::*)(EntityRef, u32, float, const Vec3&);
+	auto f = &CSharpMethodProxy<T>::call<(T)&AnimationScene::setAnimatorIK>;
+	mono_add_internal_call("Lumix.Animator::setAnimatorIK", f);
+}
+
 
 {
 	const reflection::Property<Vec3>* prop = getProperty<Vec3>("distance_joint", "Axis position");
@@ -1164,6 +1096,27 @@
 }
 
 {
+	using T = void(Lumix::PhysicsScene::*)(EntityRef, float);
+	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsScene::setVehicleAccel>;
+	mono_add_internal_call("Lumix.Vehicle::setVehicleAccel", f);
+}
+
+
+{
+	using T = void(Lumix::PhysicsScene::*)(EntityRef, float);
+	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsScene::setVehicleSteer>;
+	mono_add_internal_call("Lumix.Vehicle::setVehicleSteer", f);
+}
+
+
+{
+	using T = void(Lumix::PhysicsScene::*)(EntityRef, float);
+	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsScene::setVehicleBrake>;
+	mono_add_internal_call("Lumix.Vehicle::setVehicleBrake", f);
+}
+
+
+{
 	const reflection::Property<float>* prop = getProperty<float>("wheel", "Radius");
 	ASSERT(prop);
 	mono_add_internal_call("Lumix.Wheel::getRadius", prop->getter);
@@ -1262,6 +1215,34 @@
 }
 
 {
+	using T = void(Lumix::NavigationScene::*)(EntityRef, bool);
+	auto f = &CSharpMethodProxy<T>::call<(T)&NavigationScene::setActorActive>;
+	mono_add_internal_call("Lumix.NavmeshAgent::setActorActive", f);
+}
+
+
+{
+	using T = bool(Lumix::NavigationScene::*)(EntityRef, const DVec3&, float, float);
+	auto f = &CSharpMethodProxy<T>::call<(T)&NavigationScene::navigate>;
+	mono_add_internal_call("Lumix.NavmeshAgent::navigate", f);
+}
+
+
+{
+	using T = void(Lumix::NavigationScene::*)(EntityRef);
+	auto f = &CSharpMethodProxy<T>::call<(T)&NavigationScene::cancelNavigation>;
+	mono_add_internal_call("Lumix.NavmeshAgent::cancelNavigation", f);
+}
+
+
+{
+	using T = void(Lumix::NavigationScene::*)(EntityRef);
+	auto f = &CSharpMethodProxy<T>::call<(T)&NavigationScene::debugDrawPath>;
+	mono_add_internal_call("Lumix.NavmeshAgent::debugDrawPath", f);
+}
+
+
+{
 	const reflection::Property<Vec3>* prop = getProperty<Vec3>("navmesh_zone", "Extents");
 	ASSERT(prop);
 	mono_add_internal_call("Lumix.NavmeshZone::getExtents", prop->getter);
@@ -1325,6 +1306,48 @@
 }
 
 {
+	using T = bool(Lumix::NavigationScene::*)(EntityRef);
+	auto f = &CSharpMethodProxy<T>::call<(T)&NavigationScene::loadZone>;
+	mono_add_internal_call("Lumix.NavmeshZone::loadZone", f);
+}
+
+
+{
+	using T = void(Lumix::NavigationScene::*)(EntityRef);
+	auto f = &CSharpMethodProxy<T>::call<(T)&NavigationScene::debugDrawContours>;
+	mono_add_internal_call("Lumix.NavmeshZone::debugDrawContours", f);
+}
+
+
+{
+	using T = void(Lumix::NavigationScene::*)(EntityRef, const DVec3&, bool, bool, bool);
+	auto f = &CSharpMethodProxy<T>::call<(T)&NavigationScene::debugDrawNavmesh>;
+	mono_add_internal_call("Lumix.NavmeshZone::debugDrawNavmesh", f);
+}
+
+
+{
+	using T = void(Lumix::NavigationScene::*)(EntityRef);
+	auto f = &CSharpMethodProxy<T>::call<(T)&NavigationScene::debugDrawCompactHeightfield>;
+	mono_add_internal_call("Lumix.NavmeshZone::debugDrawCompactHeightfield", f);
+}
+
+
+{
+	using T = void(Lumix::NavigationScene::*)(EntityRef);
+	auto f = &CSharpMethodProxy<T>::call<(T)&NavigationScene::debugDrawHeightfield>;
+	mono_add_internal_call("Lumix.NavmeshZone::debugDrawHeightfield", f);
+}
+
+
+{
+	using T = Lumix::NavmeshBuildJob *(Lumix::NavigationScene::*)(EntityRef);
+	auto f = &CSharpMethodProxy<T>::call<(T)&NavigationScene::generateNavmesh>;
+	mono_add_internal_call("Lumix.NavmeshZone::generateNavmesh", f);
+}
+
+
+{
 	const reflection::Property<const char*>* prop = getProperty<const char*>("lua_script_inline", "Code");
 	ASSERT(prop);
 	struct S : CSPropertyWrapper<const char*> {};
@@ -1381,6 +1404,20 @@
 	mono_add_internal_call("Lumix.AmbientSound::getSound", &S::cs_getter);
 	mono_add_internal_call("Lumix.AmbientSound::setSound", &S::cs_setter);
 }
+
+{
+	using T = void(Lumix::AudioScene::*)(EntityRef);
+	auto f = &CSharpMethodProxy<T>::call<(T)&AudioScene::pauseAmbientSound>;
+	mono_add_internal_call("Lumix.AmbientSound::pauseAmbientSound", f);
+}
+
+
+{
+	using T = void(Lumix::AudioScene::*)(EntityRef);
+	auto f = &CSharpMethodProxy<T>::call<(T)&AudioScene::resumeAmbientSound>;
+	mono_add_internal_call("Lumix.AmbientSound::resumeAmbientSound", f);
+}
+
 
 {
 	const reflection::Property<float>* prop = getProperty<float>("echo_zone", "Radius");

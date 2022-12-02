@@ -1510,7 +1510,7 @@ static bool hasAttribute(MonoClass* cl, MonoClass* attr) {
 void CSharpPluginImpl::loadAssembly() {
 	ASSERT(!m_assembly);
 
-	const char* path = "main.dll";
+	const char* path = "cs/bin/main.dll";
 
 	IAllocator& allocator = m_engine.getAllocator();
 	m_assembly_domain = mono_domain_create_appdomain("lumix_runtime", nullptr);
