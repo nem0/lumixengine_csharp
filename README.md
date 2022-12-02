@@ -12,3 +12,4 @@ Getting started:
 3. Build and run Lumix Engine Studio, you can now create and use C# scripts
 
 [See this plugin in action](https://www.youtube.com/watch?v=jZrPzzhROqc)
+[Debugging](https://www.youtube.com/watch?v=4U7PQ3zR6Ok)
