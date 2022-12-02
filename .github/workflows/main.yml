@@ -4,6 +4,9 @@ jobs:
     windows:
         runs-on: windows-2019
         steps:
+            - name: install mono
+              run: |
+                choco install mono
             - name: clone engine
               run: |
                 git.exe clone --depth=1 https://github.com/nem0/lumixengine.git .
