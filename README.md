@@ -11,3 +11,4 @@ Getting started:
 2. [Install this plugin](https://github.com/nem0/LumixEngine/wiki/available-plugins)
 3. Build and run Lumix Engine Studio, you can now create and use C# scripts
 
+[See this plugin in action](https://www.youtube.com/watch?v=jZrPzzhROqc)
