@@ -1085,7 +1085,7 @@ struct AddCSharpComponentPlugin final : public StudioApp::IAddComponentPlugin {
 
 	void onGUI(bool create_entity, bool from_filter, EntityPtr parent, struct WorldEditor& editor) override {
 		ImGui::SetNextWindowSize(ImVec2(300, 300));
-		if (!ImGuiEx::BeginResizableMenu(getLabel(), nullptr, true)) return;
+		if (!ImGui::BeginMenu(getLabel())) return;
 
 		CSharpScriptScene* script_scene = (CSharpScriptScene*)editor.getUniverse()->getScene(CSHARP_SCRIPT_TYPE);
 		CSharpPlugin& plugin = (CSharpPlugin&)script_scene->getPlugin();
