@@ -8,7 +8,7 @@ namespace Lumix
 	public class LuaScript : Component
 	{
 		public LuaScript(Entity _entity)
-			: base(_entity,  getScene(_entity.instance_, "lua_script" )) { }
+			: base(_entity,  getModule(_entity.instance_, "lua_script" )) { }
 
 
 	} // class

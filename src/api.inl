@@ -1,4 +1,172 @@
 {
+	using T = Lumix::EntityPtr(Lumix::GUIModule::*)(const Vec2&) const;
+	auto f = &CSharpMethodProxy<T>::call<(T)&GUIModule::getRectAt>;
+	mono_add_internal_call("Lumix.GuiModule::getRectAt", f);
+}
+
+
+{
+	using T = Lumix::EntityPtr(Lumix::GUIModule::*)(const Vec2&) const;
+	auto f = &CSharpMethodProxy<T>::call<(T)&GUIModule::getRectAt>;
+	mono_add_internal_call("Lumix.GuiModule::GetRectAt", f);
+}
+{
+	using T = bool(Lumix::GUIModule::*)(const Vec2&, EntityRef);
+	auto f = &CSharpMethodProxy<T>::call<(T)&GUIModule::isOver>;
+	mono_add_internal_call("Lumix.GuiModule::isOver", f);
+}
+
+
+{
+	using T = bool(Lumix::GUIModule::*)(const Vec2&, EntityRef);
+	auto f = &CSharpMethodProxy<T>::call<(T)&GUIModule::isOver>;
+	mono_add_internal_call("Lumix.GuiModule::IsOver", f);
+}
+{
+	using T = void(Lumix::AudioModule::*)(float);
+	auto f = &CSharpMethodProxy<T>::call<(T)&AudioModule::setMasterVolume>;
+	mono_add_internal_call("Lumix.AudioModule::setMasterVolume", f);
+}
+
+
+{
+	using T = void(Lumix::AudioModule::*)(float);
+	auto f = &CSharpMethodProxy<T>::call<(T)&AudioModule::setMasterVolume>;
+	mono_add_internal_call("Lumix.AudioModule::SetMasterVolume", f);
+}
+{
+	using T = int(Lumix::AudioModule::*)(EntityRef, const Path&, bool);
+	auto f = &CSharpMethodProxy<T>::call<(T)&AudioModule::play>;
+	mono_add_internal_call("Lumix.AudioModule::play", f);
+}
+
+
+{
+	using T = int(Lumix::AudioModule::*)(EntityRef, const Path&, bool);
+	auto f = &CSharpMethodProxy<T>::call<(T)&AudioModule::play>;
+	mono_add_internal_call("Lumix.AudioModule::Play", f);
+}
+{
+	using T = void(Lumix::AudioModule::*)(int);
+	auto f = &CSharpMethodProxy<T>::call<(T)&AudioModule::stop>;
+	mono_add_internal_call("Lumix.AudioModule::stop", f);
+}
+
+
+{
+	using T = void(Lumix::AudioModule::*)(int);
+	auto f = &CSharpMethodProxy<T>::call<(T)&AudioModule::stop>;
+	mono_add_internal_call("Lumix.AudioModule::Stop", f);
+}
+{
+	using T = bool(Lumix::AudioModule::*)(int);
+	auto f = &CSharpMethodProxy<T>::call<(T)&AudioModule::isEnd>;
+	mono_add_internal_call("Lumix.AudioModule::isEnd", f);
+}
+
+
+{
+	using T = bool(Lumix::AudioModule::*)(int);
+	auto f = &CSharpMethodProxy<T>::call<(T)&AudioModule::isEnd>;
+	mono_add_internal_call("Lumix.AudioModule::IsEnd", f);
+}
+{
+	using T = void(Lumix::AudioModule::*)(int, u32);
+	auto f = &CSharpMethodProxy<T>::call<(T)&AudioModule::setFrequency>;
+	mono_add_internal_call("Lumix.AudioModule::setFrequency", f);
+}
+
+
+{
+	using T = void(Lumix::AudioModule::*)(int, u32);
+	auto f = &CSharpMethodProxy<T>::call<(T)&AudioModule::setFrequency>;
+	mono_add_internal_call("Lumix.AudioModule::SetFrequency", f);
+}
+{
+	using T = void(Lumix::AudioModule::*)(int, float);
+	auto f = &CSharpMethodProxy<T>::call<(T)&AudioModule::setVolume>;
+	mono_add_internal_call("Lumix.AudioModule::setVolume", f);
+}
+
+
+{
+	using T = void(Lumix::AudioModule::*)(int, float);
+	auto f = &CSharpMethodProxy<T>::call<(T)&AudioModule::setVolume>;
+	mono_add_internal_call("Lumix.AudioModule::SetVolume", f);
+}
+{
+	using T = void(Lumix::AudioModule::*)(int, float, float, float, float);
+	auto f = &CSharpMethodProxy<T>::call<(T)&AudioModule::setEcho>;
+	mono_add_internal_call("Lumix.AudioModule::setEcho", f);
+}
+
+
+{
+	using T = void(Lumix::AudioModule::*)(int, float, float, float, float);
+	auto f = &CSharpMethodProxy<T>::call<(T)&AudioModule::setEcho>;
+	mono_add_internal_call("Lumix.AudioModule::SetEcho", f);
+}
+{
+	using T = void(Lumix::RenderModule::*)(const DVec3&, float, Color);
+	auto f = &CSharpMethodProxy<T>::call<(T)&RenderModule::addDebugCross>;
+	mono_add_internal_call("Lumix.RendererModule::addDebugCross", f);
+}
+
+
+{
+	using T = void(Lumix::RenderModule::*)(const DVec3&, float, Color);
+	auto f = &CSharpMethodProxy<T>::call<(T)&RenderModule::addDebugCross>;
+	mono_add_internal_call("Lumix.RendererModule::AddDebugCross", f);
+}
+{
+	using T = void(Lumix::RenderModule::*)(const DVec3&, const DVec3&, Color);
+	auto f = &CSharpMethodProxy<T>::call<(T)&RenderModule::addDebugLine>;
+	mono_add_internal_call("Lumix.RendererModule::addDebugLine", f);
+}
+
+
+{
+	using T = void(Lumix::RenderModule::*)(const DVec3&, const DVec3&, Color);
+	auto f = &CSharpMethodProxy<T>::call<(T)&RenderModule::addDebugLine>;
+	mono_add_internal_call("Lumix.RendererModule::AddDebugLine", f);
+}
+{
+	using T = void(Lumix::RenderModule::*)(const DVec3&, const DVec3&, const DVec3&, Color);
+	auto f = &CSharpMethodProxy<T>::call<(T)&RenderModule::addDebugTriangle>;
+	mono_add_internal_call("Lumix.RendererModule::addDebugTriangle", f);
+}
+
+
+{
+	using T = void(Lumix::RenderModule::*)(const DVec3&, const DVec3&, const DVec3&, Color);
+	auto f = &CSharpMethodProxy<T>::call<(T)&RenderModule::addDebugTriangle>;
+	mono_add_internal_call("Lumix.RendererModule::AddDebugTriangle", f);
+}
+{
+	using T = void(Lumix::RenderModule::*)(EntityRef);
+	auto f = &CSharpMethodProxy<T>::call<(T)&RenderModule::setActiveCamera>;
+	mono_add_internal_call("Lumix.RendererModule::setActiveCamera", f);
+}
+
+
+{
+	using T = void(Lumix::RenderModule::*)(EntityRef);
+	auto f = &CSharpMethodProxy<T>::call<(T)&RenderModule::setActiveCamera>;
+	mono_add_internal_call("Lumix.RendererModule::SetActiveCamera", f);
+}
+{
+	using T = Lumix::EntityPtr(Lumix::PhysicsModule::*)(const Vec3&, const Vec3&, EntityRef);
+	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsModule::raycast>;
+	mono_add_internal_call("Lumix.PhysicsModule::raycast", f);
+}
+
+
+{
+	using T = Lumix::EntityPtr(Lumix::PhysicsModule::*)(const Vec3&, const Vec3&, EntityRef);
+	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsModule::raycast>;
+	mono_add_internal_call("Lumix.PhysicsModule::Raycast", f);
+}
+{
 	const reflection::Property<bool>* prop = getProperty<bool>("gui_rect", "Enabled");
 	ASSERT(prop);
 	mono_add_internal_call("Lumix.GuiRect::getEnabled", prop->getter);

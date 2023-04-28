@@ -8,124 +8,148 @@ namespace Lumix
 	public class Vehicle : Component
 	{
 		public Vehicle(Entity _entity)
-			: base(_entity,  getScene(_entity.instance_, "vehicle" )) { }
+			: base(_entity,  getModule(_entity.instance_, "vehicle" )) { }
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getSpeed(IntPtr scene, int cmp);
+		extern static float getSpeed(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setSpeed(IntPtr scene, int cmp, float value);
+		extern static void setSpeed(IntPtr module, int cmp, float value);
 
 
 		public float Speed
 		{
-			get { return getSpeed(scene_, entity_.entity_Id_); }
-			set { setSpeed(scene_, entity_.entity_Id_, value); }
+			get { return getSpeed(module_, entity_.entity_Id_); }
+			set { setSpeed(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static int getCurrentGear(IntPtr scene, int cmp);
+		extern static int getCurrentGear(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setCurrentGear(IntPtr scene, int cmp, int value);
+		extern static void setCurrentGear(IntPtr module, int cmp, int value);
 
 
 		public int CurrentGear
 		{
-			get { return getCurrentGear(scene_, entity_.entity_Id_); }
-			set { setCurrentGear(scene_, entity_.entity_Id_, value); }
+			get { return getCurrentGear(module_, entity_.entity_Id_); }
+			set { setCurrentGear(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getRPM(IntPtr scene, int cmp);
+		extern static float getRPM(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setRPM(IntPtr scene, int cmp, float value);
+		extern static void setRPM(IntPtr module, int cmp, float value);
 
 
 		public float RPM
 		{
-			get { return getRPM(scene_, entity_.entity_Id_); }
-			set { setRPM(scene_, entity_.entity_Id_, value); }
+			get { return getRPM(module_, entity_.entity_Id_); }
+			set { setRPM(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getMass(IntPtr scene, int cmp);
+		extern static float getMass(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setMass(IntPtr scene, int cmp, float value);
+		extern static void setMass(IntPtr module, int cmp, float value);
 
 
 		public float Mass
 		{
-			get { return getMass(scene_, entity_.entity_Id_); }
-			set { setMass(scene_, entity_.entity_Id_, value); }
+			get { return getMass(module_, entity_.entity_Id_); }
+			set { setMass(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static Vec3 getCenterOfMass(IntPtr scene, int cmp);
+		extern static Vec3 getCenterOfMass(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setCenterOfMass(IntPtr scene, int cmp, Vec3 value);
+		extern static void setCenterOfMass(IntPtr module, int cmp, Vec3 value);
 
 
 		public Vec3 CenterOfMass
 		{
-			get { return getCenterOfMass(scene_, entity_.entity_Id_); }
-			set { setCenterOfMass(scene_, entity_.entity_Id_, value); }
+			get { return getCenterOfMass(module_, entity_.entity_Id_); }
+			set { setCenterOfMass(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getMOIMultiplier(IntPtr scene, int cmp);
+		extern static float getMOIMultiplier(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setMOIMultiplier(IntPtr scene, int cmp, float value);
+		extern static void setMOIMultiplier(IntPtr module, int cmp, float value);
 
 
 		public float MOIMultiplier
 		{
-			get { return getMOIMultiplier(scene_, entity_.entity_Id_); }
-			set { setMOIMultiplier(scene_, entity_.entity_Id_, value); }
+			get { return getMOIMultiplier(module_, entity_.entity_Id_); }
+			set { setMOIMultiplier(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static string getChassis(IntPtr scene, int cmp);
+		extern static string getChassis(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setChassis(IntPtr scene, int cmp, string value);
+		extern static void setChassis(IntPtr module, int cmp, string value);
 
 
 		public string Chassis
 		{
-			get { return getChassis(scene_, entity_.entity_Id_); }
-			set { setChassis(scene_, entity_.entity_Id_, value); }
+			get { return getChassis(module_, entity_.entity_Id_); }
+			set { setChassis(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static int getChassisLayer(IntPtr scene, int cmp);
+		extern static int getChassisLayer(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setChassisLayer(IntPtr scene, int cmp, int value);
+		extern static void setChassisLayer(IntPtr module, int cmp, int value);
 
 
 		public int ChassisLayer
 		{
-			get { return getChassisLayer(scene_, entity_.entity_Id_); }
-			set { setChassisLayer(scene_, entity_.entity_Id_, value); }
+			get { return getChassisLayer(module_, entity_.entity_Id_); }
+			set { setChassisLayer(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static int getWheelsLayer(IntPtr scene, int cmp);
+		extern static int getWheelsLayer(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setWheelsLayer(IntPtr scene, int cmp, int value);
+		extern static void setWheelsLayer(IntPtr module, int cmp, int value);
 
 
 		public int WheelsLayer
 		{
-			get { return getWheelsLayer(scene_, entity_.entity_Id_); }
-			set { setWheelsLayer(scene_, entity_.entity_Id_, value); }
+			get { return getWheelsLayer(module_, entity_.entity_Id_); }
+			set { setWheelsLayer(module_, entity_.entity_Id_, value); }
+		}
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		extern static void setVehicleAccel(IntPtr instance, int cmp, float a0);
+
+		public void SetVehicleAccel(float a0)
+		{
+			setVehicleAccel(module_, entity_.entity_Id_, a0);
+		}
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		extern static void setVehicleSteer(IntPtr instance, int cmp, float a0);
+
+		public void SetVehicleSteer(float a0)
+		{
+			setVehicleSteer(module_, entity_.entity_Id_, a0);
+		}
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		extern static void setVehicleBrake(IntPtr instance, int cmp, float a0);
+
+		public void SetVehicleBrake(float a0)
+		{
+			setVehicleBrake(module_, entity_.entity_Id_, a0);
 		}
 
 	} // class

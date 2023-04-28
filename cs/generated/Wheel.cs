@@ -8,137 +8,137 @@ namespace Lumix
 	public class Wheel : Component
 	{
 		public Wheel(Entity _entity)
-			: base(_entity,  getScene(_entity.instance_, "wheel" )) { }
+			: base(_entity,  getModule(_entity.instance_, "wheel" )) { }
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getRadius(IntPtr scene, int cmp);
+		extern static float getRadius(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setRadius(IntPtr scene, int cmp, float value);
+		extern static void setRadius(IntPtr module, int cmp, float value);
 
 
 		public float Radius
 		{
-			get { return getRadius(scene_, entity_.entity_Id_); }
-			set { setRadius(scene_, entity_.entity_Id_, value); }
+			get { return getRadius(module_, entity_.entity_Id_); }
+			set { setRadius(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getWidth(IntPtr scene, int cmp);
+		extern static float getWidth(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setWidth(IntPtr scene, int cmp, float value);
+		extern static void setWidth(IntPtr module, int cmp, float value);
 
 
 		public float Width
 		{
-			get { return getWidth(scene_, entity_.entity_Id_); }
-			set { setWidth(scene_, entity_.entity_Id_, value); }
+			get { return getWidth(module_, entity_.entity_Id_); }
+			set { setWidth(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getMass(IntPtr scene, int cmp);
+		extern static float getMass(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setMass(IntPtr scene, int cmp, float value);
+		extern static void setMass(IntPtr module, int cmp, float value);
 
 
 		public float Mass
 		{
-			get { return getMass(scene_, entity_.entity_Id_); }
-			set { setMass(scene_, entity_.entity_Id_, value); }
+			get { return getMass(module_, entity_.entity_Id_); }
+			set { setMass(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getMOI(IntPtr scene, int cmp);
+		extern static float getMOI(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setMOI(IntPtr scene, int cmp, float value);
+		extern static void setMOI(IntPtr module, int cmp, float value);
 
 
 		public float MOI
 		{
-			get { return getMOI(scene_, entity_.entity_Id_); }
-			set { setMOI(scene_, entity_.entity_Id_, value); }
+			get { return getMOI(module_, entity_.entity_Id_); }
+			set { setMOI(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getMaxCompression(IntPtr scene, int cmp);
+		extern static float getMaxCompression(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setMaxCompression(IntPtr scene, int cmp, float value);
+		extern static void setMaxCompression(IntPtr module, int cmp, float value);
 
 
 		public float MaxCompression
 		{
-			get { return getMaxCompression(scene_, entity_.entity_Id_); }
-			set { setMaxCompression(scene_, entity_.entity_Id_, value); }
+			get { return getMaxCompression(module_, entity_.entity_Id_); }
+			set { setMaxCompression(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getMaxDroop(IntPtr scene, int cmp);
+		extern static float getMaxDroop(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setMaxDroop(IntPtr scene, int cmp, float value);
+		extern static void setMaxDroop(IntPtr module, int cmp, float value);
 
 
 		public float MaxDroop
 		{
-			get { return getMaxDroop(scene_, entity_.entity_Id_); }
-			set { setMaxDroop(scene_, entity_.entity_Id_, value); }
+			get { return getMaxDroop(module_, entity_.entity_Id_); }
+			set { setMaxDroop(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getSpringStrength(IntPtr scene, int cmp);
+		extern static float getSpringStrength(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setSpringStrength(IntPtr scene, int cmp, float value);
+		extern static void setSpringStrength(IntPtr module, int cmp, float value);
 
 
 		public float SpringStrength
 		{
-			get { return getSpringStrength(scene_, entity_.entity_Id_); }
-			set { setSpringStrength(scene_, entity_.entity_Id_, value); }
+			get { return getSpringStrength(module_, entity_.entity_Id_); }
+			set { setSpringStrength(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getSpringDamperRate(IntPtr scene, int cmp);
+		extern static float getSpringDamperRate(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setSpringDamperRate(IntPtr scene, int cmp, float value);
+		extern static void setSpringDamperRate(IntPtr module, int cmp, float value);
 
 
 		public float SpringDamperRate
 		{
-			get { return getSpringDamperRate(scene_, entity_.entity_Id_); }
-			set { setSpringDamperRate(scene_, entity_.entity_Id_, value); }
+			get { return getSpringDamperRate(module_, entity_.entity_Id_); }
+			set { setSpringDamperRate(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static int getSlot(IntPtr scene, int cmp);
+		extern static int getSlot(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setSlot(IntPtr scene, int cmp, int value);
+		extern static void setSlot(IntPtr module, int cmp, int value);
 
 
 		public int Slot
 		{
-			get { return getSlot(scene_, entity_.entity_Id_); }
-			set { setSlot(scene_, entity_.entity_Id_, value); }
+			get { return getSlot(module_, entity_.entity_Id_); }
+			set { setSlot(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getRPM(IntPtr scene, int cmp);
+		extern static float getRPM(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setRPM(IntPtr scene, int cmp, float value);
+		extern static void setRPM(IntPtr module, int cmp, float value);
 
 
 		public float RPM
 		{
-			get { return getRPM(scene_, entity_.entity_Id_); }
-			set { setRPM(scene_, entity_.entity_Id_, value); }
+			get { return getRPM(module_, entity_.entity_Id_); }
+			set { setRPM(module_, entity_.entity_Id_, value); }
 		}
 
 	} // class

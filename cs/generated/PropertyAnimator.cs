@@ -8,33 +8,33 @@ namespace Lumix
 	public class PropertyAnimator : Component
 	{
 		public PropertyAnimator(Entity _entity)
-			: base(_entity,  getScene(_entity.instance_, "property_animator" )) { }
+			: base(_entity,  getModule(_entity.instance_, "property_animator" )) { }
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static string getAnimation(IntPtr scene, int cmp);
+		extern static string getAnimation(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setAnimation(IntPtr scene, int cmp, string value);
+		extern static void setAnimation(IntPtr module, int cmp, string value);
 
 
 		public string Animation
 		{
-			get { return getAnimation(scene_, entity_.entity_Id_); }
-			set { setAnimation(scene_, entity_.entity_Id_, value); }
+			get { return getAnimation(module_, entity_.entity_Id_); }
+			set { setAnimation(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static bool getEnabled(IntPtr scene, int cmp);
+		extern static bool getEnabled(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setEnabled(IntPtr scene, int cmp, bool value);
+		extern static void setEnabled(IntPtr module, int cmp, bool value);
 
 
 		public bool IsEnabled
 		{
-			get { return getEnabled(scene_, entity_.entity_Id_); }
-			set { setEnabled(scene_, entity_.entity_Id_, value); }
+			get { return getEnabled(module_, entity_.entity_Id_); }
+			set { setEnabled(module_, entity_.entity_Id_, value); }
 		}
 
 	} // class

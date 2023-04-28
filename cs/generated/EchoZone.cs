@@ -8,33 +8,33 @@ namespace Lumix
 	public class EchoZone : Component
 	{
 		public EchoZone(Entity _entity)
-			: base(_entity,  getScene(_entity.instance_, "echo_zone" )) { }
+			: base(_entity,  getModule(_entity.instance_, "echo_zone" )) { }
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getRadius(IntPtr scene, int cmp);
+		extern static float getRadius(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setRadius(IntPtr scene, int cmp, float value);
+		extern static void setRadius(IntPtr module, int cmp, float value);
 
 
 		public float Radius
 		{
-			get { return getRadius(scene_, entity_.entity_Id_); }
-			set { setRadius(scene_, entity_.entity_Id_, value); }
+			get { return getRadius(module_, entity_.entity_Id_); }
+			set { setRadius(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getDelay(IntPtr scene, int cmp);
+		extern static float getDelay(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setDelay(IntPtr scene, int cmp, float value);
+		extern static void setDelay(IntPtr module, int cmp, float value);
 
 
 		public float Delay
 		{
-			get { return getDelay(scene_, entity_.entity_Id_); }
-			set { setDelay(scene_, entity_.entity_Id_, value); }
+			get { return getDelay(module_, entity_.entity_Id_); }
+			set { setDelay(module_, entity_.entity_Id_, value); }
 		}
 
 	} // class

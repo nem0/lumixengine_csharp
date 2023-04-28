@@ -69,10 +69,10 @@ struct CSPropertyBindingsVisitor : reflection::IPropertyVisitor {
 				 "		{\n"
 				 "			get { return get"
 			  << csharp_name
-			  << "(scene_, entity_.entity_Id_); }\n"
+			  << "(module_, entity_.entity_Id_); }\n"
 				 "			set { set"
 			  << csharp_name
-			  << "(scene_, entity_.entity_Id_, value); }\n"
+			  << "(module_, entity_.entity_Id_, value); }\n"
 				 "		}\n"
 				 "\n";
 	}
@@ -777,8 +777,8 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 	/*
 	static void generateEnumsBindings() {
 		os::OutputFile cs_file;
-		if (!cs_file.open("cs/generated/enums.cs")) {
-			logError("C#") << "Failed to create cs/generated/enums.cs";
+		if (!cs_file.open("cs/src/generated/enums.cs")) {
+			logError("C#") << "Failed to create cs/src/generated/enums.cs";
 			return;
 		}
 
@@ -822,16 +822,16 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 		if (func->isConstMethod()) blob << " const";
 	}
 
-	static void generateScenesBindings(OutputMemoryStream& api_blob) {
-		/*using namespace reflection;
-		for (Scene* scene_ptr = getFirstScene(); scene_ptr; scene_ptr = scene_ptr->next) {
-			Scene& scene = *scene_ptr;
+	static void generateModule(OutputMemoryStream& api_blob) {
+		using namespace reflection;
+		for (Module* module_ptr = getFirstModule(); module_ptr; module_ptr = module_ptr->next) {
+			Module& module = *module_ptr;
 			StaticString<128> class_name;
-			getCSharpName(scene.name, class_name);
-			class_name << "Scene";
+			getCSharpName(module.name, class_name);
+			class_name.add("Module");
 
 			os::OutputFile cs_file;
-			StaticString<LUMIX_MAX_PATH> filepath("cs/generated/", class_name, ".cs");
+			StaticString<LUMIX_MAX_PATH> filepath("cs/src/generated/", class_name, ".cs");
 			if (!cs_file.open(filepath)) {
 				logError("Failed to create ", filepath);
 				continue;
@@ -848,7 +848,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 					<< " : IModule\n"
 					   "	{\n"
 					   "		public static string Type { get { return \""
-					<< scene.name
+					<< module.name
 					<< "\"; } }\n"
 					   "\n"
 					   "		public "
@@ -864,7 +864,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 					   "		}\n"
 					   "\n";
 
-			for (FunctionBase* func_ptr : scene.functions) {
+			for (FunctionBase* func_ptr : module.functions) {
 				FunctionBase& func = *func_ptr;
 				StaticString<128> cs_method_name;
 				const char* cpp_method_name = func.decl_code + stringLength(func.decl_code);
@@ -922,7 +922,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 				cs_file << ");\n";
 
 				if (cs_return_type == "Entity") {
-					cs_file << "			return Universe.GetEntity(ret);\n";
+					cs_file << "			return World.GetEntity(ret);\n";
 				}
 
 				cs_file << "		}\n"
@@ -939,7 +939,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 			
 			cs_file << "	}\n}\n";
 			cs_file.close();
-		}*/
+		}
 	}
 
 
@@ -954,7 +954,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 		OutputMemoryStream api_blob(m_app.getAllocator());
 
 		// generateEnumsBindings();
-		generateScenesBindings(api_blob);
+		generateModule(api_blob);
 
 		using namespace reflection;
 		Span<const RegisteredComponent> cmps = reflection::getComponents();
@@ -1025,7 +1025,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 				cs_blob << ")\n"
 							"		{\n"
 							"			"
-						<< (ret_cs != "void" ? "return " : "") << cpp_method_name << "(scene_, entity_.entity_Id_";
+						<< (ret_cs != "void" ? "return " : "") << cpp_method_name << "(module_, entity_.entity_Id_";
 
 				for (int i = 1, c = func->getArgCount(); i < c; ++i) {
 					cs_blob << ", a" << i - 1;
@@ -1039,7 +1039,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 			cs_blob << "\t} // class\n"
 					   "} // namespace\n";
 
-			StaticString<LUMIX_MAX_PATH> filepath("cs/generated/", class_name, ".cs");
+			StaticString<LUMIX_MAX_PATH> filepath("cs/src/generated/", class_name, ".cs");
 			if (!fs.saveContentSync(Path(filepath), cs_blob)) {
 				logError("Failed to create ", filepath);
 			}

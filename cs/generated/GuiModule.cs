@@ -4,14 +4,14 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public unsafe partial class GuiScene : IScene
+	public unsafe partial class GuiModule : IModule
 	{
 		public static string Type { get { return "gui"; } }
 
-		public GuiScene(IntPtr _instance)
+		public GuiModule(IntPtr _instance)
 			: base(_instance) { }
 
-		public static implicit operator System.IntPtr(GuiScene _value)
+		public static implicit operator System.IntPtr(GuiModule _value)
 		{
 			return _value.instance_;
 		}
@@ -30,14 +30,6 @@ namespace Lumix
 		public bool IsOver(Vec2 a0, int a1)
 		{
 			return isOver(instance_, a0, a1);
-		}
-
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static IntPtr getSystem(IntPtr instance);
-
-		public IntPtr GetSystem()
-		{
-			return getSystem(instance_);
 		}
 
 	}

@@ -4,14 +4,14 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public unsafe partial class LuaScriptScene : IScene
+	public unsafe partial class LuaScriptModule : IModule
 	{
 		public static string Type { get { return "lua_script"; } }
 
-		public LuaScriptScene(IntPtr _instance)
+		public LuaScriptModule(IntPtr _instance)
 			: base(_instance) { }
 
-		public static implicit operator System.IntPtr(LuaScriptScene _value)
+		public static implicit operator System.IntPtr(LuaScriptModule _value)
 		{
 			return _value.instance_;
 		}

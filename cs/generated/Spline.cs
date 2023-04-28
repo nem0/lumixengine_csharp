@@ -8,7 +8,7 @@ namespace Lumix
 	public class Spline : Component
 	{
 		public Spline(Entity _entity)
-			: base(_entity,  getScene(_entity.instance_, "spline" )) { }
+			: base(_entity,  getModule(_entity.instance_, "spline" )) { }
 
 
 	} // class

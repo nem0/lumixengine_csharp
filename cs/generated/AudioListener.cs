@@ -8,7 +8,7 @@ namespace Lumix
 	public class AudioListener : Component
 	{
 		public AudioListener(Entity _entity)
-			: base(_entity,  getScene(_entity.instance_, "audio_listener" )) { }
+			: base(_entity,  getModule(_entity.instance_, "audio_listener" )) { }
 
 
 	} // class

@@ -4,14 +4,14 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public unsafe partial class RendererScene : IScene
+	public unsafe partial class RendererModule : IModule
 	{
 		public static string Type { get { return "renderer"; } }
 
-		public RendererScene(IntPtr _instance)
+		public RendererModule(IntPtr _instance)
 			: base(_instance) { }
 
-		public static implicit operator System.IntPtr(RendererScene _value)
+		public static implicit operator System.IntPtr(RendererModule _value)
 		{
 			return _value.instance_;
 		}

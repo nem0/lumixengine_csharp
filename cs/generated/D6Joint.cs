@@ -8,189 +8,189 @@ namespace Lumix
 	public class D6Joint : Component
 	{
 		public D6Joint(Entity _entity)
-			: base(_entity,  getScene(_entity.instance_, "d6_joint" )) { }
+			: base(_entity,  getModule(_entity.instance_, "d6_joint" )) { }
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static Vec3 getAxisPosition(IntPtr scene, int cmp);
+		extern static Vec3 getAxisPosition(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setAxisPosition(IntPtr scene, int cmp, Vec3 value);
+		extern static void setAxisPosition(IntPtr module, int cmp, Vec3 value);
 
 
 		public Vec3 AxisPosition
 		{
-			get { return getAxisPosition(scene_, entity_.entity_Id_); }
-			set { setAxisPosition(scene_, entity_.entity_Id_, value); }
+			get { return getAxisPosition(module_, entity_.entity_Id_); }
+			set { setAxisPosition(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static Vec3 getAxisDirection(IntPtr scene, int cmp);
+		extern static Vec3 getAxisDirection(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setAxisDirection(IntPtr scene, int cmp, Vec3 value);
+		extern static void setAxisDirection(IntPtr module, int cmp, Vec3 value);
 
 
 		public Vec3 AxisDirection
 		{
-			get { return getAxisDirection(scene_, entity_.entity_Id_); }
-			set { setAxisDirection(scene_, entity_.entity_Id_, value); }
+			get { return getAxisDirection(module_, entity_.entity_Id_); }
+			set { setAxisDirection(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static int getXMotion(IntPtr scene, int cmp);
+		extern static int getXMotion(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setXMotion(IntPtr scene, int cmp, int value);
+		extern static void setXMotion(IntPtr module, int cmp, int value);
 
 
 		public int XMotion
 		{
-			get { return getXMotion(scene_, entity_.entity_Id_); }
-			set { setXMotion(scene_, entity_.entity_Id_, value); }
+			get { return getXMotion(module_, entity_.entity_Id_); }
+			set { setXMotion(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static int getYMotion(IntPtr scene, int cmp);
+		extern static int getYMotion(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setYMotion(IntPtr scene, int cmp, int value);
+		extern static void setYMotion(IntPtr module, int cmp, int value);
 
 
 		public int YMotion
 		{
-			get { return getYMotion(scene_, entity_.entity_Id_); }
-			set { setYMotion(scene_, entity_.entity_Id_, value); }
+			get { return getYMotion(module_, entity_.entity_Id_); }
+			set { setYMotion(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static int getZMotion(IntPtr scene, int cmp);
+		extern static int getZMotion(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setZMotion(IntPtr scene, int cmp, int value);
+		extern static void setZMotion(IntPtr module, int cmp, int value);
 
 
 		public int ZMotion
 		{
-			get { return getZMotion(scene_, entity_.entity_Id_); }
-			set { setZMotion(scene_, entity_.entity_Id_, value); }
+			get { return getZMotion(module_, entity_.entity_Id_); }
+			set { setZMotion(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static int getSwing1(IntPtr scene, int cmp);
+		extern static int getSwing1(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setSwing1(IntPtr scene, int cmp, int value);
+		extern static void setSwing1(IntPtr module, int cmp, int value);
 
 
 		public int Swing1
 		{
-			get { return getSwing1(scene_, entity_.entity_Id_); }
-			set { setSwing1(scene_, entity_.entity_Id_, value); }
+			get { return getSwing1(module_, entity_.entity_Id_); }
+			set { setSwing1(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static int getSwing2(IntPtr scene, int cmp);
+		extern static int getSwing2(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setSwing2(IntPtr scene, int cmp, int value);
+		extern static void setSwing2(IntPtr module, int cmp, int value);
 
 
 		public int Swing2
 		{
-			get { return getSwing2(scene_, entity_.entity_Id_); }
-			set { setSwing2(scene_, entity_.entity_Id_, value); }
+			get { return getSwing2(module_, entity_.entity_Id_); }
+			set { setSwing2(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static int getTwist(IntPtr scene, int cmp);
+		extern static int getTwist(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setTwist(IntPtr scene, int cmp, int value);
+		extern static void setTwist(IntPtr module, int cmp, int value);
 
 
 		public int Twist
 		{
-			get { return getTwist(scene_, entity_.entity_Id_); }
-			set { setTwist(scene_, entity_.entity_Id_, value); }
+			get { return getTwist(module_, entity_.entity_Id_); }
+			set { setTwist(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getLinearLimit(IntPtr scene, int cmp);
+		extern static float getLinearLimit(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setLinearLimit(IntPtr scene, int cmp, float value);
+		extern static void setLinearLimit(IntPtr module, int cmp, float value);
 
 
 		public float LinearLimit
 		{
-			get { return getLinearLimit(scene_, entity_.entity_Id_); }
-			set { setLinearLimit(scene_, entity_.entity_Id_, value); }
+			get { return getLinearLimit(module_, entity_.entity_Id_); }
+			set { setLinearLimit(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static Vec2 getSwingLimit(IntPtr scene, int cmp);
+		extern static Vec2 getSwingLimit(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setSwingLimit(IntPtr scene, int cmp, Vec2 value);
+		extern static void setSwingLimit(IntPtr module, int cmp, Vec2 value);
 
 
 		public Vec2 SwingLimit
 		{
-			get { return getSwingLimit(scene_, entity_.entity_Id_); }
-			set { setSwingLimit(scene_, entity_.entity_Id_, value); }
+			get { return getSwingLimit(module_, entity_.entity_Id_); }
+			set { setSwingLimit(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static Vec2 getTwistLimit(IntPtr scene, int cmp);
+		extern static Vec2 getTwistLimit(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setTwistLimit(IntPtr scene, int cmp, Vec2 value);
+		extern static void setTwistLimit(IntPtr module, int cmp, Vec2 value);
 
 
 		public Vec2 TwistLimit
 		{
-			get { return getTwistLimit(scene_, entity_.entity_Id_); }
-			set { setTwistLimit(scene_, entity_.entity_Id_, value); }
+			get { return getTwistLimit(module_, entity_.entity_Id_); }
+			set { setTwistLimit(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getDamping(IntPtr scene, int cmp);
+		extern static float getDamping(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setDamping(IntPtr scene, int cmp, float value);
+		extern static void setDamping(IntPtr module, int cmp, float value);
 
 
 		public float Damping
 		{
-			get { return getDamping(scene_, entity_.entity_Id_); }
-			set { setDamping(scene_, entity_.entity_Id_, value); }
+			get { return getDamping(module_, entity_.entity_Id_); }
+			set { setDamping(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getStiffness(IntPtr scene, int cmp);
+		extern static float getStiffness(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setStiffness(IntPtr scene, int cmp, float value);
+		extern static void setStiffness(IntPtr module, int cmp, float value);
 
 
 		public float Stiffness
 		{
-			get { return getStiffness(scene_, entity_.entity_Id_); }
-			set { setStiffness(scene_, entity_.entity_Id_, value); }
+			get { return getStiffness(module_, entity_.entity_Id_); }
+			set { setStiffness(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getRestitution(IntPtr scene, int cmp);
+		extern static float getRestitution(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setRestitution(IntPtr scene, int cmp, float value);
+		extern static void setRestitution(IntPtr module, int cmp, float value);
 
 
 		public float Restitution
 		{
-			get { return getRestitution(scene_, entity_.entity_Id_); }
-			set { setRestitution(scene_, entity_.entity_Id_, value); }
+			get { return getRestitution(module_, entity_.entity_Id_); }
+			set { setRestitution(module_, entity_.entity_Id_, value); }
 		}
 
 	} // class

@@ -8,7 +8,7 @@ namespace Lumix
 	public class CsharpScript : Component
 	{
 		public CsharpScript(Entity _entity)
-			: base(_entity,  getScene(_entity.instance_, "csharp_script" )) { }
+			: base(_entity,  getModule(_entity.instance_, "csharp_script" )) { }
 
 
 	} // class

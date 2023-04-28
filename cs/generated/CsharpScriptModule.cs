@@ -4,14 +4,14 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public unsafe partial class CsharpScriptScene : IScene
+	public unsafe partial class CsharpScriptModule : IModule
 	{
 		public static string Type { get { return "csharp_script"; } }
 
-		public CsharpScriptScene(IntPtr _instance)
+		public CsharpScriptModule(IntPtr _instance)
 			: base(_instance) { }
 
-		public static implicit operator System.IntPtr(CsharpScriptScene _value)
+		public static implicit operator System.IntPtr(CsharpScriptModule _value)
 		{
 			return _value.instance_;
 		}

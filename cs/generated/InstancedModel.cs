@@ -8,20 +8,20 @@ namespace Lumix
 	public class InstancedModel : Component
 	{
 		public InstancedModel(Entity _entity)
-			: base(_entity,  getScene(_entity.instance_, "instanced_model" )) { }
+			: base(_entity,  getModule(_entity.instance_, "instanced_model" )) { }
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static string getModel(IntPtr scene, int cmp);
+		extern static string getModel(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setModel(IntPtr scene, int cmp, string value);
+		extern static void setModel(IntPtr module, int cmp, string value);
 
 
 		public string Model
 		{
-			get { return getModel(scene_, entity_.entity_Id_); }
-			set { setModel(scene_, entity_.entity_Id_, value); }
+			get { return getModel(module_, entity_.entity_Id_); }
+			set { setModel(module_, entity_.entity_Id_, value); }
 		}
 
 	} // class

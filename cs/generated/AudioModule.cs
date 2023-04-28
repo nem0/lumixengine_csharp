@@ -4,14 +4,14 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-	public unsafe partial class AudioScene : IScene
+	public unsafe partial class AudioModule : IModule
 	{
 		public static string Type { get { return "audio"; } }
 
-		public AudioScene(IntPtr _instance)
+		public AudioModule(IntPtr _instance)
 			: base(_instance) { }
 
-		public static implicit operator System.IntPtr(AudioScene _value)
+		public static implicit operator System.IntPtr(AudioModule _value)
 		{
 			return _value.instance_;
 		}

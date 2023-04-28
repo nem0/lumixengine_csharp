@@ -8,72 +8,72 @@ namespace Lumix
 	public class Camera : Component
 	{
 		public Camera(Entity _entity)
-			: base(_entity,  getScene(_entity.instance_, "camera" )) { }
+			: base(_entity,  getModule(_entity.instance_, "camera" )) { }
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getFOV(IntPtr scene, int cmp);
+		extern static float getFOV(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setFOV(IntPtr scene, int cmp, float value);
+		extern static void setFOV(IntPtr module, int cmp, float value);
 
 
 		public float FOV
 		{
-			get { return getFOV(scene_, entity_.entity_Id_); }
-			set { setFOV(scene_, entity_.entity_Id_, value); }
+			get { return getFOV(module_, entity_.entity_Id_); }
+			set { setFOV(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getNear(IntPtr scene, int cmp);
+		extern static float getNear(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setNear(IntPtr scene, int cmp, float value);
+		extern static void setNear(IntPtr module, int cmp, float value);
 
 
 		public float Near
 		{
-			get { return getNear(scene_, entity_.entity_Id_); }
-			set { setNear(scene_, entity_.entity_Id_, value); }
+			get { return getNear(module_, entity_.entity_Id_); }
+			set { setNear(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getFar(IntPtr scene, int cmp);
+		extern static float getFar(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setFar(IntPtr scene, int cmp, float value);
+		extern static void setFar(IntPtr module, int cmp, float value);
 
 
 		public float Far
 		{
-			get { return getFar(scene_, entity_.entity_Id_); }
-			set { setFar(scene_, entity_.entity_Id_, value); }
+			get { return getFar(module_, entity_.entity_Id_); }
+			set { setFar(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static bool getOrthographic(IntPtr scene, int cmp);
+		extern static bool getOrthographic(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setOrthographic(IntPtr scene, int cmp, bool value);
+		extern static void setOrthographic(IntPtr module, int cmp, bool value);
 
 
 		public bool IsOrthographic
 		{
-			get { return getOrthographic(scene_, entity_.entity_Id_); }
-			set { setOrthographic(scene_, entity_.entity_Id_, value); }
+			get { return getOrthographic(module_, entity_.entity_Id_); }
+			set { setOrthographic(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getOrthographicSize(IntPtr scene, int cmp);
+		extern static float getOrthographicSize(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setOrthographicSize(IntPtr scene, int cmp, float value);
+		extern static void setOrthographicSize(IntPtr module, int cmp, float value);
 
 
 		public float OrthographicSize
 		{
-			get { return getOrthographicSize(scene_, entity_.entity_Id_); }
-			set { setOrthographicSize(scene_, entity_.entity_Id_, value); }
+			get { return getOrthographicSize(module_, entity_.entity_Id_); }
+			set { setOrthographicSize(module_, entity_.entity_Id_, value); }
 		}
 
 	} // class

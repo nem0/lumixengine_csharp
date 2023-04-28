@@ -12,13 +12,13 @@ namespace Lumix
         private static byte[] s_imgui_text_buffer = new byte[4096];
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		protected extern static int create(IntPtr universe, int entity, string cmp_type);
+		protected extern static int create(IntPtr world, int entity, string cmp_type);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		protected extern static IntPtr getScene(IntPtr universe, string cmp_type);
+		protected extern static IntPtr getModule(IntPtr world, string cmp_type);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		protected extern static int entityInput(IntPtr editor, IntPtr universe, string label, int entity);
+		protected extern static int entityInput(IntPtr editor, IntPtr world, string label, int entity);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		protected extern static int getEntityIDFromGUID(IntPtr manager, ulong guid);
@@ -30,7 +30,7 @@ namespace Lumix
 		protected extern static IntPtr resourceInput(IntPtr editor, string label, string type, IntPtr resource);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		protected extern static void pushUndoCommand(IntPtr editor, IntPtr universe, int entity, Component cmp, string property, string old_value, string value);
+		protected extern static void pushUndoCommand(IntPtr editor, IntPtr world, int entity, Component cmp, string property, string old_value, string value);
 
 		public string Serialize(IntPtr manager)
 		{
@@ -42,7 +42,7 @@ namespace Lumix
 				if (!f.IsPublic) continue;
 				if(f.Name == "entity_") continue;
 				if(f.Name == "componentId_") continue;
-				if(f.Name == "scene_") continue;
+				if(f.Name == "module_") continue;
 				
 				var val = f.GetValue(this);
 				Type val_type = f.FieldType;
@@ -127,7 +127,7 @@ namespace Lumix
 				if (field_type == typeof(Entity))
 				{
 					int entity_id = int.Parse(value);
-					Entity e = Universe.GetEntity(entity_id);
+					Entity e = World.GetEntity(entity_id);
 					field.SetValue(this, e);
 				}
 				else if(field_type.BaseType == typeof(Resource))
@@ -168,7 +168,7 @@ namespace Lumix
 			else if(field_type == typeof(Lumix.Entity))
 			{
 				int entity_id = int.Parse(value);
-				Entity e = Universe.GetEntity(entity_id);
+				Entity e = World.GetEntity(entity_id);
 				field.SetValue(this, e);
 			}
 			else if(field_type.BaseType == typeof(Lumix.Resource))
@@ -184,7 +184,7 @@ namespace Lumix
 			}
 		}
 
-        public IntPtr scene_;
+        public IntPtr module_;
 		protected Entity entity_;
 		public Entity entity 
 		{ 
@@ -197,9 +197,9 @@ namespace Lumix
 			}
 		}
 
-        public Universe Universe
+        public World World
         {
-            get { return entity.Universe; }
+            get { return entity.World; }
         }
 
         public Component()
@@ -207,10 +207,10 @@ namespace Lumix
             
         }
 
-        public Component(Entity _entity, IntPtr _scene)
+        public Component(Entity _entity, IntPtr _module)
         {
             entity_ = _entity;
-            scene_ = _scene;
+            module_ = _module;
         }
 
         public T GetComponent<T>() where T : Component
@@ -231,7 +231,7 @@ namespace Lumix
 				if (!f.IsPublic) continue;
 				if(f.Name == "entity_") continue;
 				if(f.Name == "componentId_") continue;
-				if(f.Name == "scene_") continue;
+				if(f.Name == "module_") continue;
 				
 				var val = f.GetValue(this);
 				Type val_type = f.FieldType;

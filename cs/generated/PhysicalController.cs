@@ -8,85 +8,101 @@ namespace Lumix
 	public class PhysicalController : Component
 	{
 		public PhysicalController(Entity _entity)
-			: base(_entity,  getScene(_entity.instance_, "physical_controller" )) { }
+			: base(_entity,  getModule(_entity.instance_, "physical_controller" )) { }
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getRadius(IntPtr scene, int cmp);
+		extern static float getRadius(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setRadius(IntPtr scene, int cmp, float value);
+		extern static void setRadius(IntPtr module, int cmp, float value);
 
 
 		public float Radius
 		{
-			get { return getRadius(scene_, entity_.entity_Id_); }
-			set { setRadius(scene_, entity_.entity_Id_, value); }
+			get { return getRadius(module_, entity_.entity_Id_); }
+			set { setRadius(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getHeight(IntPtr scene, int cmp);
+		extern static float getHeight(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setHeight(IntPtr scene, int cmp, float value);
+		extern static void setHeight(IntPtr module, int cmp, float value);
 
 
 		public float Height
 		{
-			get { return getHeight(scene_, entity_.entity_Id_); }
-			set { setHeight(scene_, entity_.entity_Id_, value); }
+			get { return getHeight(module_, entity_.entity_Id_); }
+			set { setHeight(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static int getLayer(IntPtr scene, int cmp);
+		extern static int getLayer(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setLayer(IntPtr scene, int cmp, int value);
+		extern static void setLayer(IntPtr module, int cmp, int value);
 
 
 		public int Layer
 		{
-			get { return getLayer(scene_, entity_.entity_Id_); }
-			set { setLayer(scene_, entity_.entity_Id_, value); }
+			get { return getLayer(module_, entity_.entity_Id_); }
+			set { setLayer(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static bool getUseRootMotion(IntPtr scene, int cmp);
+		extern static bool getUseRootMotion(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setUseRootMotion(IntPtr scene, int cmp, bool value);
+		extern static void setUseRootMotion(IntPtr module, int cmp, bool value);
 
 
 		public bool IsUseRootMotion
 		{
-			get { return getUseRootMotion(scene_, entity_.entity_Id_); }
-			set { setUseRootMotion(scene_, entity_.entity_Id_, value); }
+			get { return getUseRootMotion(module_, entity_.entity_Id_); }
+			set { setUseRootMotion(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static bool getUseCustomGravity(IntPtr scene, int cmp);
+		extern static bool getUseCustomGravity(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setUseCustomGravity(IntPtr scene, int cmp, bool value);
+		extern static void setUseCustomGravity(IntPtr module, int cmp, bool value);
 
 
 		public bool IsUseCustomGravity
 		{
-			get { return getUseCustomGravity(scene_, entity_.entity_Id_); }
-			set { setUseCustomGravity(scene_, entity_.entity_Id_, value); }
+			get { return getUseCustomGravity(module_, entity_.entity_Id_); }
+			set { setUseCustomGravity(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getCustomGravityAcceleration(IntPtr scene, int cmp);
+		extern static float getCustomGravityAcceleration(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setCustomGravityAcceleration(IntPtr scene, int cmp, float value);
+		extern static void setCustomGravityAcceleration(IntPtr module, int cmp, float value);
 
 
 		public float CustomGravityAcceleration
 		{
-			get { return getCustomGravityAcceleration(scene_, entity_.entity_Id_); }
-			set { setCustomGravityAcceleration(scene_, entity_.entity_Id_, value); }
+			get { return getCustomGravityAcceleration(module_, entity_.entity_Id_); }
+			set { setCustomGravityAcceleration(module_, entity_.entity_Id_, value); }
+		}
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		extern static void moveController(IntPtr instance, int cmp, Vec3 a0);
+
+		public void MoveController(Vec3 a0)
+		{
+			moveController(module_, entity_.entity_Id_, a0);
+		}
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		extern static bool isControllerCollisionDown(IntPtr instance, int cmp);
+
+		public bool IsControllerCollisionDown()
+		{
+			return isControllerCollisionDown(module_, entity_.entity_Id_);
 		}
 
 	} // class

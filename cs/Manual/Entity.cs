@@ -16,19 +16,19 @@ namespace Lumix
         public List<Component> components_ = new List<Component>();
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        private extern static string getName(IntPtr universe, int entity);
+        private extern static string getName(IntPtr world, int entity);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        private extern static void setName(IntPtr universe, int entity, string name);
+        private extern static void setName(IntPtr world, int entity, string name);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        private extern static void destroy(IntPtr universe, int entity);
+        private extern static void destroy(IntPtr world, int entity);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        private extern static bool hasComponent(IntPtr universe, int entity, string cmp_type);
+        private extern static bool hasComponent(IntPtr world, int entity, string cmp_type);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		protected extern static IntPtr getScene(IntPtr universe, string cmp_type);
+		protected extern static IntPtr getModule(IntPtr world, string cmp_type);
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		extern static int getFirstEntity(IntPtr instance);
 
@@ -152,9 +152,9 @@ namespace Lumix
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static System.IntPtr getScene(IntPtr instance, int type);
+		extern static System.IntPtr getModule(IntPtr instance, int type);
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static System.IntPtr getScene(IntPtr instance, uint hash);
+		extern static System.IntPtr getModule(IntPtr instance, uint hash);
 
 
 		public Entity(IntPtr _instance)
@@ -331,14 +331,14 @@ namespace Lumix
 			return getRotation(instance_, entity_Id_);
 		}
 
-		public System.IntPtr GetScene(int type)
+		public System.IntPtr GetModule(int type)
 		{
-			return getScene(instance_, type);
+			return getModule(instance_, type);
 		}
 
-		public System.IntPtr GetScene(uint hash)
+		public System.IntPtr GetModule(uint hash)
 		{
-			return getScene(instance_, hash);
+			return getModule(instance_, hash);
 		}
         
         public void Destroy()
@@ -347,9 +347,9 @@ namespace Lumix
             entity_Id_ = -1;
         }
 
-        public Entity(IntPtr _universe, int _id)
+        public Entity(IntPtr _world, int _id)
         {
-            instance_ = _universe;
+            instance_ = _world;
             entity_Id_ = _id;
         }
         
@@ -442,9 +442,9 @@ namespace Lumix
             set { setRotation(instance_, entity_Id_, value); }
         }
 
-        public Universe Universe
+        public World World
         {
-            get { return new Universe(instance_); }
+            get { return new World(instance_); }
         }
 
         public static implicit operator int (Entity value)

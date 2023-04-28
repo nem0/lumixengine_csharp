@@ -4,15 +4,15 @@ using System.Runtime.CompilerServices;
 
 namespace Lumix
 {
-    public class IScene
+    public class IModule
     {
         public IntPtr instance_;
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        protected extern static IntPtr getUniverse(IntPtr instance);
+        protected extern static IntPtr getWorld(IntPtr instance);
 
-        public Universe Universe { get { return new Universe(getUniverse(instance_)); }}
+        public World World { get { return new World(getWorld(instance_)); }}
 
-        public IScene(IntPtr _instance)
+        public IModule(IntPtr _instance)
         {
             instance_ = _instance;
         }

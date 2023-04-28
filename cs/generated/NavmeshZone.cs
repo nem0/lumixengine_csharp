@@ -8,124 +8,172 @@ namespace Lumix
 	public class NavmeshZone : Component
 	{
 		public NavmeshZone(Entity _entity)
-			: base(_entity,  getScene(_entity.instance_, "navmesh_zone" )) { }
+			: base(_entity,  getModule(_entity.instance_, "navmesh_zone" )) { }
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static Vec3 getExtents(IntPtr scene, int cmp);
+		extern static Vec3 getExtents(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setExtents(IntPtr scene, int cmp, Vec3 value);
+		extern static void setExtents(IntPtr module, int cmp, Vec3 value);
 
 
 		public Vec3 Extents
 		{
-			get { return getExtents(scene_, entity_.entity_Id_); }
-			set { setExtents(scene_, entity_.entity_Id_, value); }
+			get { return getExtents(module_, entity_.entity_Id_); }
+			set { setExtents(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getAgentHeight(IntPtr scene, int cmp);
+		extern static float getAgentHeight(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setAgentHeight(IntPtr scene, int cmp, float value);
+		extern static void setAgentHeight(IntPtr module, int cmp, float value);
 
 
 		public float AgentHeight
 		{
-			get { return getAgentHeight(scene_, entity_.entity_Id_); }
-			set { setAgentHeight(scene_, entity_.entity_Id_, value); }
+			get { return getAgentHeight(module_, entity_.entity_Id_); }
+			set { setAgentHeight(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getAgentRadius(IntPtr scene, int cmp);
+		extern static float getAgentRadius(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setAgentRadius(IntPtr scene, int cmp, float value);
+		extern static void setAgentRadius(IntPtr module, int cmp, float value);
 
 
 		public float AgentRadius
 		{
-			get { return getAgentRadius(scene_, entity_.entity_Id_); }
-			set { setAgentRadius(scene_, entity_.entity_Id_, value); }
+			get { return getAgentRadius(module_, entity_.entity_Id_); }
+			set { setAgentRadius(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getCellSize(IntPtr scene, int cmp);
+		extern static float getCellSize(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setCellSize(IntPtr scene, int cmp, float value);
+		extern static void setCellSize(IntPtr module, int cmp, float value);
 
 
 		public float CellSize
 		{
-			get { return getCellSize(scene_, entity_.entity_Id_); }
-			set { setCellSize(scene_, entity_.entity_Id_, value); }
+			get { return getCellSize(module_, entity_.entity_Id_); }
+			set { setCellSize(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getCellHeight(IntPtr scene, int cmp);
+		extern static float getCellHeight(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setCellHeight(IntPtr scene, int cmp, float value);
+		extern static void setCellHeight(IntPtr module, int cmp, float value);
 
 
 		public float CellHeight
 		{
-			get { return getCellHeight(scene_, entity_.entity_Id_); }
-			set { setCellHeight(scene_, entity_.entity_Id_, value); }
+			get { return getCellHeight(module_, entity_.entity_Id_); }
+			set { setCellHeight(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getWalkableSlopeAngle(IntPtr scene, int cmp);
+		extern static float getWalkableSlopeAngle(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setWalkableSlopeAngle(IntPtr scene, int cmp, float value);
+		extern static void setWalkableSlopeAngle(IntPtr module, int cmp, float value);
 
 
 		public float WalkableSlopeAngle
 		{
-			get { return getWalkableSlopeAngle(scene_, entity_.entity_Id_); }
-			set { setWalkableSlopeAngle(scene_, entity_.entity_Id_, value); }
+			get { return getWalkableSlopeAngle(module_, entity_.entity_Id_); }
+			set { setWalkableSlopeAngle(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static float getMaxClimb(IntPtr scene, int cmp);
+		extern static float getMaxClimb(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setMaxClimb(IntPtr scene, int cmp, float value);
+		extern static void setMaxClimb(IntPtr module, int cmp, float value);
 
 
 		public float MaxClimb
 		{
-			get { return getMaxClimb(scene_, entity_.entity_Id_); }
-			set { setMaxClimb(scene_, entity_.entity_Id_, value); }
+			get { return getMaxClimb(module_, entity_.entity_Id_); }
+			set { setMaxClimb(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static bool getAutoload(IntPtr scene, int cmp);
+		extern static bool getAutoload(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setAutoload(IntPtr scene, int cmp, bool value);
+		extern static void setAutoload(IntPtr module, int cmp, bool value);
 
 
 		public bool IsAutoload
 		{
-			get { return getAutoload(scene_, entity_.entity_Id_); }
-			set { setAutoload(scene_, entity_.entity_Id_, value); }
+			get { return getAutoload(module_, entity_.entity_Id_); }
+			set { setAutoload(module_, entity_.entity_Id_, value); }
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static bool getDetailed(IntPtr scene, int cmp);
+		extern static bool getDetailed(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setDetailed(IntPtr scene, int cmp, bool value);
+		extern static void setDetailed(IntPtr module, int cmp, bool value);
 
 
 		public bool IsDetailed
 		{
-			get { return getDetailed(scene_, entity_.entity_Id_); }
-			set { setDetailed(scene_, entity_.entity_Id_, value); }
+			get { return getDetailed(module_, entity_.entity_Id_); }
+			set { setDetailed(module_, entity_.entity_Id_, value); }
+		}
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		extern static bool loadZone(IntPtr instance, int cmp);
+
+		public bool LoadZone()
+		{
+			return loadZone(module_, entity_.entity_Id_);
+		}
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		extern static void debugDrawContours(IntPtr instance, int cmp);
+
+		public void DebugDrawContours()
+		{
+			debugDrawContours(module_, entity_.entity_Id_);
+		}
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		extern static void debugDrawNavmesh(IntPtr instance, int cmp, DVec3 a0, bool a1, bool a2, bool a3);
+
+		public void DebugDrawNavmesh(DVec3 a0, bool a1, bool a2, bool a3)
+		{
+			debugDrawNavmesh(module_, entity_.entity_Id_, a0, a1, a2, a3);
+		}
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		extern static void debugDrawCompactHeightfield(IntPtr instance, int cmp);
+
+		public void DebugDrawCompactHeightfield()
+		{
+			debugDrawCompactHeightfield(module_, entity_.entity_Id_);
+		}
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		extern static void debugDrawHeightfield(IntPtr instance, int cmp);
+
+		public void DebugDrawHeightfield()
+		{
+			debugDrawHeightfield(module_, entity_.entity_Id_);
+		}
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		extern static IntPtr generateNavmesh(IntPtr instance, int cmp);
+
+		public IntPtr GenerateNavmesh()
+		{
+			return generateNavmesh(module_, entity_.entity_Id_);
 		}
 
 	} // class

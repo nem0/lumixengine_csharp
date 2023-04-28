@@ -8,20 +8,20 @@ namespace Lumix
 	public class Animable : Component
 	{
 		public Animable(Entity _entity)
-			: base(_entity,  getScene(_entity.instance_, "animable" )) { }
+			: base(_entity,  getModule(_entity.instance_, "animable" )) { }
 
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static string getAnimation(IntPtr scene, int cmp);
+		extern static string getAnimation(IntPtr module, int cmp);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		extern static void setAnimation(IntPtr scene, int cmp, string value);
+		extern static void setAnimation(IntPtr module, int cmp, string value);
 
 
 		public string Animation
 		{
-			get { return getAnimation(scene_, entity_.entity_Id_); }
-			set { setAnimation(scene_, entity_.entity_Id_, value); }
+			get { return getAnimation(module_, entity_.entity_Id_); }
+			set { setAnimation(module_, entity_.entity_Id_, value); }
 		}
 
 	} // class
