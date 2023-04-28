@@ -55,11 +55,11 @@ struct CSPropertyBindingsVisitor : reflection::IPropertyVisitor {
 		*blob << "		[MethodImplAttribute(MethodImplOptions.InternalCall)]\n"
 				 "		extern static "
 			  << cs_type << " get" << csharp_name
-			  << "(IntPtr scene, int cmp);\n"
+			  << "(IntPtr module, int cmp);\n"
 				 "\n"
 				 "		[MethodImplAttribute(MethodImplOptions.InternalCall)]\n"
 				 "		extern static void set"
-			  << csharp_name << "(IntPtr scene, int cmp, " << cs_type
+			  << csharp_name << "(IntPtr module, int cmp, " << cs_type
 			  << " value);\n"
 				 "\n\n";
 
@@ -114,13 +114,13 @@ struct PropertyGridCSharpPlugin final : public PropertyGrid::IPlugin {
 		}
 
 		void set(const String& value) {
-			CSharpScriptScene* scene = static_cast<CSharpScriptScene*>(editor.getUniverse()->getScene("csharp_script"));
-			u32 gc_handle = scene->getGCHandle(entity, script_index);
+			CSharpScriptModule* module = static_cast<CSharpScriptModule*>(editor.getWorld()->getModule("csharp_script"));
+			u32 gc_handle = module->getGCHandle(entity, script_index);
 			MonoString* prop_mono_str = mono_string_new(mono_domain_get(), property_name.c_str());
 			MonoString* value_str = mono_string_new(mono_domain_get(), value.c_str());
 			auto that = this;
 			void* args[] = {&that, prop_mono_str, value_str};
-			scene->tryCallMethod(gc_handle, "OnUndo", args, lengthOf(args), true);
+			module->tryCallMethod(gc_handle, "OnUndo", args, lengthOf(args), true);
 		}
 
 		void undo() override { set(old_value); }
@@ -152,15 +152,15 @@ struct PropertyGridCSharpPlugin final : public PropertyGrid::IPlugin {
 		{}
 
 		bool execute() override {
-			auto* scene = static_cast<CSharpScriptScene*>(editor.getUniverse()->getScene("csharp_script"));
-			scr_index = scene->addScript(entity, scr_index);
-			scene->setScriptName(entity, scr_index, name.c_str());
+			auto* module = static_cast<CSharpScriptModule*>(editor.getWorld()->getModule("csharp_script"));
+			scr_index = module->addScript(entity, scr_index);
+			module->setScriptName(entity, scr_index, name.c_str());
 			return true;
 		}
 
 		void undo() override {
-			auto* scene = static_cast<CSharpScriptScene*>(editor.getUniverse()->getScene("csharp_script"));
-			scene->removeScript(entity, scr_index);
+			auto* module = static_cast<CSharpScriptModule*>(editor.getWorld()->getModule("csharp_script"));
+			module->removeScript(entity, scr_index);
 		}
 
 		const char* getType() override { return "add_csharp_script"; }
@@ -174,23 +174,23 @@ struct PropertyGridCSharpPlugin final : public PropertyGrid::IPlugin {
 
 
 	struct RemoveScriptCommand final : public IEditorCommand {
-		explicit RemoveScriptCommand(CSharpScriptScene& scene, EntityRef entity, i32 scr_index, IAllocator& allocator)
+		explicit RemoveScriptCommand(CSharpScriptModule& module, EntityRef entity, i32 scr_index, IAllocator& allocator)
 			: blob(allocator)
-			, scene(scene)
+			, module(module)
 			, scr_index(scr_index)
 			, entity(entity)
 		{}
 
 		bool execute() override {
-			scene.serializeScript(entity, scr_index, blob);
-			scene.removeScript(entity, scr_index);
+			module.serializeScript(entity, scr_index, blob);
+			module.removeScript(entity, scr_index);
 			return true;
 		}
 
 		void undo() override {
-			scene.insertScript(entity, scr_index);
+			module.insertScript(entity, scr_index);
 			InputMemoryStream input(blob);
-			scene.deserializeScript(entity, scr_index, input);
+			module.deserializeScript(entity, scr_index, input);
 		}
 
 		const char* getType() override { return "remove_csharp_script"; }
@@ -198,7 +198,7 @@ struct PropertyGridCSharpPlugin final : public PropertyGrid::IPlugin {
 		bool merge(IEditorCommand& command) override { return false; }
 
 		OutputMemoryStream blob;
-		CSharpScriptScene& scene;
+		CSharpScriptModule& module;
 		EntityRef entity;
 		int scr_index;
 	};
@@ -220,7 +220,7 @@ struct PropertyGridCSharpPlugin final : public PropertyGrid::IPlugin {
 	}
 
 
-	static EntityPtr csharp_entityInput(PropertyGridCSharpPlugin* that, Universe* universe, MonoString* label_mono, EntityPtr entity) {
+	static EntityPtr csharp_entityInput(PropertyGridCSharpPlugin* that, World* world, MonoString* label_mono, EntityPtr entity) {
 		StudioApp& app = that->m_app;
 		PropertyGrid& prop_grid = app.getPropertyGrid();
 		MonoStringHolder label = label_mono;
@@ -231,21 +231,21 @@ struct PropertyGridCSharpPlugin final : public PropertyGrid::IPlugin {
 
 
 	static void csharp_Component_pushUndoCommand(PropertyGridCSharpPlugin* that,
-		Universe* universe,
+		World* world,
 		EntityRef entity,
 		MonoObject* cmp_obj,
 		MonoString* prop,
 		MonoString* old_value,
 		MonoString* new_value) {
-		CSharpScriptScene* scene = (CSharpScriptScene*)universe->getScene(CSHARP_SCRIPT_TYPE);
+		CSharpScriptModule* module = (CSharpScriptModule*)world->getModule(CSHARP_SCRIPT_TYPE);
 		MonoStringHolder prop_str = prop;
 		MonoStringHolder new_value_str = new_value;
 		MonoStringHolder old_value_str = old_value;
 		WorldEditor& editor = that->m_app.getWorldEditor();
 		IAllocator& allocator = editor.getAllocator();
-		int script_count = scene->getScriptCount(entity);
+		int script_count = module->getScriptCount(entity);
 		for (int i = 0; i < script_count; ++i) {
-			u32 gc_handle = scene->getGCHandle(entity, i);
+			u32 gc_handle = module->getGCHandle(entity, i);
 			if (mono_gchandle_get_target(gc_handle) == cmp_obj) {
 				
 				using CmdTypePtr = UniquePtr<PropertyGridCSharpPlugin::SetPropertyCommand>;
@@ -271,9 +271,9 @@ struct PropertyGridCSharpPlugin final : public PropertyGrid::IPlugin {
 		if (cmp_type != CSHARP_SCRIPT_TYPE) return;
 		if (entities.length() != 1) return;
 
-		Universe* universe = editor.getUniverse();
-		auto* scene = static_cast<CSharpScriptScene*>(universe->getScene(CSHARP_SCRIPT_TYPE));
-		auto& plugin = static_cast<CSharpPlugin&>(scene->getPlugin());
+		World* world = editor.getWorld();
+		auto* module = static_cast<CSharpScriptModule*>(world->getModule(CSHARP_SCRIPT_TYPE));
+		auto& plugin = static_cast<CSharpSystem&>(module->getSystem());
 		IAllocator& allocator = editor.getAllocator();
 
 		if (ImGui::Button("Add script")) ImGui::OpenPopup("add_csharp_script_popup");
@@ -292,18 +292,19 @@ struct PropertyGridCSharpPlugin final : public PropertyGrid::IPlugin {
 			ImGui::EndPopup();
 		}
 
-		for (int j = 0; j < scene->getScriptCount(entities[0]); ++j) {
-			const char* script_name = scene->getScriptName(entities[0], j);
+		for (int j = 0; j < module->getScriptCount(entities[0]); ++j) {
+			const char* script_name = module->getScriptName(entities[0], j);
 			StaticString<LUMIX_MAX_PATH + 20> header(script_name);
-			if (header.empty()) header << j;
-			header << "###" << j;
+			if (header.empty()) header.add(j);
+			header.add("###");
+			header.add(j);
 			if (ImGui::CollapsingHeader(header)) {
-				u32 gc_handle = scene->getGCHandle(entities[0], j);
+				u32 gc_handle = module->getGCHandle(entities[0], j);
 				if (gc_handle == INVALID_GC_HANDLE) continue;
 				ImGui::PushID(j);
 				auto* that = this;
 				void* args[] = {&that};
-				scene->tryCallMethod(gc_handle, "OnInspector", args, 1, true);
+				module->tryCallMethod(gc_handle, "OnInspector", args, 1, true);
 				if (ImGui::Button("Edit")) {
 					FileSystem& fs = m_app.getEngine().getFileSystem();
 					StaticString<LUMIX_MAX_PATH> fullpath(fs.getBasePath(), "cs/src/", script_name, ".cs");
@@ -316,7 +317,7 @@ struct PropertyGridCSharpPlugin final : public PropertyGrid::IPlugin {
 				}
 				ImGui::SameLine();
 				if (ImGui::Button("Remove script")) {
-					UniquePtr<RemoveScriptCommand> cmd = UniquePtr<RemoveScriptCommand>::create(allocator, *scene, entities[0], j, allocator);
+					UniquePtr<RemoveScriptCommand> cmd = UniquePtr<RemoveScriptCommand>::create(allocator, *module, entities[0], j, allocator);
 					editor.executeCommand(cmd.move());
 					ImGui::PopID();
 					break;
@@ -411,9 +412,9 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 			int ret_code;
 			subprocess_join(&m_compile_process, &ret_code);
 			if (ret_code == 0) {
-				CSharpScriptScene* scene = getScene();
-				CSharpPlugin& plugin = (CSharpPlugin&)scene->getPlugin();
-				plugin.loadAssembly();
+				CSharpScriptModule* module = getModule();
+				CSharpSystem& system = (CSharpSystem&)module->getSystem();
+				system.loadAssembly();
 			} else {
 				char tmp[1024];
 				FILE* p_stderr = subprocess_stderr(&m_compile_process);
@@ -621,7 +622,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 		WorldEditor& editor = m_app.getWorldEditor();
 		FileSystem& fs = editor.getEngine().getFileSystem();
 		StaticString<LUMIX_MAX_PATH> file_path(fs.getBasePath(), "cs/src/");
-		if (filename) file_path << filename;
+		if (filename) file_path.add(filename);
 		os::shellExecuteOpen(file_path);
 	}
 
@@ -636,8 +637,8 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 
 		bool need_init = !os::dirExists("cs");
 
-		CSharpScriptScene* scene = getScene();
-		CSharpPlugin& plugin = (CSharpPlugin&)scene->getPlugin();
+		CSharpScriptModule* module = getModule();
+		CSharpSystem& system = (CSharpSystem&)module->getSystem();
 		if (m_compilation_running) {
 			ImGui::Text("Compiling...");
 		} else {
@@ -674,7 +675,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 
 		ImGui::InputTextWithHint("##filter", "Filter", m_filter, sizeof(m_filter));
 
-		for (const String& name : plugin.getNames()) {
+		for (const String& name : system.getNames()) {
 			if (m_filter[0] != '\0' && stristr(name.c_str(), m_filter) == 0) continue;
 			ImGui::PushID((const void*)name.c_str());
 			if (ImGui::Button("Edit")) {
@@ -697,9 +698,9 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 	const char* getName() const override { return "csharp_script"; }
 
 
-	CSharpScriptScene* getScene() const {
+	CSharpScriptModule* getModule() const {
 		WorldEditor& editor = m_app.getWorldEditor();
-		return (CSharpScriptScene*)editor.getUniverse()->getScene("csharp_script");
+		return (CSharpScriptModule*)editor.getWorld()->getModule("csharp_script");
 	}
 
 
@@ -822,7 +823,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 	}
 
 	static void generateScenesBindings(OutputMemoryStream& api_blob) {
-		using namespace reflection;
+		/*using namespace reflection;
 		for (Scene* scene_ptr = getFirstScene(); scene_ptr; scene_ptr = scene_ptr->next) {
 			Scene& scene = *scene_ptr;
 			StaticString<128> class_name;
@@ -844,7 +845,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 					   "{\n"
 					   "	public unsafe partial class "
 					<< class_name
-					<< " : IScene\n"
+					<< " : IModule\n"
 					   "	{\n"
 					   "		public static string Type { get { return \""
 					<< scene.name
@@ -938,7 +939,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 			
 			cs_file << "	}\n}\n";
 			cs_file.close();
-		}
+		}*/
 	}
 
 
@@ -979,7 +980,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 
 			cs_blob << "		public " << class_name
 					<< "(Entity _entity)\n"
-					   "			: base(_entity,  getScene(_entity.instance_, \""
+					   "			: base(_entity,  getModule(_entity.instance_, \""
 					<< cmp_name
 					<< "\" )) { }\n"
 					   "\n\n";
@@ -1056,8 +1057,8 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 		if (m_compilation_running) return;
 
 		m_compile_log = "";
-		CSharpScriptScene* scene = getScene();
-		CSharpPlugin& plugin = (CSharpPlugin&)scene->getPlugin();
+		CSharpScriptModule* module = getModule();
+		CSharpSystem& plugin = (CSharpSystem&)module->getSystem();
 		plugin.unloadAssembly();
 		IAllocator& allocator = m_app.getWorldEditor().getAllocator();
 		const char* args[] = {"c:\\windows\\system32\\cmd.exe", "/c \"\"C:\\Program Files\\Mono\\bin\\mcs.bat\" -out:\"cs\\bin\\main.dll\" -target:library -debug -unsafe -recurse:\"cs\\src\\*.cs\"", nullptr};
@@ -1087,8 +1088,8 @@ struct AddCSharpComponentPlugin final : public StudioApp::IAddComponentPlugin {
 		ImGui::SetNextWindowSize(ImVec2(300, 300));
 		if (!ImGui::BeginMenu(getLabel())) return;
 
-		CSharpScriptScene* script_scene = (CSharpScriptScene*)editor.getUniverse()->getScene(CSHARP_SCRIPT_TYPE);
-		CSharpPlugin& plugin = (CSharpPlugin&)script_scene->getPlugin();
+		CSharpScriptModule* script_module = (CSharpScriptModule*)editor.getWorld()->getModule(CSHARP_SCRIPT_TYPE);
+		CSharpSystem& plugin = (CSharpSystem&)script_module->getSystem();
 		for (auto& iter : plugin.getNamesArray()) {
 			const char* name = iter.c_str();
 			bool b = false;
@@ -1100,15 +1101,15 @@ struct AddCSharpComponentPlugin final : public StudioApp::IAddComponentPlugin {
 				if (editor.getSelectedEntities().empty()) return;
 				EntityRef entity = editor.getSelectedEntities()[0];
 
-				if (!editor.getUniverse()->hasComponent(entity, CSHARP_SCRIPT_TYPE)) {
+				if (!editor.getWorld()->hasComponent(entity, CSHARP_SCRIPT_TYPE)) {
 					editor.addComponent(Span(&entity, 1), CSHARP_SCRIPT_TYPE);
 				}
 
-				const ComponentUID cmp = editor.getUniverse()->getComponent(entity, CSHARP_SCRIPT_TYPE);
+				const ComponentUID cmp = editor.getWorld()->getComponent(entity, CSHARP_SCRIPT_TYPE);
 				editor.beginCommandGroup("add_cs_script");
 				editor.addArrayPropertyItem(cmp, "scripts");
 
-				int scr_count = script_scene->getScriptCount(entity);
+				int scr_count = script_module->getScriptCount(entity);
 				editor.setProperty(cmp.type, "scripts", scr_count - 1, "Path", Span((const EntityRef*)&entity, 1), name);
 				editor.endCommandGroup();
 				editor.lockGroupCommand();

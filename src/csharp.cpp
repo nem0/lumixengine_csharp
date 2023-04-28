@@ -1,7 +1,7 @@
 #include "csharp.h"
 #include "animation/animation.h"
-#include "animation/animation_scene.h"
-#include "audio/audio_scene.h"
+#include "animation/animation_module.h"
+#include "audio/audio_module.h"
 #include "engine/engine.h"
 #include "engine/flag_set.h"
 #include "engine/geometry.h"
@@ -12,13 +12,13 @@
 #include "engine/prefab.h"
 #include "engine/reflection.h"
 #include "engine/resource_manager.h"
-#include "engine/universe.h"
-#include "gui/gui_scene.h"
+#include "engine/world.h"
+#include "gui/gui_module.h"
 #include "helpers.h"
 #include "imgui/imgui.h"
-#include "navigation/navigation_scene.h"
-#include "physics/physics_scene.h"
-#include "renderer/render_scene.h"
+#include "navigation/navigation_module.h"
+#include "physics/physics_module.h"
+#include "renderer/render_module.h"
 #include "renderer/renderer.h"
 #include <mono/metadata/exception.h>
 #include <mono/metadata/mono-gc.h>
@@ -92,11 +92,11 @@ void getCSharpName(const char* in_name, StaticString<128>& class_name) {
 }
 
 
-struct CSharpPluginImpl : public CSharpPlugin {
-	CSharpPluginImpl(Engine& engine);
-	~CSharpPluginImpl();
+struct CSharpSystemImpl : public CSharpSystem {
+	CSharpSystemImpl(Engine& engine);
+	~CSharpSystemImpl();
 	const char* getName() const override { return "csharp_script"; }
-	void createScenes(Universe& universe) override;
+	void createModules(World& world) override;
 	void* getAssembly() const override;
 	void* getDomain() const override;
 	void unloadAssembly() override;
@@ -105,9 +105,8 @@ struct CSharpPluginImpl : public CSharpPlugin {
 	const Array<String>& getNamesArray() const override { return m_names_array; }
 	void setStaticField(const char* name_space, const char* class_name, const char* field_name, void* value);
 	void registerProperties();
-	u32 getVersion() const override { return 0; }
 	void serialize(OutputMemoryStream& serializer) const override {}
-	bool deserialize(u32 version, InputMemoryStream& serializer) override { return true; }
+	bool deserialize(i32 version, InputMemoryStream& serializer) override { return version == 0; }
 
 	Engine& m_engine;
 	IAllocator& m_allocator;
@@ -135,50 +134,50 @@ Resource* csharp_Resource_load(Engine& engine, MonoString* path, MonoString* typ
 }
 
 /*
-bool csharp_Entity_hasComponent(Universe* universe, Entity entity, MonoString* type) {
+bool csharp_Entity_hasComponent(World* world, Entity entity, MonoString* type) {
 	MonoStringHolder type_str = type;
 	ComponentType cmp_type = reflection::getComponentType((const char*)type_str);
-	return universe->hasComponent(entity, cmp_type);
+	return world->hasComponent(entity, cmp_type);
 }
 
 
-void csharp_Entity_setParent(Universe* universe, Entity parent, Entity child) {
-	universe->setParent(parent, child);
+void csharp_Entity_setParent(World* world, Entity parent, Entity child) {
+	world->setParent(parent, child);
 }
 
 
-Entity csharp_Entity_getParent(Universe* universe, Entity entity) {
-	return universe->getParent(entity);
+Entity csharp_Entity_getParent(World* world, Entity entity) {
+	return world->getParent(entity);
 }
 
 
-Universe* csharp_getUniverse(IScene* scene) {
-	return &scene->getUniverse();
+World* csharp_getUniverse(IModule* module) {
+	return &module->getUniverse();
 }
 
 
-MonoObject* csharp_getEntity(Universe* universe, int entity_idx) {
-	auto* cs_scene = (CSharpScriptScene*)universe->getScene(CSHARP_SCRIPT_TYPE);
+MonoObject* csharp_getEntity(World* world, int entity_idx) {
+	auto* cs_scene = (CSharpScriptModule*)world->getModule(CSHARP_SCRIPT_TYPE);
 	u32 gc_handle = cs_scene->getEntityGCHandle({entity_idx});
 	return mono_gchandle_get_target(gc_handle);
 }
 
 
-IScene* csharp_getScene(Universe* universe, MonoString* type_str) {
+IModule* csharp_getScene(World* world, MonoString* type_str) {
 	MonoStringHolder type = type_str;
 	ComponentType cmp_type = reflection::getComponentType((const char*)type);
-	return universe->getScene(cmp_type);
+	return world->getModule(cmp_type);
 }
 
 
-Entity csharp_instantiatePrefab(Universe* universe, PrefabResource* prefab, const Vec3& pos, const Quat& rot, float scale) {
-	return universe->instantiatePrefab(*prefab, pos, rot, scale);
+Entity csharp_instantiatePrefab(World* world, PrefabResource* prefab, const Vec3& pos, const Quat& rot, float scale) {
+	return world->instantiatePrefab(*prefab, pos, rot, scale);
 }
 
 
-IScene* csharp_getSceneByName(Universe* universe, MonoString* type_str) {
+IModule* csharp_getSceneByName(World* world, MonoString* type_str) {
 	MonoStringHolder name = type_str;
-	return universe->getScene(crc32((const char*)name));
+	return world->getModule(crc32((const char*)name));
 }
 
 
@@ -192,67 +191,67 @@ u64 csharp_Component_getEntityGUIDFromID(ISerializer* serializer, int id) {
 }
 
 
-void csharp_Component_create(Universe* universe, int entity, MonoString* type_str) {
+void csharp_Component_create(World* world, int entity, MonoString* type_str) {
 	MonoStringHolder type = type_str;
 	ComponentType cmp_type = reflection::getComponentType((const char*)type);
-	IScene* scene = universe->getScene(cmp_type);
-	if (!scene) return;
-	if (universe->hasComponent({entity}, cmp_type)) {
+	IModule* module = world->getModule(cmp_type);
+	if (!module) return;
+	if (world->hasComponent({entity}, cmp_type)) {
 		logError("C# Script") << "Component " << (const char*)type << " already exists in entity " << entity;
 		return;
 	}
 
-	universe->createComponent(cmp_type, {entity});
+	world->createComponent(cmp_type, {entity});
 }
 
 
-void csharp_Entity_destroy(Universe* universe, int entity) {
-	universe->destroyEntity({entity});
+void csharp_Entity_destroy(World* world, int entity) {
+	world->destroyEntity({entity});
 }
 */
 
-void csharp_Entity_setPosition(Universe* universe, int entity, const DVec3& pos) {
-	universe->setPosition({entity}, pos);
+void csharp_Entity_setPosition(World* world, int entity, const DVec3& pos) {
+	world->setPosition({entity}, pos);
 }
 
-void csharp_Entity_setRotation(Universe* universe, int entity, const Quat& pos) {
-	universe->setRotation({entity}, pos);
+void csharp_Entity_setRotation(World* world, int entity, const Quat& pos) {
+	world->setRotation({entity}, pos);
 }
 
-void csharp_Entity_setLocalRotation(Universe* universe, int entity, const Quat& pos) {
-	universe->setLocalRotation({entity}, pos);
+void csharp_Entity_setLocalRotation(World* world, int entity, const Quat& pos) {
+	world->setLocalRotation({entity}, pos);
 }
 
-DVec3 csharp_Entity_getPosition(Universe* universe, int entity) {
-	return universe->getPosition({entity});
+DVec3 csharp_Entity_getPosition(World* world, int entity) {
+	return world->getPosition({entity});
 }
 
-void csharp_Entity_setLocalPosition(Universe* universe, int entity, const DVec3& pos) {
-	universe->setLocalPosition({entity}, pos);
+void csharp_Entity_setLocalPosition(World* world, int entity, const DVec3& pos) {
+	world->setLocalPosition({entity}, pos);
 }
 
-DVec3 csharp_Entity_getLocalPosition(Universe* universe, int entity) {
-	return universe->getLocalTransform({entity}).pos;
+DVec3 csharp_Entity_getLocalPosition(World* world, int entity) {
+	return world->getLocalTransform({entity}).pos;
 }
 
-Quat csharp_Entity_getLocalRotation(Universe* universe, int entity) {
-	return universe->getLocalTransform({entity}).rot;
-}
-
-
-Quat csharp_Entity_getRotation(Universe* universe, int entity) {
-	return universe->getRotation({entity});
+Quat csharp_Entity_getLocalRotation(World* world, int entity) {
+	return world->getLocalTransform({entity}).rot;
 }
 
 
-void csharp_Entity_setName(Universe* universe, int entity, MonoString* name) {
+Quat csharp_Entity_getRotation(World* world, int entity) {
+	return world->getRotation({entity});
+}
+
+
+void csharp_Entity_setName(World* world, int entity, MonoString* name) {
 	MonoStringHolder str = name;
-	universe->setEntityName({entity}, (const char*)str);
+	world->setEntityName({entity}, (const char*)str);
 }
 
 
-MonoString* csharp_Entity_getName(Universe* universe, int entity) {
-	return mono_string_new(mono_domain_get(), universe->getEntityName({entity}));
+MonoString* csharp_Entity_getName(World* world, int entity) {
+	return mono_string_new(mono_domain_get(), world->getEntityName({entity}));
 }
 
 
@@ -377,16 +376,16 @@ template <typename T>
 struct CSPropertyWrapper {
 	using CSType = typename ToCSharpType<T>::Type;
 	
-	static void cs_setter(IScene* scene, EntityRef e, u32 array_idx, CSType val) {
-		setter(scene, e, array_idx, T(fromCSharpValue(val)));
+	static void cs_setter(IModule* module, EntityRef e, u32 array_idx, CSType val) {
+		setter(module, e, array_idx, T(fromCSharpValue(val)));
 	}
 
-	static CSType cs_getter(IScene* scene, EntityRef e, u32 array_idx) {
-		return toCSharpValue(getter(scene, e, array_idx));
+	static CSType cs_getter(IModule* module, EntityRef e, u32 array_idx) {
+		return toCSharpValue(getter(module, e, array_idx));
 	}
 		
-	static inline T (*getter)(IScene*, EntityRef, u32);
-	static inline void (*setter)(IScene*, EntityRef, u32, const T&);
+	static inline T (*getter)(IModule*, EntityRef, u32);
+	static inline void (*setter)(IModule*, EntityRef, u32, const T&);
 };
 
 template <typename T>
@@ -395,40 +394,40 @@ const reflection::Property<T>* getProperty(const char* cmp_type_name, const char
 	return static_cast<const reflection::Property<T>*>(reflection::getProperty(cmp_type, prop_name));
 }
 
-template <typename C, int (C::*Function)(EntityRef)> int csharp_getSubobjectCount(C* scene, int entity) {
-	return (scene->*Function)({entity});
+template <typename C, int (C::*Function)(EntityRef)> int csharp_getSubobjectCount(C* module, int entity) {
+	return (module->*Function)({entity});
 }
 
 
-template <typename C, void (C::*Function)(EntityRef, int)> void csharp_addSubobject(C* scene, int entity) {
-	(scene->*Function)({entity}, -1);
+template <typename C, void (C::*Function)(EntityRef, int)> void csharp_addSubobject(C* module, int entity) {
+	(module->*Function)({entity}, -1);
 }
 
 
-template <typename C, void (C::*Function)(EntityRef, int)> void csharp_removeSubobject(C* scene, int entity, int index) {
-	(scene->*Function)({entity}, index);
+template <typename C, void (C::*Function)(EntityRef, int)> void csharp_removeSubobject(C* module, int entity, int index) {
+	(module->*Function)({entity}, index);
 }
 
 
-template <typename R, typename C, R (C::*Function)(EntityRef, int)> typename ToCSharpType<R>::Type csharp_getSubproperty(C* scene, int entity, int index) {
-	R val = (scene->*Function)({entity}, index);
+template <typename R, typename C, R (C::*Function)(EntityRef, int)> typename ToCSharpType<R>::Type csharp_getSubproperty(C* module, int entity, int index) {
+	R val = (module->*Function)({entity}, index);
 	return toCSharpValue(val);
 }
 
 /*
 template <auto setter>
-void csharp_setProperty(typename ClassOf<decltype(setter)>::Type* scene, int cmp, typename ToCSharpType<typename ArgNType<1, decltype(setter)>::Type>::Type value) {
-	(scene->*setter)({cmp}, fromCSharpValue(value));
+void csharp_setProperty(typename ClassOf<decltype(setter)>::Type* module, int cmp, typename ToCSharpType<typename ArgNType<1, decltype(setter)>::Type>::Type value) {
+	(module->*setter)({cmp}, fromCSharpValue(value));
 }
 
 
-template <typename T, typename C, void (C::*Function)(EntityRef, int, T)> void csharp_setSubproperty(C* scene, int entity, typename ToCSharpType<T>::Type value, int index) {
-	(scene->*Function)({entity}, index, fromCSharpValue(value));
+template <typename T, typename C, void (C::*Function)(EntityRef, int, T)> void csharp_setSubproperty(C* module, int entity, typename ToCSharpType<T>::Type value, int index) {
+	(module->*Function)({entity}, index, fromCSharpValue(value));
 }
 
 
-template <typename T, typename C, void (C::*Function)(EntityRef, const T&)> void csharp_setProperty(C* scene, int entity, typename ToCSharpType<T>::Type value) {
-	(scene->*Function)({entity}, T(fromCSharpValue(value)));
+template <typename T, typename C, void (C::*Function)(EntityRef, const T&)> void csharp_setProperty(C* module, int entity, typename ToCSharpType<T>::Type value) {
+	(module->*Function)({entity}, T(fromCSharpValue(value)));
 }
 
 
@@ -449,7 +448,7 @@ void csharp_logError(MonoString* message) {
 }
 
 
-struct CSharpScriptSceneImpl : public CSharpScriptScene {
+struct CSharpScriptModuleImpl : public CSharpScriptModule {
 	struct Script {
 		Script(IAllocator& allocator)
 			: properties(allocator) {}
@@ -472,9 +471,9 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 	};
 
 
-	CSharpScriptSceneImpl(CSharpPluginImpl& plugin, Universe& universe)
+	CSharpScriptModuleImpl(CSharpSystemImpl& plugin, World& world)
 		: m_system(plugin)
-		, m_universe(universe)
+		, m_world(world)
 		, m_scripts(plugin.m_allocator)
 		, m_entities_gc_handles(plugin.m_allocator)
 		, m_updates(plugin.m_allocator)
@@ -486,15 +485,24 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 		createImGuiAPI();
 		createEngineAPI();
 
-		m_system.m_on_assembly_load.bind<&CSharpScriptSceneImpl::onAssemblyLoad>(this);
-		m_system.m_on_assembly_unload.bind<&CSharpScriptSceneImpl::onAssemblyUnload>(this);
+		m_system.m_on_assembly_load.bind<&CSharpScriptModuleImpl::onAssemblyLoad>(this);
+		m_system.m_on_assembly_unload.bind<&CSharpScriptModuleImpl::onAssemblyUnload>(this);
 		onAssemblyLoad();
 	}
 
 
-	~CSharpScriptSceneImpl() {
-		m_system.m_on_assembly_load.unbind<&CSharpScriptSceneImpl::onAssemblyLoad>(this);
-		m_system.m_on_assembly_unload.unbind<&CSharpScriptSceneImpl::onAssemblyUnload>(this);
+	~CSharpScriptModuleImpl() {
+		for (u32 handle : m_entities_gc_handles) {
+			mono_gchandle_free(handle);
+		}
+		for (ScriptComponent* script_cmp : m_scripts) {
+			for (Script& script : script_cmp->scripts) {
+				setScriptNameHash(*script_cmp, script, RuntimeHash());
+			}
+			LUMIX_DELETE(m_system.m_allocator, script_cmp);
+		}
+		m_system.m_on_assembly_load.unbind<&CSharpScriptModuleImpl::onAssemblyLoad>(this);
+		m_system.m_on_assembly_unload.unbind<&CSharpScriptModuleImpl::onAssemblyUnload>(this);
 	}
 
 
@@ -589,10 +597,10 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 		mono_add_internal_call("Lumix.Component::getEntityGUIDFromID", csharp_Component_getEntityGUIDFromID);
 		mono_add_internal_call("Lumix.Component::create", csharp_Component_create);
 		mono_add_internal_call("Lumix.Component::getScene", csharp_getScene);
-		mono_add_internal_call("Lumix.Universe::instantiatePrefab", csharp_instantiatePrefab);
-		mono_add_internal_call("Lumix.Universe::getSceneByName", csharp_getSceneByName);
-		mono_add_internal_call("Lumix.Universe::getEntity", csharp_getEntity);
-		mono_add_internal_call("Lumix.IScene::getUniverse", csharp_getUniverse);
+		mono_add_internal_call("Lumix.World::instantiatePrefab", csharp_instantiatePrefab);
+		mono_add_internal_call("Lumix.World::getSceneByName", csharp_getSceneByName);
+		mono_add_internal_call("Lumix.World::getEntity", csharp_getEntity);
+		mono_add_internal_call("Lumix.IModule::getUniverse", csharp_getUniverse);
 		mono_add_internal_call("Lumix.Entity::hasComponent", csharp_Entity_hasComponent);
 		mono_add_internal_call("Lumix.Entity::setParent", csharp_Entity_setParent);
 		mono_add_internal_call("Lumix.Entity::getParent", csharp_Entity_getParent);
@@ -612,7 +620,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 	}
 
 
-	void onContact(const PhysicsScene::ContactData& data) {
+	void onContact(const PhysicsModule::ContactData& data) {
 		ASSERT(false); // TODO
 					   /*MonoObject* e1_obj = mono_gchandle_get_target(getEntityGCHandle(data.e1));
 					   MonoObject* e2_obj = mono_gchandle_get_target(getEntityGCHandle(data.e2));
@@ -629,9 +637,9 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 	}
 
 	void startGame() override {
-		PhysicsScene* phy_scene = (PhysicsScene*)m_universe.getScene("physics");
+		PhysicsModule* phy_scene = (PhysicsModule*)m_world.getModule("physics");
 		if (phy_scene) {
-			phy_scene->onContact().bind<&CSharpScriptSceneImpl::onContact>(this);
+			phy_scene->onContact().bind<&CSharpScriptModuleImpl::onContact>(this);
 		}
 
 		for (ScriptComponent* cmp : m_scripts) {
@@ -646,9 +654,9 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 
 	void stopGame() override {
 		m_is_game_running = false;
-		PhysicsScene* phy_scene = (PhysicsScene*)m_universe.getScene("physics");
+		PhysicsModule* phy_scene = (PhysicsModule*)m_world.getModule("physics");
 		if (phy_scene) {
-			phy_scene->onContact().unbind<&CSharpScriptSceneImpl::onContact>(this);
+			phy_scene->onContact().unbind<&CSharpScriptModuleImpl::onContact>(this);
 			;
 		}
 	}
@@ -744,7 +752,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 
 		if (m_system.m_assembly) applyProperties(*script);
 
-		m_universe.onComponentCreated(entity, CSHARP_SCRIPT_TYPE, this);
+		m_world.onComponentCreated(entity, CSHARP_SCRIPT_TYPE, this);
 	}
 	*/
 
@@ -872,7 +880,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 	u32 createCSharpEntity(EntityRef entity) {
 		if (!m_system.m_assembly) return INVALID_GC_HANDLE;
 
-		u32 handle = createObjectGC("Lumix", "Entity", &m_universe);
+		u32 handle = createObjectGC("Lumix", "Entity", &m_world);
 		m_entities_gc_handles.insert(entity, handle);
 
 		MonoObject* obj = mono_gchandle_get_target(handle);
@@ -887,10 +895,10 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 		MonoClassField* universe_field = mono_class_get_field_from_name(mono_class, "instance_");
 		ASSERT(universe_field);
 
-		void* y = &m_universe;
+		void* y = &m_world;
 		mono_field_set_value(obj, universe_field, &y);
 
-		Universe* x;
+		World* x;
 		mono_field_get_value(obj, universe_field, &x);
 
 		return handle;
@@ -904,7 +912,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 		script->entity = entity;
 		m_scripts.insert(entity, script);
 		createCSharpEntity(script->entity);
-		m_universe.onComponentCreated(entity, CSHARP_SCRIPT_TYPE, this);
+		m_world.onComponentCreated(entity, CSHARP_SCRIPT_TYPE, this);
 	}
 
 
@@ -920,7 +928,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 		}
 		LUMIX_DELETE(m_system.m_allocator, script);
 		m_scripts.erase(entity);
-		m_universe.onComponentDestroyed(entity, CSHARP_SCRIPT_TYPE, this);
+		m_world.onComponentDestroyed(entity, CSHARP_SCRIPT_TYPE, this);
 	}
 
 
@@ -986,11 +994,11 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 					}
 				}
 			}
-			m_universe.onComponentCreated(script->entity, CSHARP_SCRIPT_TYPE, this);
+			m_world.onComponentCreated(script->entity, CSHARP_SCRIPT_TYPE, this);
 		}
 	}
 
-	IPlugin& getPlugin() const override { return m_system; }
+	ISystem& getSystem() const override { return m_system; }
 
 
 	MonoObject* createKeyboardEvent(const InputSystem::Event& event) {
@@ -1090,8 +1098,7 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 	}
 
 
-	void update(float time_delta, bool paused) override {
-		if (paused) return;
+	void update(float time_delta) override {
 		if (!m_is_game_running) return;
 
 		processInput();
@@ -1102,25 +1109,8 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 	}
 
 
-	void lateUpdate(float time_delta, bool paused) override {}
+	World& getWorld() override { return m_world; }
 
-
-	Universe& getUniverse() override { return m_universe; }
-
-
-	void clear() override {
-		for (u32 handle : m_entities_gc_handles) {
-			mono_gchandle_free(handle);
-		}
-		m_entities_gc_handles.clear();
-		for (ScriptComponent* script_cmp : m_scripts) {
-			for (Script& script : script_cmp->scripts) {
-				setScriptNameHash(*script_cmp, script, RuntimeHash());
-			}
-			LUMIX_DELETE(m_system.m_allocator, script_cmp);
-		}
-		m_scripts.clear();
-	}
 
 
 	template <typename T> void* toCSharpArg(T* arg) { return (void*)arg; }
@@ -1267,8 +1257,8 @@ struct CSharpScriptSceneImpl : public CSharpScriptScene {
 	HashMap<EntityRef, u32> m_entities_gc_handles;
 	Array<u32> m_updates;
 	Array<u32> m_on_inputs;
-	CSharpPluginImpl& m_system;
-	Universe& m_universe;
+	CSharpSystemImpl& m_system;
+	World& m_world;
 	bool m_is_game_running;
 };
 
@@ -1279,9 +1269,9 @@ struct CSProperties : reflection::DynamicProperties {
 	{ name = "cs_properties"; }
 		
 	u32 getCount(ComponentUID cmp, int index) const override { 
-		CSharpScriptSceneImpl& scene = (CSharpScriptSceneImpl&)*cmp.scene;
+		CSharpScriptModuleImpl& module = (CSharpScriptModuleImpl&)*cmp.module;
 		const EntityRef e = (EntityRef)cmp.entity;
-		//return scene.getPropertyCount(e, index);
+		//return module.getPropertyCount(e, index);
 		return {};
 	}
 
@@ -1392,7 +1382,7 @@ static void initDebug() {
 }
 
 
-CSharpPluginImpl::CSharpPluginImpl(Engine& engine)
+CSharpSystemImpl::CSharpSystemImpl(Engine& engine)
 	: m_engine(engine)
 	, m_allocator(engine.getAllocator())
 	, m_names(m_allocator)
@@ -1427,24 +1417,24 @@ CSharpPluginImpl::CSharpPluginImpl(Engine& engine)
 }
 
 
-void CSharpPluginImpl::registerProperties() {
+void CSharpSystemImpl::registerProperties() {
 	struct ScriptEnum : reflection::StringEnumAttribute {
 		u32 count(ComponentUID cmp) const override { return getPlugin(cmp).getNamesArray().size(); }
 		const char* name(ComponentUID cmp, u32 idx) const override { return getPlugin(cmp).getNamesArray()[idx].c_str(); }
-		static CSharpPlugin& getPlugin(ComponentUID cmp) { return static_cast<CSharpPlugin&>(cmp.scene->getPlugin()); }
+		static CSharpSystem& getPlugin(ComponentUID cmp) { return static_cast<CSharpSystem&>(cmp.module->getSystem()); }
 	};
 
 	using namespace reflection;
-	LUMIX_SCENE(CSharpScriptSceneImpl, "csharp_script")
+	LUMIX_MODULE(CSharpScriptModuleImpl, "csharp_script")
 		.LUMIX_CMP(ScriptComponent, "csharp_script", "C# script")
-			.begin_array<&CSharpScriptScene::getScriptCount, &CSharpScriptScene::addScript, &CSharpScriptScene::removeScript>("scripts")
+			.begin_array<&CSharpScriptModule::getScriptCount, &CSharpScriptModule::addScript, &CSharpScriptModule::removeScript>("scripts")
 				.LUMIX_PROP(ScriptName, "Path").attribute<ScriptEnum>()
 				.property<CSProperties>()
 			.end_array();
 }
 
 
-void CSharpPluginImpl::setStaticField(const char* name_space, const char* class_name, const char* field_name, void* value) {
+void CSharpSystemImpl::setStaticField(const char* name_space, const char* class_name, const char* field_name, void* value) {
 	MonoClass* mono_class = mono_class_from_name(mono_assembly_get_image(m_assembly), name_space, class_name);
 	ASSERT(mono_class);
 	if (!mono_class) return;
@@ -1461,23 +1451,23 @@ void CSharpPluginImpl::setStaticField(const char* name_space, const char* class_
 }
 
 
-CSharpPluginImpl::~CSharpPluginImpl() {
+CSharpSystemImpl::~CSharpSystemImpl() {
 	unloadAssembly();
 	mono_jit_cleanup(m_domain);
 }
 
 
-void* CSharpPluginImpl::getAssembly() const {
+void* CSharpSystemImpl::getAssembly() const {
 	return m_assembly;
 }
 
 
-void* CSharpPluginImpl::getDomain() const {
+void* CSharpSystemImpl::getDomain() const {
 	return m_domain;
 }
 
 
-void CSharpPluginImpl::unloadAssembly() {
+void CSharpSystemImpl::unloadAssembly() {
 	if (!m_assembly) return;
 
 	m_on_assembly_unload.invoke();
@@ -1507,7 +1497,7 @@ static bool hasAttribute(MonoClass* cl, MonoClass* attr) {
 }
 
 
-void CSharpPluginImpl::loadAssembly() {
+void CSharpSystemImpl::loadAssembly() {
 	ASSERT(!m_assembly);
 
 	const char* path = "cs/bin/main.dll";
@@ -1540,14 +1530,14 @@ void CSharpPluginImpl::loadAssembly() {
 	m_on_assembly_load.invoke();
 }
 
-void CSharpPluginImpl::createScenes(Universe& universe) {
-	auto scene = UniquePtr<CSharpScriptSceneImpl>::create(m_engine.getAllocator(), *this, universe);
-	universe.addScene(scene.move());
+void CSharpSystemImpl::createModules(World& world) {
+	auto module = UniquePtr<CSharpScriptModuleImpl>::create(m_engine.getAllocator(), *this, world);
+	world.addModule(module.move());
 }
 
 
 LUMIX_PLUGIN_ENTRY(csharp) {
-	return LUMIX_NEW(engine.getAllocator(), CSharpPluginImpl)(engine);
+	return LUMIX_NEW(engine.getAllocator(), CSharpSystemImpl)(engine);
 }
 
 

@@ -152,15 +152,15 @@
 }
 
 {
-	using T = Lumix::Vec3(Lumix::RenderScene::*)(EntityRef, float, float);
-	auto f = &CSharpMethodProxy<T>::call<(T)&RenderScene::getTerrainNormalAt>;
+	using T = Lumix::Vec3(Lumix::RenderModule::*)(EntityRef, float, float);
+	auto f = &CSharpMethodProxy<T>::call<(T)&RenderModule::getTerrainNormalAt>;
 	mono_add_internal_call("Lumix.Terrain::getTerrainNormalAt", f);
 }
 
 
 {
-	using T = float(Lumix::RenderScene::*)(EntityRef, float, float);
-	auto f = &CSharpMethodProxy<T>::call<(T)&RenderScene::getTerrainHeightAt>;
+	using T = float(Lumix::RenderModule::*)(EntityRef, float, float);
+	auto f = &CSharpMethodProxy<T>::call<(T)&RenderModule::getTerrainHeightAt>;
 	mono_add_internal_call("Lumix.Terrain::getTerrainHeightAt", f);
 }
 
@@ -384,8 +384,8 @@
 }
 
 {
-	using T = Lumix::Model *(Lumix::RenderScene::*)(EntityRef);
-	auto f = &CSharpMethodProxy<T>::call<(T)&RenderScene::getModelInstanceModel>;
+	using T = Lumix::Model *(Lumix::RenderModule::*)(EntityRef);
+	auto f = &CSharpMethodProxy<T>::call<(T)&RenderModule::getModelInstanceModel>;
 	mono_add_internal_call("Lumix.ModelInstance::getModelInstanceModel", f);
 }
 
@@ -533,43 +533,43 @@
 }
 
 {
-	using T = void(Lumix::PhysicsScene::*)(EntityRef);
-	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsScene::putToSleep>;
+	using T = void(Lumix::PhysicsModule::*)(EntityRef);
+	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsModule::putToSleep>;
 	mono_add_internal_call("Lumix.RigidActor::putToSleep", f);
 }
 
 
 {
-	using T = float(Lumix::PhysicsScene::*)(EntityRef);
-	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsScene::getActorSpeed>;
+	using T = float(Lumix::PhysicsModule::*)(EntityRef);
+	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsModule::getActorSpeed>;
 	mono_add_internal_call("Lumix.RigidActor::getActorSpeed", f);
 }
 
 
 {
-	using T = Lumix::Vec3(Lumix::PhysicsScene::*)(EntityRef);
-	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsScene::getActorVelocity>;
+	using T = Lumix::Vec3(Lumix::PhysicsModule::*)(EntityRef);
+	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsModule::getActorVelocity>;
 	mono_add_internal_call("Lumix.RigidActor::getActorVelocity", f);
 }
 
 
 {
-	using T = void(Lumix::PhysicsScene::*)(EntityRef, const Vec3&);
-	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsScene::applyForceToActor>;
+	using T = void(Lumix::PhysicsModule::*)(EntityRef, const Vec3&);
+	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsModule::applyForceToActor>;
 	mono_add_internal_call("Lumix.RigidActor::applyForceToActor", f);
 }
 
 
 {
-	using T = void(Lumix::PhysicsScene::*)(EntityRef, const Vec3&);
-	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsScene::applyImpulseToActor>;
+	using T = void(Lumix::PhysicsModule::*)(EntityRef, const Vec3&);
+	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsModule::applyImpulseToActor>;
 	mono_add_internal_call("Lumix.RigidActor::applyImpulseToActor", f);
 }
 
 
 {
-	using T = void(Lumix::PhysicsScene::*)(EntityRef, const Vec3&, const Vec3&);
-	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsScene::addForceAtPos>;
+	using T = void(Lumix::PhysicsModule::*)(EntityRef, const Vec3&, const Vec3&);
+	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsModule::addForceAtPos>;
 	mono_add_internal_call("Lumix.RigidActor::addForceAtPos", f);
 }
 
@@ -648,15 +648,15 @@
 }
 
 {
-	using T = void(Lumix::PhysicsScene::*)(EntityRef, const Vec3&);
-	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsScene::moveController>;
+	using T = void(Lumix::PhysicsModule::*)(EntityRef, const Vec3&);
+	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsModule::moveController>;
 	mono_add_internal_call("Lumix.PhysicalController::moveController", f);
 }
 
 
 {
-	using T = bool(Lumix::PhysicsScene::*)(EntityRef) const;
-	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsScene::isControllerCollisionDown>;
+	using T = bool(Lumix::PhysicsModule::*)(EntityRef) const;
+	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsModule::isControllerCollisionDown>;
 	mono_add_internal_call("Lumix.PhysicalController::isControllerCollisionDown", f);
 }
 
@@ -792,36 +792,36 @@
 }
 
 {
-	using T = void(Lumix::AnimationScene::*)(EntityRef, u32, u32);
-	auto f = &CSharpMethodProxy<T>::call<(T)&AnimationScene::setAnimatorInput>;
+	using T = void(Lumix::AnimationModule::*)(EntityRef, u32, u32);
+	auto f = &CSharpMethodProxy<T>::call<(T)&AnimationModule::setAnimatorInput>;
 	mono_add_internal_call("Lumix.Animator::setAnimatorInput", f);
 }
 
 
 {
-	using T = void(Lumix::AnimationScene::*)(EntityRef, u32, float);
-	auto f = &CSharpMethodProxy<T>::call<(T)&AnimationScene::setAnimatorInput>;
+	using T = void(Lumix::AnimationModule::*)(EntityRef, u32, float);
+	auto f = &CSharpMethodProxy<T>::call<(T)&AnimationModule::setAnimatorInput>;
 	mono_add_internal_call("Lumix.Animator::setAnimatorInput", f);
 }
 
 
 {
-	using T = void(Lumix::AnimationScene::*)(EntityRef, u32, bool);
-	auto f = &CSharpMethodProxy<T>::call<(T)&AnimationScene::setAnimatorInput>;
+	using T = void(Lumix::AnimationModule::*)(EntityRef, u32, bool);
+	auto f = &CSharpMethodProxy<T>::call<(T)&AnimationModule::setAnimatorInput>;
 	mono_add_internal_call("Lumix.Animator::setAnimatorInput", f);
 }
 
 
 {
-	using T = int(Lumix::AnimationScene::*)(EntityRef, Path) const;
-	auto f = &CSharpMethodProxy<T>::call<(T)&AnimationScene::getAnimatorInputIndex>;
+	using T = int(Lumix::AnimationModule::*)(EntityRef, Path) const;
+	auto f = &CSharpMethodProxy<T>::call<(T)&AnimationModule::getAnimatorInputIndex>;
 	mono_add_internal_call("Lumix.Animator::getAnimatorInputIndex", f);
 }
 
 
 {
-	using T = void(Lumix::AnimationScene::*)(EntityRef, u32, float, const Vec3&);
-	auto f = &CSharpMethodProxy<T>::call<(T)&AnimationScene::setAnimatorIK>;
+	using T = void(Lumix::AnimationModule::*)(EntityRef, u32, float, const Vec3&);
+	auto f = &CSharpMethodProxy<T>::call<(T)&AnimationModule::setAnimatorIK>;
 	mono_add_internal_call("Lumix.Animator::setAnimatorIK", f);
 }
 
@@ -1096,22 +1096,22 @@
 }
 
 {
-	using T = void(Lumix::PhysicsScene::*)(EntityRef, float);
-	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsScene::setVehicleAccel>;
+	using T = void(Lumix::PhysicsModule::*)(EntityRef, float);
+	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsModule::setVehicleAccel>;
 	mono_add_internal_call("Lumix.Vehicle::setVehicleAccel", f);
 }
 
 
 {
-	using T = void(Lumix::PhysicsScene::*)(EntityRef, float);
-	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsScene::setVehicleSteer>;
+	using T = void(Lumix::PhysicsModule::*)(EntityRef, float);
+	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsModule::setVehicleSteer>;
 	mono_add_internal_call("Lumix.Vehicle::setVehicleSteer", f);
 }
 
 
 {
-	using T = void(Lumix::PhysicsScene::*)(EntityRef, float);
-	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsScene::setVehicleBrake>;
+	using T = void(Lumix::PhysicsModule::*)(EntityRef, float);
+	auto f = &CSharpMethodProxy<T>::call<(T)&PhysicsModule::setVehicleBrake>;
 	mono_add_internal_call("Lumix.Vehicle::setVehicleBrake", f);
 }
 
@@ -1215,29 +1215,29 @@
 }
 
 {
-	using T = void(Lumix::NavigationScene::*)(EntityRef, bool);
-	auto f = &CSharpMethodProxy<T>::call<(T)&NavigationScene::setActorActive>;
+	using T = void(Lumix::NavigationModule::*)(EntityRef, bool);
+	auto f = &CSharpMethodProxy<T>::call<(T)&NavigationModule::setActorActive>;
 	mono_add_internal_call("Lumix.NavmeshAgent::setActorActive", f);
 }
 
 
 {
-	using T = bool(Lumix::NavigationScene::*)(EntityRef, const DVec3&, float, float);
-	auto f = &CSharpMethodProxy<T>::call<(T)&NavigationScene::navigate>;
+	using T = bool(Lumix::NavigationModule::*)(EntityRef, const DVec3&, float, float);
+	auto f = &CSharpMethodProxy<T>::call<(T)&NavigationModule::navigate>;
 	mono_add_internal_call("Lumix.NavmeshAgent::navigate", f);
 }
 
 
 {
-	using T = void(Lumix::NavigationScene::*)(EntityRef);
-	auto f = &CSharpMethodProxy<T>::call<(T)&NavigationScene::cancelNavigation>;
+	using T = void(Lumix::NavigationModule::*)(EntityRef);
+	auto f = &CSharpMethodProxy<T>::call<(T)&NavigationModule::cancelNavigation>;
 	mono_add_internal_call("Lumix.NavmeshAgent::cancelNavigation", f);
 }
 
 
 {
-	using T = void(Lumix::NavigationScene::*)(EntityRef);
-	auto f = &CSharpMethodProxy<T>::call<(T)&NavigationScene::debugDrawPath>;
+	using T = void(Lumix::NavigationModule::*)(EntityRef);
+	auto f = &CSharpMethodProxy<T>::call<(T)&NavigationModule::debugDrawPath>;
 	mono_add_internal_call("Lumix.NavmeshAgent::debugDrawPath", f);
 }
 
@@ -1306,43 +1306,43 @@
 }
 
 {
-	using T = bool(Lumix::NavigationScene::*)(EntityRef);
-	auto f = &CSharpMethodProxy<T>::call<(T)&NavigationScene::loadZone>;
+	using T = bool(Lumix::NavigationModule::*)(EntityRef);
+	auto f = &CSharpMethodProxy<T>::call<(T)&NavigationModule::loadZone>;
 	mono_add_internal_call("Lumix.NavmeshZone::loadZone", f);
 }
 
 
 {
-	using T = void(Lumix::NavigationScene::*)(EntityRef);
-	auto f = &CSharpMethodProxy<T>::call<(T)&NavigationScene::debugDrawContours>;
+	using T = void(Lumix::NavigationModule::*)(EntityRef);
+	auto f = &CSharpMethodProxy<T>::call<(T)&NavigationModule::debugDrawContours>;
 	mono_add_internal_call("Lumix.NavmeshZone::debugDrawContours", f);
 }
 
 
 {
-	using T = void(Lumix::NavigationScene::*)(EntityRef, const DVec3&, bool, bool, bool);
-	auto f = &CSharpMethodProxy<T>::call<(T)&NavigationScene::debugDrawNavmesh>;
+	using T = void(Lumix::NavigationModule::*)(EntityRef, const DVec3&, bool, bool, bool);
+	auto f = &CSharpMethodProxy<T>::call<(T)&NavigationModule::debugDrawNavmesh>;
 	mono_add_internal_call("Lumix.NavmeshZone::debugDrawNavmesh", f);
 }
 
 
 {
-	using T = void(Lumix::NavigationScene::*)(EntityRef);
-	auto f = &CSharpMethodProxy<T>::call<(T)&NavigationScene::debugDrawCompactHeightfield>;
+	using T = void(Lumix::NavigationModule::*)(EntityRef);
+	auto f = &CSharpMethodProxy<T>::call<(T)&NavigationModule::debugDrawCompactHeightfield>;
 	mono_add_internal_call("Lumix.NavmeshZone::debugDrawCompactHeightfield", f);
 }
 
 
 {
-	using T = void(Lumix::NavigationScene::*)(EntityRef);
-	auto f = &CSharpMethodProxy<T>::call<(T)&NavigationScene::debugDrawHeightfield>;
+	using T = void(Lumix::NavigationModule::*)(EntityRef);
+	auto f = &CSharpMethodProxy<T>::call<(T)&NavigationModule::debugDrawHeightfield>;
 	mono_add_internal_call("Lumix.NavmeshZone::debugDrawHeightfield", f);
 }
 
 
 {
-	using T = Lumix::NavmeshBuildJob *(Lumix::NavigationScene::*)(EntityRef);
-	auto f = &CSharpMethodProxy<T>::call<(T)&NavigationScene::generateNavmesh>;
+	using T = Lumix::NavmeshBuildJob *(Lumix::NavigationModule::*)(EntityRef);
+	auto f = &CSharpMethodProxy<T>::call<(T)&NavigationModule::generateNavmesh>;
 	mono_add_internal_call("Lumix.NavmeshZone::generateNavmesh", f);
 }
 
@@ -1406,15 +1406,15 @@
 }
 
 {
-	using T = void(Lumix::AudioScene::*)(EntityRef);
-	auto f = &CSharpMethodProxy<T>::call<(T)&AudioScene::pauseAmbientSound>;
+	using T = void(Lumix::AudioModule::*)(EntityRef);
+	auto f = &CSharpMethodProxy<T>::call<(T)&AudioModule::pauseAmbientSound>;
 	mono_add_internal_call("Lumix.AmbientSound::pauseAmbientSound", f);
 }
 
 
 {
-	using T = void(Lumix::AudioScene::*)(EntityRef);
-	auto f = &CSharpMethodProxy<T>::call<(T)&AudioScene::resumeAmbientSound>;
+	using T = void(Lumix::AudioModule::*)(EntityRef);
+	auto f = &CSharpMethodProxy<T>::call<(T)&AudioModule::resumeAmbientSound>;
 	mono_add_internal_call("Lumix.AmbientSound::resumeAmbientSound", f);
 }
 

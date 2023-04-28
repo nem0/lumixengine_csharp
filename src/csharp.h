@@ -20,7 +20,7 @@ template <int N> struct StaticString;
 void getCSharpName(const char* cmp_name, StaticString<128>& class_name);
 
 
-struct CSharpPlugin : IPlugin
+struct CSharpSystem : ISystem
 {
 	virtual void* getDomain() const = 0;
 	virtual void* getAssembly() const = 0;
@@ -31,7 +31,7 @@ struct CSharpPlugin : IPlugin
 };
 
 
-struct CSharpScriptScene : IScene
+struct CSharpScriptModule : IModule
 {
 	virtual int addScript(EntityRef entity, int scr_index) = 0;
 	virtual void removeScript(EntityRef entity, int scr_index) = 0;
