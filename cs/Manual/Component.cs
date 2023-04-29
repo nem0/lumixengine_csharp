@@ -32,7 +32,7 @@ namespace Lumix
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		protected extern static void pushUndoCommand(IntPtr editor, IntPtr world, int entity, Component cmp, string property, string old_value, string value);
 
-		public string Serialize(IntPtr manager)
+		public string Serialize()
 		{
 			var type = this.GetType();
 			var string_builder = new System.Text.StringBuilder();
@@ -53,15 +53,7 @@ namespace Lumix
 				
 				if(f.FieldType == typeof(Entity))
 				{
-					if (manager != IntPtr.Zero)
-					{
-						ulong guid = getEntityGUIDFromID(manager, ((Entity)val).entity_Id_);
-						string_builder.Append(guid.ToString());
-					}
-					else
-					{
-						string_builder.Append(((Entity)val).entity_Id_);
-					}
+					string_builder.Append(((Entity)val).entity_Id_);
 				}
 				else if(f.FieldType.BaseType == typeof(Resource))
 				{

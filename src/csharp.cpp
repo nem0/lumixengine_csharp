@@ -965,7 +965,6 @@ struct CSharpScriptModuleImpl : public CSharpScriptModule {
 		const i32 len = serializer.read<int>();
 		m_scripts.reserve(len);
 		IAllocator& allocator = m_system.m_allocator;
-		Array<u8> buf(allocator);
 		for (int i = 0; i < len; ++i) {
 			ScriptComponent* script = LUMIX_NEW(allocator, ScriptComponent)(allocator);
 
@@ -980,18 +979,11 @@ struct CSharpScriptModuleImpl : public CSharpScriptModule {
 				serializer.read(scr.script_name_hash);
 				setScriptNameHash(*script, scr, scr.script_name_hash);
 
-				u32 size = serializer.read<u32>();
-				buf.resize(size);
 				MonoObject* obj = mono_gchandle_get_target(scr.gc_handle);
+				const char* c_str = serializer.readString();
 				if (obj) {
-					if (size > 0) {
-						serializer.read(&buf[0], size);
-						MonoString* str = mono_string_new(mono_domain_get(), (const char*)&buf[0]);
-						tryCallMethod(true, obj, nullptr, "Deserialize", str);
-					} else {
-						MonoString* str = mono_string_new(mono_domain_get(), "");
-						tryCallMethod(true, obj, nullptr, "Deserialize", str);
-					}
+					MonoString* str = mono_string_new(mono_domain_get(), (const char*)c_str);
+					tryCallMethod(true, obj, nullptr, "Deserialize", str);
 				}
 			}
 			m_world.onComponentCreated(script->entity, CSHARP_SCRIPT_TYPE, this);
