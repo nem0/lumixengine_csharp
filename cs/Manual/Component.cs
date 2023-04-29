@@ -21,16 +21,13 @@ namespace Lumix
 		protected extern static int entityInput(IntPtr editor, IntPtr world, string label, int entity);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		protected extern static int getEntityIDFromGUID(IntPtr manager, ulong guid);
-
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		protected extern static ulong getEntityGUIDFromID(IntPtr manager, int id);
-
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		protected extern static IntPtr resourceInput(IntPtr editor, string label, string type, IntPtr resource);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		protected extern static void pushUndoCommand(IntPtr editor, IntPtr world, int entity, Component cmp, string property, string old_value, string value);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		protected extern static int getEntityFromEntityMap(IntPtr entity_map, int entity_id);
 
 		public string Serialize()
 		{
@@ -53,7 +50,7 @@ namespace Lumix
 				
 				if(f.FieldType == typeof(Entity))
 				{
-					string_builder.Append(((Entity)val).entity_Id_);
+					string_builder.Append(val == null ? -1 : ((Entity)val).entity_Id_);
 				}
 				else if(f.FieldType.BaseType == typeof(Resource))
 				{
@@ -70,37 +67,7 @@ namespace Lumix
 			return string_builder.ToString();
 		}
 
-		public static string ConvertGUIDToID(string data, IntPtr manager)
-		{
-			var string_builder = new System.Text.StringBuilder();
-			string[] values = data.Split('|');
-			int version = int.Parse(values[0]);
-			if (version > 0) return "";
-			string_builder.Append(values[0]);
-			string_builder.Append("|");
-			for (int i = 1; i < values.Length - 1; i += 3)
-			{
-				string type = values[i];
-				string name = values[i + 1];
-				string value = values[i + 2];
-
-				string_builder.Append(type);
-				string_builder.Append("|");
-				string_builder.Append(name);
-				string_builder.Append("|");
-
-				if (type == typeof(Entity).Name)
-				{
-					value = getEntityIDFromGUID(manager, ulong.Parse(value)).ToString();
-				}
-				string_builder.Append(value);
-				string_builder.Append("|");
-			}
-
-			return string_builder.ToString();
-		}
-
-		public void Deserialize(string data)
+		public void Deserialize(string data, IntPtr entity_map)
 		{
 			var this_type = this.GetType();
 			string[] values = data.Split('|');
@@ -119,6 +86,7 @@ namespace Lumix
 				if (field_type == typeof(Entity))
 				{
 					int entity_id = int.Parse(value);
+					entity_id = getEntityFromEntityMap(entity_map, entity_id);
 					Entity e = World.GetEntity(entity_id);
 					field.SetValue(this, e);
 				}

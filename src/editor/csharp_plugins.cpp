@@ -220,7 +220,7 @@ struct PropertyGridCSharpPlugin final : public PropertyGrid::IPlugin {
 	}
 
 
-	static EntityPtr csharp_entityInput(PropertyGridCSharpPlugin* that, World* world, MonoString* label_mono, EntityPtr entity) {
+	static i32 csharp_entityInput(PropertyGridCSharpPlugin* that, World* world, MonoString* label_mono, i32 entity) {
 		StudioApp& app = that->m_app;
 		PropertyGrid& prop_grid = app.getPropertyGrid();
 		MonoStringHolder label = label_mono;

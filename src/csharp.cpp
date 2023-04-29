@@ -133,6 +133,12 @@ Resource* csharp_Resource_load(Engine& engine, MonoString* path, MonoString* typ
 	return rm.load(res_type, Path((const char*)path_str));
 }
 
+MonoObject* csharp_getEntity(World* world, int entity_idx) {
+	auto* cs_module = (CSharpScriptModule*)world->getModule(CSHARP_SCRIPT_TYPE);
+	u32 gc_handle = cs_module->getEntityGCHandle({entity_idx});
+	return mono_gchandle_get_target(gc_handle);
+}
+
 /*
 bool csharp_Entity_hasComponent(World* world, Entity entity, MonoString* type) {
 	MonoStringHolder type_str = type;
@@ -156,12 +162,6 @@ World* csharp_getUniverse(IModule* module) {
 }
 
 
-MonoObject* csharp_getEntity(World* world, int entity_idx) {
-	auto* cs_scene = (CSharpScriptModule*)world->getModule(CSHARP_SCRIPT_TYPE);
-	u32 gc_handle = cs_scene->getEntityGCHandle({entity_idx});
-	return mono_gchandle_get_target(gc_handle);
-}
-
 
 IModule* csharp_getScene(World* world, MonoString* type_str) {
 	MonoStringHolder type = type_str;
@@ -180,10 +180,6 @@ IModule* csharp_getSceneByName(World* world, MonoString* type_str) {
 	return world->getModule(crc32((const char*)name));
 }
 
-
-int csharp_Component_getEntityIDFromGUID(IDeserializer* serializer, u64 guid) {
-	return serializer->getEntity({guid}).index;
-}
 
 
 u64 csharp_Component_getEntityGUIDFromID(ISerializer* serializer, int id) {
@@ -209,6 +205,10 @@ void csharp_Entity_destroy(World* world, int entity) {
 	world->destroyEntity({entity});
 }
 */
+
+int csharp_Component_getEntityFromEntityMap(EntityMap* entity_map, int entity_id) {
+	return entity_map->get(EntityPtr{entity_id}).index;
+}
 
 void csharp_Entity_setPosition(World* world, int entity, const DVec3& pos) {
 	world->setPosition({entity}, pos);
@@ -594,17 +594,17 @@ struct CSharpScriptModuleImpl : public CSharpScriptModule {
 		/*
 		mono_add_internal_call("Lumix.Engine::loadResource", csharp_loadResource);
 		mono_add_internal_call("Lumix.Component::getEntityIDFromGUID", csharp_Component_getEntityIDFromGUID);
-		mono_add_internal_call("Lumix.Component::getEntityGUIDFromID", csharp_Component_getEntityGUIDFromID);
 		mono_add_internal_call("Lumix.Component::create", csharp_Component_create);
 		mono_add_internal_call("Lumix.Component::getScene", csharp_getScene);
 		mono_add_internal_call("Lumix.World::instantiatePrefab", csharp_instantiatePrefab);
 		mono_add_internal_call("Lumix.World::getSceneByName", csharp_getSceneByName);
-		mono_add_internal_call("Lumix.World::getEntity", csharp_getEntity);
 		mono_add_internal_call("Lumix.IModule::getUniverse", csharp_getUniverse);
 		mono_add_internal_call("Lumix.Entity::hasComponent", csharp_Entity_hasComponent);
 		mono_add_internal_call("Lumix.Entity::setParent", csharp_Entity_setParent);
 		mono_add_internal_call("Lumix.Entity::getParent", csharp_Entity_getParent);
 		mono_add_internal_call("Lumix.Entity::destroy", csharp_Entity_destroy);*/
+		mono_add_internal_call("Lumix.World::getEntity", csharp_getEntity);
+		mono_add_internal_call("Lumix.Component::getEntityFromEntityMap", csharp_Component_getEntityFromEntityMap);
 		mono_add_internal_call("Lumix.Entity::setPosition", csharp_Entity_setPosition);
 		mono_add_internal_call("Lumix.Entity::setRotation", csharp_Entity_setRotation);
 		mono_add_internal_call("Lumix.Entity::getPosition", csharp_Entity_getPosition);
@@ -704,13 +704,14 @@ struct CSharpScriptModuleImpl : public CSharpScriptModule {
 	*/
 
 	void applyProperties(ScriptComponent& script) {
+		EntityMap map(m_system.m_allocator);
 		for (Script& inst : script.scripts) {
 			if (inst.gc_handle == INVALID_GC_HANDLE) continue;
 			if (inst.properties.length() == 0) continue;
 
 			MonoObject* obj = mono_gchandle_get_target(inst.gc_handle);
 			MonoString* str = mono_string_new(mono_domain_get(), inst.properties.getData());
-			tryCallMethod(true, obj, nullptr, "Deserialize", str);
+			tryCallMethod(true, obj, nullptr, "Deserialize", str, &map);
 		}
 	}
 
@@ -983,7 +984,7 @@ struct CSharpScriptModuleImpl : public CSharpScriptModule {
 				const char* c_str = serializer.readString();
 				if (obj) {
 					MonoString* str = mono_string_new(mono_domain_get(), (const char*)c_str);
-					tryCallMethod(true, obj, nullptr, "Deserialize", str);
+					tryCallMethod(true, obj, nullptr, "Deserialize", str, &entity_map);
 				}
 			}
 			m_world.onComponentCreated(script->entity, CSHARP_SCRIPT_TYPE, this);

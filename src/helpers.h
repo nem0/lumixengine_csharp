@@ -18,7 +18,7 @@ bool inherits(MonoClass* mono_class, const char* base);
 
 
 struct MonoStringHolder
-{
+{			
 	MonoStringHolder(MonoString* mono_string) : str(mono_string_to_utf8(mono_string)) {}
 	MonoStringHolder(char* ptr) : str(ptr) {}
 	MonoStringHolder(MonoStringHolder&& rhs) { str = rhs.str; rhs.str = nullptr; }
