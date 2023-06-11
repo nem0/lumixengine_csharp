@@ -505,6 +505,7 @@ struct CSharpScriptModuleImpl : public CSharpScriptModule {
 		m_system.m_on_assembly_unload.unbind<&CSharpScriptModuleImpl::onAssemblyUnload>(this);
 	}
 
+	const char* getName() const override { return "csharp_script"; }
 
 	void onAssemblyLoad() {
 		for (ScriptComponent* cmp : m_scripts) {
