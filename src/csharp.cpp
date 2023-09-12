@@ -3,7 +3,6 @@
 #include "animation/animation_module.h"
 #include "audio/audio_module.h"
 #include "engine/engine.h"
-#include "engine/flag_set.h"
 #include "engine/geometry.h"
 #include "engine/hash_map.h"
 #include "engine/input_system.h"
@@ -457,7 +456,7 @@ struct CSharpScriptModuleImpl : public CSharpScriptModule {
 
 		RuntimeHash script_name_hash;
 		u32 gc_handle = INVALID_GC_HANDLE;
-		FlagSet<Flags, u32> flags;
+		Flags flags;
 		String properties;
 	};
 
@@ -711,7 +710,7 @@ struct CSharpScriptModuleImpl : public CSharpScriptModule {
 			if (inst.properties.length() == 0) continue;
 
 			MonoObject* obj = mono_gchandle_get_target(inst.gc_handle);
-			MonoString* str = mono_string_new(mono_domain_get(), inst.properties.getData());
+			MonoString* str = mono_string_new(mono_domain_get(), inst.properties.c_str());
 			tryCallMethod(true, obj, nullptr, "Deserialize", str, &map);
 		}
 	}
@@ -818,12 +817,12 @@ struct CSharpScriptModuleImpl : public CSharpScriptModule {
 		if (script.gc_handle != INVALID_GC_HANDLE) {
 			ASSERT(m_system.m_assembly);
 			mono_gchandle_free(script.gc_handle);
-			if (script.flags.isSet(Script::HAS_UPDATE)) {
-				script.flags.unset(Script::HAS_UPDATE);
+			if (script.flags & Script::HAS_UPDATE) {
+				script.flags &= ~Script::HAS_UPDATE;
 				m_updates.eraseItems([&script](u32 iter) { return iter == script.gc_handle; });
 			}
-			if (script.flags.isSet(Script::HAS_ON_INPUT)) {
-				script.flags.unset(Script::HAS_ON_INPUT);
+			if (script.flags & Script::HAS_ON_INPUT) {
+				script.flags &= ~Script::HAS_ON_INPUT;
 				m_on_inputs.eraseItems([&script](u32 iter) { return iter == script.gc_handle; });
 			}
 			script.script_name_hash = RuntimeHash();
@@ -862,11 +861,11 @@ struct CSharpScriptModuleImpl : public CSharpScriptModule {
 
 		if (mono_class_get_method_from_name(mono_class, "Update", 1)) {
 			m_updates.push(script.gc_handle);
-			script.flags.set(Script::HAS_UPDATE);
+			script.flags |= Script::HAS_UPDATE;
 		}
 		if (mono_class_get_method_from_name(mono_class, "OnInput", 1)) {
 			m_on_inputs.push(script.gc_handle);
-			script.flags.set(Script::HAS_ON_INPUT);
+			script.flags |= Script::HAS_ON_INPUT;
 		}
 	}
 
@@ -1070,11 +1069,10 @@ struct CSharpScriptModuleImpl : public CSharpScriptModule {
 
 	void processInput() {
 		InputSystem& input = m_system.m_engine.getInputSystem();
-		const InputSystem::Event* events = input.getEvents();
+		Span<const InputSystem::Event> events = input.getEvents();
 		for (u32 gc_handle : m_on_inputs) {
 			MonoObject* cs_event = nullptr;
-			for (int i = 0, n = input.getEventsCount(); i < n; ++i) {
-				const InputSystem::Event& event = events[i];
+			for (const InputSystem::Event& event : events) {
 				switch (event.device->type) {
 					case InputSystem::Device::KEYBOARD: {
 						cs_event = createKeyboardEvent(event);
@@ -1256,7 +1254,6 @@ struct CSharpScriptModuleImpl : public CSharpScriptModule {
 	bool m_is_game_running;
 };
 
-
 struct CSProperties : reflection::DynamicProperties {
 	CSProperties(IAllocator& allocator)
 	: reflection::DynamicProperties(allocator)
@@ -1398,10 +1395,10 @@ CSharpSystemImpl::CSharpSystemImpl(Engine& engine)
 	mono_config_parse(nullptr);
 	
 	mono_set_dirs(nullptr, nullptr);
-	char exe_path[LUMIX_MAX_PATH];
+	char exe_path[MAX_PATH];
 	os::getExecutablePath(Span(exe_path));
-	Span<const char> exe_dir = Path::getDir(exe_path);
-	StaticString<LUMIX_MAX_PATH * 3> assemblies_paths(exe_dir, ";.");
+	StringView exe_dir = Path::getDir(exe_path);
+	StaticString<MAX_PATH * 3> assemblies_paths(exe_dir, ";.");
 	mono_set_assemblies_path(assemblies_paths);
 	initDebug();
 	m_domain = mono_jit_init("lumix");
