@@ -2,7 +2,7 @@ name: build
 on: [push]
 jobs:
     windows:
-        runs-on: windows-2019
+        runs-on: windows-2022
         steps:
             - name: install mono
               run: |
@@ -20,9 +20,9 @@ jobs:
             - name: create project
               working-directory: projects
               run: |
-                ./genie.exe vs2019
+                ./genie.exe vs2022
             - name: build
               working-directory: projects
               shell: cmd
               run: |
-                "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/MSBuild/Current/Bin/MSBuild.exe" tmp/vs2019/LumixEngine.sln /p:Configuration=Debug                
+                "C:/Program Files/Microsoft Visual Studio/2022/Enterprise/MSBuild/Current/Bin/MSBuild.exe" tmp/vs2022/LumixEngine.sln /p:Configuration=Debug                
