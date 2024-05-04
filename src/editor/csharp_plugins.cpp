@@ -1,5 +1,7 @@
 #include "../csharp.h"
 #include "../helpers.h"
+#include "core/log.h"
+#include "core/os.h"
 #include "editor/asset_browser.h"
 #include "editor/file_system_watcher.h"
 #include "editor/property_grid.h"
@@ -8,8 +10,6 @@
 #include "editor/utils.h"
 #include "editor/world_editor.h"
 #include "engine/engine.h"
-#include "engine/log.h"
-#include "engine/os.h"
 #include "engine/reflection.h"
 #include "engine/resource.h"
 #include "engine/resource_manager.h"
@@ -712,6 +712,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 			case reflection::Variant::VEC2: return "Vec2";
 			case reflection::Variant::VEC3: return "Vec3";
 			// TODO 
+			case reflection::Variant::QUAT: return "Quat";
 			case reflection::Variant::DVEC3: return "DVec3";
 			case reflection::Variant::COLOR: return "Color";
 			case reflection::Variant::ENTITY: return "EntityRef";
@@ -734,6 +735,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 			case reflection::Variant::VEC2: cs_type.append("Vec2"); break;
 			case reflection::Variant::VEC3: cs_type.append("Vec3"); break;
 		
+			case reflection::Variant::QUAT: cs_type.append("Quat"); break;
 			case reflection::Variant::DVEC3: cs_type.append("DVec3"); break;
 			case reflection::Variant::COLOR: cs_type.append("Vec4"); break;
 			case reflection::Variant::ENTITY: cs_type.append("int"); break;
@@ -753,6 +755,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 			case reflection::Variant::VEC2: cs_type = "Vec2"; break;
 			case reflection::Variant::VEC3: cs_type = "Vec3"; break;
 
+			case reflection::Variant::QUAT: cs_type = "Quat"; break;
 			case reflection::Variant::DVEC3: cs_type = "DVec3"; break;
 			case reflection::Variant::COLOR: cs_type = "Vec4"; break;
 			case reflection::Variant::PTR: cs_type = "IntPtr"; break;
@@ -808,7 +811,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 	}
 
 	static void printType(reflection::FunctionBase* func, OutputMemoryStream& blob) {
-		blob << skipStruct(func->getReturnTypeName()) << "(" << skipStruct(func->getThisTypeName()) << "::*)(";
+		blob << skipStruct(func->getReturnType().type_name) << "(" << skipStruct(func->getThisType().type_name) << "::*)(";
 		for (u32 i = 0; i < func->getArgCount(); ++i) {
 			if (i > 0) blob << ", ";
 			reflection::TypeDescriptor td = func->getArgType(i);

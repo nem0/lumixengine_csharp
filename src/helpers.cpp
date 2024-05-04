@@ -1,5 +1,5 @@
 #include "helpers.h"
-#include "engine/string.h"
+#include "core/string.h"
 
 
 namespace Lumix
