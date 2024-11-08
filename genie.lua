@@ -16,7 +16,6 @@ project "csharp"
 	buildoptions { "/wd4267", "/wd4244" }
 	defines { "BUILDING_CSHARP" }
 	links { "engine" }
-	useLua()
 	defaultConfigurations()
 
 	configuration { "Debug" }

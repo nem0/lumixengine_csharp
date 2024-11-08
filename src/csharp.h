@@ -2,12 +2,13 @@
 
 
 #include "core/hash.h"
+#include "core/hash_map.h"
 #include "engine/plugin.h"
 
 
-namespace Lumix
-{
+namespace Lumix {
 
+struct String;
 
 enum { INVALID_GC_HANDLE = 0xffffFFFF };
 
