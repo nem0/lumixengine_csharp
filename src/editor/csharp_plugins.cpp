@@ -265,8 +265,8 @@ struct PropertyGridCSharpPlugin final : public PropertyGrid::IPlugin {
 		mono_add_internal_call("Lumix.Component::resourceInput", &csharp_resourceInput);
 	}
 
-
-	void onGUI(PropertyGrid& grid, Span<const EntityRef> entities, ComponentType cmp_type, WorldEditor& editor) override {
+	
+	void onGUI(PropertyGrid& grid, Span<const EntityRef> entities, ComponentType cmp_type, const TextFilter& filter, WorldEditor& editor) override {
 		if (cmp_type != CSHARP_SCRIPT_TYPE) return;
 		if (entities.length() != 1) return;
 
@@ -306,7 +306,8 @@ struct PropertyGridCSharpPlugin final : public PropertyGrid::IPlugin {
 				if (ImGui::Button("Edit")) {
 					FileSystem& fs = m_app.getEngine().getFileSystem();
 					StaticString<MAX_PATH> fullpath(fs.getBasePath(), "cs/src/", script_name, ".cs");
-					os::ExecuteOpenResult res = os::shellExecuteOpen(fullpath);
+					os::ExecuteOpenResult res = os::shellExecuteOpen(fullpath, {}, {});
+					// TODO check if works
 					switch(res) {
 						case os::ExecuteOpenResult::SUCCESS: break;
 						case os::ExecuteOpenResult::OTHER_ERROR: logError("Could not open ", fullpath); break;
@@ -346,29 +347,12 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 		makeUpToDate();
 
 		app.getPropertyGrid().addPlugin(m_property_grid_plugin);
-
-		m_toggle_ui.init("C#", "C#", "csharp", "", Action::IMGUI_PRIORITY);
-		m_toggle_ui.func.bind<&StudioCSharpPlugin::toggleOpen>(this);
-		m_toggle_ui.is_selected.bind<&StudioCSharpPlugin::isOpen>(this);
-		
-		app.addWindowAction(&m_toggle_ui);
+		app.getSettings().registerOption("csharp_open", &m_is_open);
 	}
 
 	~StudioCSharpPlugin() {
-		m_app.removeAction(&m_toggle_ui);
 		m_app.getPropertyGrid().removePlugin(m_property_grid_plugin);
 	}
-
-	void onSettingsLoaded() override {
-		m_is_open = m_app.getSettings().getValue(Settings::GLOBAL, "is_csharp_open", false);
-	}
-
-	void onBeforeSettingsSaved() override {
-		m_app.getSettings().setValue(Settings::GLOBAL, "is_csharp_open", m_is_open);
-	}
-
-	void toggleOpen() { m_is_open = !m_is_open; }
-	bool isOpen() const { return m_is_open; }
 
 	bool packData(const char* dest_dir) {
 		char exe_path[MAX_PATH];
@@ -587,12 +571,14 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 		const char* base_path = m_app.getWorldEditor().getEngine().getFileSystem().getBasePath();
 		StaticString<MAX_PATH> full_path(base_path, "cs/");
 		os::shellExecuteOpen("code", ".", full_path);
+		// TODO check if works
 	}
 
 	void openVSProject() {
 		const char* base_path = m_app.getWorldEditor().getEngine().getFileSystem().getBasePath();
 		StaticString<MAX_PATH> full_path(base_path, "cs/src/main.csproj");
-		os::shellExecuteOpen(full_path);
+		os::shellExecuteOpen(full_path, {}, {});
+		// TODO check if works
 	}
 
 	void generateCSProj() {
@@ -621,7 +607,8 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 		FileSystem& fs = editor.getEngine().getFileSystem();
 		StaticString<MAX_PATH> file_path(fs.getBasePath(), "cs/src/");
 		if (filename) file_path.append(filename);
-		os::shellExecuteOpen(file_path);
+		os::shellExecuteOpen(file_path, {}, {});
+		// TODO check if works
 	}
 
 
@@ -820,7 +807,8 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 			if (td.is_reference) blob << "&";
 		}
 		blob << ")";
-		if (func->isConstMethod()) blob << " const";
+		// TODO
+		// if (func->isConstMethod()) blob << " const";
 	}
 
 	static void generateModule(OutputMemoryStream& api_blob) {
@@ -1077,7 +1065,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 	bool m_deferred_compile = false;
 	PropertyGridCSharpPlugin m_property_grid_plugin;
 	bool m_is_open = false;
-	Action m_toggle_ui;
+	Action m_toggle_ui{"C#", "Toggle C# UI", "csharp_toggle_ui", "", Action::WINDOW};
 };
 
 struct AddCSharpComponentPlugin final : public StudioApp::IAddComponentPlugin {
@@ -1106,7 +1094,10 @@ struct AddCSharpComponentPlugin final : public StudioApp::IAddComponentPlugin {
 					editor.addComponent(Span(&entity, 1), CSHARP_SCRIPT_TYPE);
 				}
 
-				const ComponentUID cmp = editor.getWorld()->getComponent(entity, CSHARP_SCRIPT_TYPE);
+				ComponentUID cmp;
+				cmp.entity = entity;
+				cmp.type = CSHARP_SCRIPT_TYPE;
+				cmp.module = editor.getWorld()->getModule(CSHARP_SCRIPT_TYPE);
 				editor.beginCommandGroup("add_cs_script");
 				editor.addArrayPropertyItem(cmp, "scripts");
 

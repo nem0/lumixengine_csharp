@@ -391,7 +391,7 @@ int subprocess_create(const char *const commandLine[], int options,
 
   if (subprocess_option_inherit_environment !=
       (options & subprocess_option_inherit_environment)) {
-    environment = "\0\0";
+    environment = (char*)"\0\0";
   }
 
   if (!CreatePipe(&rd, &wr, (LPSECURITY_ATTRIBUTES)&saAttr, 0)) {

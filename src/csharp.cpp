@@ -1,6 +1,7 @@
 #include "core/geometry.h"
 #include "core/hash_map.h"
 #include "core/log.h"
+#include "core/os.h"
 #include "core/path.h"
 #include "csharp.h"
 #include "animation/animation.h"
@@ -1494,7 +1495,8 @@ void CSharpSystemImpl::loadAssembly() {
 	const char* path = "cs/bin/main.dll";
 
 	IAllocator& allocator = m_engine.getAllocator();
-	m_assembly_domain = mono_domain_create_appdomain("lumix_runtime", nullptr);
+	// TODO check if this works
+	m_assembly_domain = mono_domain_create_appdomain((char*)"lumix_runtime", nullptr);
 	mono_domain_set_config(m_assembly_domain, ".", "");
 	mono_domain_set(m_assembly_domain, true);
 	m_assembly = mono_domain_assembly_open(m_assembly_domain, path);
