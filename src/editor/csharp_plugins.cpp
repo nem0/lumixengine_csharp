@@ -2,6 +2,7 @@
 #include "../helpers.h"
 #include "core/log.h"
 #include "core/os.h"
+#include "editor/action.h"
 #include "editor/asset_browser.h"
 #include "editor/file_system_watcher.h"
 #include "editor/property_grid.h"
@@ -1065,7 +1066,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 	bool m_deferred_compile = false;
 	PropertyGridCSharpPlugin m_property_grid_plugin;
 	bool m_is_open = false;
-	Action m_toggle_ui{"C#", "Toggle C# UI", "csharp_toggle_ui", "", Action::WINDOW};
+	Action m_toggle_ui{"C#", "C#", "Toggle UI", "csharp_toggle_ui", "", Action::WINDOW};
 };
 
 struct AddCSharpComponentPlugin final : public StudioApp::IAddComponentPlugin {

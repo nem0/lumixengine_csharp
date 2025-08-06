@@ -1255,118 +1255,6 @@ struct CSharpScriptModuleImpl : public CSharpScriptModule {
 	bool m_is_game_running;
 };
 
-struct CSProperties : reflection::DynamicProperties {
-	CSProperties(IAllocator& allocator)
-	: reflection::DynamicProperties(allocator)
-	{ name = "cs_properties"; }
-		
-	u32 getCount(ComponentUID cmp, int index) const override { 
-		CSharpScriptModuleImpl& module = (CSharpScriptModuleImpl&)*cmp.module;
-		const EntityRef e = (EntityRef)cmp.entity;
-		//return module.getPropertyCount(e, index);
-		return {};
-	}
-
-	Type getType(ComponentUID cmp, int array_idx, u32 idx) const override { 
-		//LuaScriptSceneImpl& scene = (LuaScriptSceneImpl&)*cmp.scene;
-		//const EntityRef e = (EntityRef)cmp.entity;
-		//const LuaScriptScene::Property::Type type = scene.getPropertyType(e, array_idx, idx);
-		//switch(type) {
-		//	case LuaScriptScene::Property::Type::BOOLEAN: return BOOLEAN;
-		//	case LuaScriptScene::Property::Type::INT: return I32;
-		//	case LuaScriptScene::Property::Type::FLOAT: return FLOAT;
-		//	case LuaScriptScene::Property::Type::STRING: return STRING;
-		//	case LuaScriptScene::Property::Type::ENTITY: return ENTITY;
-		//	case LuaScriptScene::Property::Type::RESOURCE: return RESOURCE;
-		//	case LuaScriptScene::Property::Type::COLOR: return COLOR;
-		//	default: ASSERT(false); return NONE;
-		//}
-		return NONE;
-	}
-
-	const char* getName(ComponentUID cmp, int array_idx, u32 idx) const override {
-		//LuaScriptSceneImpl& scene = (LuaScriptSceneImpl&)*cmp.scene;
-		//const EntityRef e = (EntityRef)cmp.entity;
-		//return scene.getPropertyName(e, array_idx, idx);
-		return "";
-	}
-
-	reflection::ResourceAttribute getResourceAttribute(ComponentUID cmp, int array_idx, u32 idx) const override {
-		//reflection::ResourceAttribute attr;
-		//LuaScriptSceneImpl& scene = (LuaScriptSceneImpl&)*cmp.scene;
-		//const EntityRef e = (EntityRef)cmp.entity;
-		//const LuaScriptScene::Property::Type type = scene.getPropertyType(e, array_idx, idx);
-		//ASSERT(type == LuaScriptScene::Property::Type::RESOURCE);
-		//attr.file_type = "*.*";
-		//attr.type  = scene.getPropertyResourceType(e, array_idx, idx);
-		//return attr;
-		return {};
-	}
-
-
-	Value getValue(ComponentUID cmp, int array_idx, u32 idx) const override { 
-		//LuaScriptSceneImpl& scene = (LuaScriptSceneImpl&)*cmp.scene;
-		//const EntityRef e = (EntityRef)cmp.entity;
-		//const LuaScriptScene::Property::Type type = scene.getPropertyType(e, array_idx, idx);
-		//const char* name = scene.getPropertyName(e, array_idx, idx);
-		//Value v = {};
-		//switch(type) {
-		//	case LuaScriptScene::Property::Type::COLOR: reflection::set(v, scene.getPropertyValue<Vec3>(e, array_idx, name)); break;
-		//	case LuaScriptScene::Property::Type::BOOLEAN: reflection::set(v, scene.getPropertyValue<bool>(e, array_idx, name)); break;
-		//	case LuaScriptScene::Property::Type::INT: reflection::set(v, scene.getPropertyValue<i32>(e, array_idx, name)); break;
-		//	case LuaScriptScene::Property::Type::FLOAT: reflection::set(v, scene.getPropertyValue<float>(e, array_idx, name)); break;
-		//	case LuaScriptScene::Property::Type::STRING: reflection::set(v, scene.getPropertyValue<const char*>(e, array_idx, name)); break;
-		//	case LuaScriptScene::Property::Type::ENTITY: reflection::set(v, scene.getPropertyValue<EntityPtr>(e, array_idx, name)); break;
-		//	case LuaScriptScene::Property::Type::RESOURCE: {
-		//		const i32 res_idx = scene.getPropertyValue<i32>(e, array_idx, name);
-		//		if (res_idx < 0) {
-		//			reflection::set(v, ""); 
-		//		}
-		//		else {
-		//			Resource* res = scene.m_system.m_engine.getLuaResource(res_idx);
-		//			reflection::set(v, res ? res->getPath().c_str() : ""); 
-		//		}
-		//		break;
-		//	}
-		//	default: ASSERT(false); break;
-		//}
-		//return v;
-		return {};
-	}
-		
-	void set(ComponentUID cmp, int array_idx, const char* name, Type type, Value v) const override { 
-		//LuaScriptSceneImpl& scene = (LuaScriptSceneImpl&)*cmp.scene;
-		//const EntityRef e = (EntityRef)cmp.entity;
-		//switch(type) {
-		//	case BOOLEAN: scene.setPropertyValue(e, array_idx, name, v.b); break;
-		//	case I32: scene.setPropertyValue(e, array_idx, name, v.i); break;
-		//	case FLOAT: scene.setPropertyValue(e, array_idx, name, v.f); break;
-		//	case STRING: scene.setPropertyValue(e, array_idx, name, v.s); break;
-		//	case ENTITY: scene.setPropertyValue(e, array_idx, name, v.e); break;
-		//	case RESOURCE: scene.setPropertyValue(e, array_idx, name, v.s); break;
-		//	case COLOR: scene.setPropertyValue(e, array_idx, name, v.v3); break;
-		//	default: ASSERT(false); break;
-		//}
-	}
-
-	void set(ComponentUID cmp, int array_idx, u32 idx, Value v) const override {
-		//LuaScriptSceneImpl& scene = (LuaScriptSceneImpl&)*cmp.scene;
-		//const EntityRef e = (EntityRef)cmp.entity;
-		//const LuaScriptScene::Property::Type type = scene.getPropertyType(e, array_idx, idx);
-		//const char* name = scene.getPropertyName(e, array_idx, idx);
-		//switch(type) {
-		//	case LuaScriptScene::Property::Type::BOOLEAN: scene.setPropertyValue(e, array_idx, name, v.b); break;
-		//	case LuaScriptScene::Property::Type::INT: scene.setPropertyValue(e, array_idx, name, v.i); break;
-		//	case LuaScriptScene::Property::Type::FLOAT: scene.setPropertyValue(e, array_idx, name, v.f); break;
-		//	case LuaScriptScene::Property::Type::STRING: scene.setPropertyValue(e, array_idx, name, v.s); break;
-		//	case LuaScriptScene::Property::Type::ENTITY: scene.setPropertyValue(e, array_idx, name, v.e); break;
-		//	case LuaScriptScene::Property::Type::RESOURCE: scene.setPropertyValue(e, array_idx, name, v.s); break;
-		//	case LuaScriptScene::Property::Type::COLOR: scene.setPropertyValue(e, array_idx, name, v.v3); break;
-		//	default: ASSERT(false); break;
-		//}
-	}
-};
-
 static void initDebug() {
 	mono_debug_init(MONO_DEBUG_FORMAT_MONO);
 	const char* options[] = {"--soft-breakpoints", "--debugger-agent=transport=dt_socket,address=127.0.0.1:55555,embedding=1,server=y,suspend=n"};
@@ -1421,7 +1309,6 @@ void CSharpSystemImpl::registerProperties() {
 		.LUMIX_CMP(ScriptComponent, "csharp_script", "C# script")
 			.begin_array<&CSharpScriptModule::getScriptCount, &CSharpScriptModule::addScript, &CSharpScriptModule::removeScript>("scripts")
 				.LUMIX_PROP(ScriptName, "Path").attribute<ScriptEnum>()
-				.property<CSProperties>()
 			.end_array();
 }
 
