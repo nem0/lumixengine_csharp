@@ -699,6 +699,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 			case reflection::Variant::VOID: return "void";
 			case reflection::Variant::VEC2: return "Vec2";
 			case reflection::Variant::VEC3: return "Vec3";
+			case reflection::Variant::VEC4: return "Vec4";
 			// TODO 
 			case reflection::Variant::QUAT: return "Quat";
 			case reflection::Variant::DVEC3: return "DVec3";
@@ -722,6 +723,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 			case reflection::Variant::VOID: cs_type.append("void"); break;
 			case reflection::Variant::VEC2: cs_type.append("Vec2"); break;
 			case reflection::Variant::VEC3: cs_type.append("Vec3"); break;
+			case reflection::Variant::VEC4: cs_type.append("Vec4"); break;
 		
 			case reflection::Variant::QUAT: cs_type.append("Quat"); break;
 			case reflection::Variant::DVEC3: cs_type.append("DVec3"); break;
@@ -742,6 +744,7 @@ struct StudioCSharpPlugin : public StudioApp::GUIPlugin {
 			case reflection::Variant::VOID: cs_type = "void"; break;
 			case reflection::Variant::VEC2: cs_type = "Vec2"; break;
 			case reflection::Variant::VEC3: cs_type = "Vec3"; break;
+			case reflection::Variant::VEC4: cs_type = "Vec4"; break;
 
 			case reflection::Variant::QUAT: cs_type = "Quat"; break;
 			case reflection::Variant::DVEC3: cs_type = "DVec3"; break;
@@ -1088,7 +1091,7 @@ struct AddCSharpComponentPlugin final : public StudioApp::IAddComponentPlugin {
 					EntityRef entity = editor.addEntity();
 					editor.selectEntities(Span(&entity, 1), false);
 				}
-				if (editor.getSelectedEntities().empty()) return;
+				if (editor.getSelectedEntities().size() == 0) return;
 				EntityRef entity = editor.getSelectedEntities()[0];
 
 				if (!editor.getWorld()->hasComponent(entity, CSHARP_SCRIPT_TYPE)) {
